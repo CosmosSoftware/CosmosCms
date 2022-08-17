@@ -10,20 +10,20 @@ WORKDIR /src
 
 COPY ["packages/", "packages/"]
 RUN ls packages/
-COPY ["CDT.Cosmos.Cms.Website/nuget.config", "CDT.Cosmos.Cms.Website/"]
+COPY ["Cosmos.Cms.Website/nuget.config", "Cosmos.Cms.Website/"]
 COPY ["nuget.config", "."]
-COPY ["CDT.Cosmos.Cms.Website/CDT.Cosmos.Cms.Website.csproj", "CDT.Cosmos.Cms.Website/"]
-COPY ["CDT.Cosmos.Cms.Common/CDT.Cosmos.Cms.Common.csproj", "CDT.Cosmos.Cms.Common/"]
-RUN dotnet restore "CDT.Cosmos.Cms.Website/CDT.Cosmos.Cms.Website.csproj"
+COPY ["Cosmos.Cms.Website/Cosmos.Cms.Website.csproj", "Cosmos.Cms.Website/"]
+COPY ["Cosmos.Cms.Common/Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
+RUN dotnet restore "Cosmos.Cms.Website/Cosmos.Cms.Website.csproj"
 COPY . .
-WORKDIR "/src/CDT.Cosmos.Cms.Website"
-# RUN dotnet build "CDT.Cosmos.Cms.Website.csproj" -c Release -o /app/build
+WORKDIR "/src/Cosmos.Cms.Website"
+# RUN dotnet build "Cosmos.Cms.Website.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CDT.Cosmos.Cms.Website.csproj" -c Release -o /app/publish
+RUN dotnet publish "Cosmos.Cms.Website.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "CDT.Cosmos.Cms.Website.dll"]
+ENTRYPOINT ["dotnet", "Cosmos.Cms.Website.dll"]

@@ -8,15 +8,15 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
-COPY ["CDT.Cosmos.Cms/CDT.Cosmos.Cms.csproj", "CDT.Cosmos.Cms/"]
-COPY ["CDT.Cosmos.Cms.Common/CDT.Cosmos.Cms.Common.csproj", "CDT.Cosmos.Cms.Common/"]
-COPY ["CDT.Cosmos.BlobService/CDT.Cosmos.BlobService.csproj", "CDT.Cosmos.BlobService/"]
+COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
+COPY ["Cosmos.Cms.Common/CDT.Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
+COPY ["Cosmos.BlobService/Cosmos.BlobService.csproj", "Cosmos.BlobService/"]
 COPY . .
-WORKDIR "/src/CDT.Cosmos.Cms"
-# RUN dotnet build "CDT.Cosmos.Cms.csproj" -c Release -o /app/build
+WORKDIR "/src/Cosmos.Cms"
+# RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "CDT.Cosmos.Cms.csproj" -c Release -o /app/publish
+RUN dotnet publish "Cosmos.Cms.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
