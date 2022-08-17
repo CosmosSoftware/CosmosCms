@@ -1,0 +1,21 @@
+﻿@model ArticleViewModel
+@removeTagHelper "*, Microsoft.AspNet.Mvc.Razor"
+@removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
+@{
+    Layout = "_LayoutKendoEditor";
+    ViewData["Title"] = Model.Title;
+}
+@Html.Raw(Model.Layout.HtmlHeader)
+<div id="eContent">
+@Html.Raw(Model.Content)
+</div>
+@Html.Raw(Model.Layout.FooterHtmlContent)
+@Html.Raw(Model.FooterJavaScript)
+<!-- Comment out the following if not using Google Translate v3 -->
+@if (ViewData["UseGoogleTranslate"] != null && (bool) ViewData["UseGoogleTranslate"])
+{
+    <script src="~/ccms/js/GoogleTranslations.js" id="ccms-lang-script" data-lang="@Model.LanguageName"></script>
+}
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

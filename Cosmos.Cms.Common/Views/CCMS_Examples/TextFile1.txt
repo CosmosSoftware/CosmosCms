@@ -1,0 +1,5 @@
+﻿READ ME
+Cosmos CMS Example Index View
+
+Replace your index and shared layout view with the example shown here.  
+Feel free to customize as needed.

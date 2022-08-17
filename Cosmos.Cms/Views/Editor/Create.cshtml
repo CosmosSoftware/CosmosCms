@@ -1,0 +1,95 @@
+﻿@using Kendo.Mvc.UI
+@model CreatePageViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h1>Create a Page</h1>
+            <hr />
+            <form asp-action="Create">
+                <input asp-for="Id" type="hidden" />
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Title" class="control-label"></label>
+                    @(Html.Kendo()
+                    .TextBoxFor(m => m.Title)
+                    .Placeholder("Enter a unique title here").HtmlAttributes(new {style = "width:100%"})
+                    )
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <p>Below lists the page templates for the current layout.</p>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TemplateId" class="control-label"></label>
+                    @(Html.Kendo()
+                    .DropDownListFor(m => m.TemplateId)
+                    .OptionLabel("Select a template (optional)...")
+                    .DataTextField("Text")
+                    .DataValueField("Value").HtmlAttributes(new {style = "width:100%"})
+                    .Events(e => e.Change("onChangeTemplate"))
+                    .BindTo(Model.Templates)
+                    )
+                    <span asp-validation-for="TemplateId" class="text-danger"></span>
+
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="previewBtn" style="display:none" class="btn btn-primary" onclick="openPreview()">Full Page Preview</button>
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+            <div id="divNotes"></div>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+    <h4>Template preview:</h4>
+    <iframe id="ifPreview" style="background-image: url('https://beta.template.webstandards.ca.gov/images/main-banner9.jpg'); height: 100%; min-height: 600px; width: 100%;">
+    </iframe>
+</div>
+<script>
+    "use strict";
+
+    function onChangeTemplate() {
+        var iframe = $("#ifPreview");
+         $( "#divNotes" ).html( "" );
+        if (iframe.length) {
+            var templateId = $("#TemplateId").val();
+            if (typeof(templateId) !== "undefined" && templateId !== null && templateId !== "") {
+                getTemplateInfo(templateId);
+                $("#previewBtn").show();
+                var url = "@Url.Action("Preview", "Templates")/" + templateId;
+                iframe.attr('src', url);
+            } else {
+                $("#previewBtn").hide();
+                iframe.attr('src', '');
+            }
+        }
+    }
+
+    function getTemplateInfo(templateId) {
+        $.get( "@Url.Action("GetTemplateInfo")/" + templateId, function( data ) {
+          var html = "<div><div class='card-header'>" + data.Title + "</div>";
+          html = html + "<div class='card-body'><p>Discription: </p>" + data.Description + "</div>";
+          html = html + "</div>";
+          $( "#divNotes" ).html( html );
+        });
+    }
+
+    function openPreview() {
+        var templateId = $("#TemplateId").val();
+        var url = "@Url.Action("Preview", "Templates")/" + templateId;
+        window.open(url, "Preview");
+    }
+</script>
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}

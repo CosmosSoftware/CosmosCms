@@ -1,0 +1,15 @@
+﻿
+@model ArticleViewModel
+@removeTagHelper "*, Microsoft.AspNet.Mvc.Razor"
+@removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
+@{
+    Layout = "_LayoutKendoEditor";
+    ViewData["Title"] = Model.Title;
+}
+<div id="eContent">
+@Html.Raw(Model.Content)
+</div>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+

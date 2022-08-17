@@ -1,0 +1,28 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Web Site Edit Logs";
+}
+<div class="container mt-5 pt-2"> 
+    <div class="row">
+        <div class="col">
+            <h3>@ViewData["Title"]</h3>
+            <hr />
+            <p>This is a list of actions taken on this website with regards to editing content.</p>
+       
+            @(Html.Kendo().Grid<ArticleLogJsonModel>().Name("grid")
+            .Columns(column =>
+            {
+            column.Template("#= kendo.toString(DateTimeStamp, 'G')#");
+            column.Bound(b => b.DateTimeStamp);
+            column.Bound(b => b.ActivityNotes);
+            column.Bound(b => b.IdentityUserId);
+            })
+            .ToolBar(t => t.Search())
+            .Pageable(pager => pager.AlwaysVisible(true).PageSizes(new[] {10, 20, 100}))
+            .Sortable()
+            .Filterable()
+            .DataSource(dataSource => { dataSource.Ajax().Read("Read_Logs", "Editor").ServerOperation(false); })
+            )
+        </div>
+    </div>
+</div>

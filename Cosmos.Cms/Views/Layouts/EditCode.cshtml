@@ -1,0 +1,31 @@
+﻿@model LayoutCodeViewModel
+@{
+    Layout = "_LayoutCodeEditor";
+    ViewData["Title"] = Model.EditorTitle;
+}
+
+<form id="codeForm" asp-action="EditCode">
+    <input type="hidden" asp-for="Id"/>
+    <input type="hidden" asp-for="EditingField"/>
+    <input type="hidden" asp-for="Head"/>
+    <input type="hidden" asp-for="HtmlHeader"/>
+    <input type="hidden" asp-for="FooterHtmlContent"/>
+</form>
+<script>
+    var editorSaveSignal = "LayoutSaved";
+
+    function btnCustomClick(e) {
+        switch (e.target.text()) {
+        case "Preview":
+            window.open("@Url.Action("Preview", "Layouts", new {Model.Id})");
+            break;
+        case "Layouts":
+            window.location.href = "@Url.Action("Index", "Layouts", new {Model.Id})";
+            break;
+        }
+    }
+
+    function closeEditor() {
+        window.location.href = "@Url.Action("Index", "Layouts")";
+    }
+</script>

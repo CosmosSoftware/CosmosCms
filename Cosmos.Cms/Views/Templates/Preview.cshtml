@@ -1,0 +1,6 @@
+﻿@model ArticleViewModel
+@{
+    Layout = "_LayoutPreview";
+    ViewData["Title"] = Model.Title;
+}
+@Html.Raw(Model.Content)

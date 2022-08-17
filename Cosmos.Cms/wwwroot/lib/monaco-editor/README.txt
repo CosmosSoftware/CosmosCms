@@ -1,0 +1,1 @@
+Current Monaco Version: monaco-editor-0.25.2

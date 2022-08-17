@@ -1,0 +1,266 @@
+﻿@addTagHelper *, Kendo.Mvc
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Boot Configuration";
+}
+
+<style>
+    .btn-circle.btn-sm {
+        border-radius: 25px;
+        height: 34px;
+        padding: 3px 10px;
+        text-align: center;
+        width: 34px;
+    }
+</style>
+<div class="container mt-5 pt-2">
+    <div class="row">
+    <div class="col">
+        <div class="card bg-secondary">
+            <div class="card-header">
+                <span class="h3">@ViewData["Title"]</span>
+                @if (User.IsInRole("Administrators"))
+                {
+                    <a class="k-button float-right" href="@Url.Content("~/")">Home</a>
+                }
+                else
+                {
+                    <a class="k-button float-right" href="@Url.Action("Index")">Back to setup</a>
+                }
+            </div>
+            <div class="card-body">
+                <p>
+                    This page shows what settings are needed when Cosmos starts up, or &quot;boots up.&quot;
+                    Format of these settings differ based on the type of install.
+                </p>
+                <kendo-tabstrip name="tabstrip">
+                    <popup-animation>
+                        <open effects="fade:in" />
+                    </popup-animation>
+                    <items>
+                        <tabstrip-item text="Getting Started" selected="true">
+                            <content>
+                                <h4>Getting Started</h4>
+                                <p>
+                                    When starting, Cosmos CMS reads configuration settings that enable
+                                    it to connect to its database, file storage and more.
+                                </p>
+                                <p>Instructions for how to create settings are coming soon...</p>
+                                <div class="bg-secondary bg-gradient rounded-pill text-white">
+                                    <p class="p-2">
+                                        Note: After installing the boot configuration, stop this website for 15 seconds then restart.
+                                    </p>
+                                </div>
+                                <p>After restarting the website, then continue to <a class="text-white" href="@Url.Action("InstallDatabase")">install the database</a>.</p>
+                            </content>
+                        </tabstrip-item>
+                        <tabstrip-item text="Boot Configuration">
+                            <content>
+                                <table class="table table-borderless text-light">
+                                    <tbody>
+                                        <tr>
+                                            <th colspan="3" style="border-bottom: solid 1px">
+                                                Required Settings:
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>Setting</th>
+                                            <th>Values</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                        <tr>
+                                            <td>CosmosSecretName</td>
+                                            <td>Name of your choice</td>
+                                            <td class="bg-info">
+                                                The Configuration Wizard contents are pasted here.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosPrimaryCloud
+                                            </td>
+                                            <td>
+                                                Valid values: azure or amazon
+                                            </td>
+                                            <td>
+                                                This setting tells the
+                                                &quot;Publisher&quot;
+                                                which cloud it is running in.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="3" style="border-bottom: solid 1px">
+                                                Optional Settings:
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>Setting</th>
+                                            <th>Values</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                        <tr>
+                                            <td>APPLICATIONINSIGHTS_CONNECTION_STRING</td>
+                                            <td>Connection string</td>
+                                            <td>
+                                                This optional field allows Application Insights to be used
+                                                to track website performance. It contains the
+                                                <a target="_blank" href="https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string?tabs=net#finding-my-connection-string">
+                                                    &quot;connection
+                                                    string&quot; provided by Microsoft
+                                                </a>.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosAllowSetup
+                                            </td>
+                                            <td>
+                                                true or false
+                                            </td>
+                                            <td>
+                                                Allows the site to run through the setup process.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosAllowConfigEdit
+                                            </td>
+                                            <td>
+                                                true or false
+                                            </td>
+                                            <td>
+                                                Allows use of the configuration wizard
+                                                after Cosmos is installed.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span class="badge badge-danger">DANGER!</span> CosmosAllowSiteReset
+                                            </td>
+                                            <td>
+                                                true or false
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-danger">DANGER!</span>
+                                                When set to &quot;true&quot; the site is allowed
+                                                to perform a &quot;factory reset.&quot; This will
+                                                wipe out all website content and remove all users.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="3" style="border-bottom: solid 1px">
+                                                If using Azure Vault to store settings:
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>Setting</th>
+                                            <th>Values</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                        <tr>
+                                            <td>CosmosUseAzureVault</td>
+                                            <td>true or false</td>
+                                            <td>If true, then Vault URL and Default Credential are required.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosCosmosAzureVaultUrl
+                                            </td>
+                                            <td>
+                                                https://[your_vault_name].vault.azure.net/
+                                            </td>
+                                            <td>
+                                                URL to the vault
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosUseDefaultCredential
+                                            </td>
+                                            <td>
+                                                true or false
+                                            </td>
+                                            <td>
+                                                When using an Azure Web App, the identity of that app can be given permissions
+                                                to connect to your vault. If set to false, then the next set of fields are
+                                                required to connect to the vault.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosAzureVaultClientId
+                                            </td>
+                                            <td>
+                                                [Client ID as a GUID]
+                                            </td>
+                                            <td>
+                                                This is the application client ID being used to connect to Azure Vault.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosAzureVaultClientSecret
+                                            </td>
+                                            <td>
+                                                [Password]
+                                            </td>
+                                            <td>
+                                                Client secret used by this application to connect to Azure Vault
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                CosmosAzureVaultTenantId
+                                            </td>
+                                            <td>
+                                                [Tenant ID as a GUID]
+                                            </td>
+                                            <td>
+                                                This is the Azure Active Directory tenant ID in which the client ID exists.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </content>
+                        </tabstrip-item>
+                        <tabstrip-item text="Local Secrets">
+                            <content>
+                                <h4>Local Secrets Example</h4>
+                                <p>
+                                    The following is an example of a local &quot;secrets&quot;
+                                    file example. Note: This is in JSON format.
+                                </p>
+                                <div class="bg-light text-danger">
+                                    <code>
+                                        <pre>
+
+ {
+    "CosmosAllowConfigEdit": "true",
+    "CosmosAllowSetup": "true",
+    "CosmosAllowSiteReset": "false",
+    "CosmosPrimaryCloud": "azure",
+    "CosmosSecretName": "{your_secret_name}",
+
+    // Azure Vault 
+    "CosmosUseAzureVault": "true",
+    "CosmosUseDefaultCredential": "false",
+    "CosmosAzureVaultClientId": "{your_client_ID}",
+    "CosmosAzureVaultClientSecret": "{your_client_secret}",
+    "CosmosAzureVaultTenantId": "{your_tenant_ID}",
+    "CosmosCosmosAzureVaultUrl": "https://{your_vault_name}.vault.azure.net/",
+
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "Connection string from app insights"
+ }
+
+</pre>
+                                    </code>
+                                </div>
+                            </content>
+                        </tabstrip-item>
+                    </items>
+                </kendo-tabstrip>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

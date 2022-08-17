@@ -1,0 +1,34 @@
+﻿@model ArticleViewModel
+@using Cosmos.Cms.Controllers
+<!DOCTYPE HTML>
+<html lang="@Model.LanguageCode">
+<head>
+
+@Html.Raw(PageImportConstants.COSMOS_HEAD_START)
+<title>@Model.Title</title>
+@Html.Raw(Model.Layout.Head)
+@Html.Raw(PageImportConstants.COSMOS_HEAD_END)
+
+<!-- 
+    START: ADD YOUR HEAD CONTENT HERE 
+    Note: This comment block can be removed.
+-->
+
+@Html.Raw(Model.HeadJavaScript)
+
+<!-- 
+    END: ADD YOUR HEAD CONTENT HERE 
+    Note: This comment block can be removed.
+-->
+
+@Html.Raw(PageImportConstants.COSMOS_HEAD_SCRIPTS_START)
+@Html.Raw(JavaScriptSnippet.FullScript)
+@Html.Raw(PageImportConstants.COSMOS_HEAD_SCRIPTS_END)
+</head>
+<body>
+@RenderBody()
+@Html.Raw(PageImportConstants.COSMOS_BODY_END_SCRIPTS_START)
+@await RenderSectionAsync("Scripts", false)
+@Html.Raw(PageImportConstants.COSMOS_BODY_END_SCRIPTS_END)
+</body>
+</html>

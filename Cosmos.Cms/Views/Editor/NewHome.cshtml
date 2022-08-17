@@ -1,0 +1,68 @@
+﻿@using Kendo.Mvc.UI
+@model NewHomeViewModel
+
+@{
+    ViewData["Title"] = "Set Home Page";
+}
+<div class="container mt-5 pt-2">
+    <div class="row">
+        <h3 class="card-title">@ViewData["Title"] </h3>
+        <hr />
+        <p>Web page selected: <u>@Model.Title</u></p>
+        <p>
+            This will become the new &quot;Home Page&quot; of this website and the old
+            home page will become a regular page with a new URL.
+        </p>
+        <p>
+            Flip the switch below to enable the change.
+        </p>
+        <form asp-action="NewHome">
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="ArticleNumber" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group form-check mb-2">
+                <label>Enable home page change:</label>
+                @(Html.Kendo().SwitchFor(m => m.IsNewHomePage)
+                .Events(ev => ev.Change("onChange"))
+                .Messages(c => c.Checked("Yes").Unchecked("No"))
+                )
+            </div>
+            <div id="lblWarning" class="form-group" style="display: none">
+                <p><span class="badge badge-danger">Note:</span> Set new home page is activated.</p>
+                <p>
+                    <span class="badge badge-warning">Tips:</span>
+                </p>
+                <ul>
+                    <li> Do not close this web browser until the process completes.</li>
+                    <li> When done, you will automatically be taken to the page list.</li>
+                    <li> To see changes right away, publish the site.</li>
+                </ul>
+                <br />
+            </div>
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-primary">Cancel Action</a> &nbsp;&nbsp;&nbsp;
+                <input type="submit" id="btnSubmit" value="Set new home page" class="btn btn-primary" style="display: none" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <div id="divNotes"></div>
+    </div>
+</div>
+<script>
+    "use strict";
+
+    function onChange(e) {
+        if (e.checked) {
+            $("#btnSubmit").show();
+            $("#lblWarning").show();
+        } else {
+            $("#btnSubmit").hide();
+            $("#lblWarning").hide();
+        }
+    }
+</script>
+@{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}

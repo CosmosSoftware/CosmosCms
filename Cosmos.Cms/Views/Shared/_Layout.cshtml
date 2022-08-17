@@ -1,0 +1,298 @@
+﻿@addTagHelper *, Kendo.Mvc
+@using Microsoft.AspNetCore.Routing
+@using Kendo.Mvc.UI
+@using System.Reflection
+@using Cosmos.Cms.Services
+@using Microsoft.Extensions.Options;
+@using Cosmos.Cms.Common.Services.Configurations
+@inject IOptions<CosmosConfig> options
+@model object
+@{
+    var assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+    var controllerName = (string)Context.GetRouteData().Values["controller"];
+    var actionName = (string)Context.GetRouteData().Values["action"];
+
+    var isAuthor = false;
+    var isEditor = false;
+    var isAdministrator = false;
+
+    ArticleViewModel articleViewModel = null;
+
+    var accountBtnTemplate = "<div id='userAcctMenu' style='font-size:0.8em'><span class='fa fa-user'></span> Account</div>";
+
+    if (User != null && User.IsInRole("Authors"))
+    {
+        isAuthor = true;
+    }
+    else if (User != null && User.IsInRole("Editors"))
+    {
+        isEditor = true;
+    }
+    else if (User != null && User.IsInRole("Administrators"))
+    {
+        isAdministrator = true;
+    }
+}
+
+<!DOCTYPE html>
+
+<html lang="en-us">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag?.Title</title>
+    @if (Model != null && Model.GetType() == typeof(ArticleViewModel))
+    {
+        articleViewModel = (ArticleViewModel)Model;
+        @*
+            Layout specific header content
+        *@
+        @Html.Raw(articleViewModel.Layout.Head)
+        @*
+            Page specific header content
+        *@
+        @Html.Raw(articleViewModel.HeadJavaScript)
+
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/lib/mdb-ui-kit/mdb.min.css" />
+        <script src="~/lib/mdb-ui-kit/mdb.min.js"></script>
+    }
+    @*
+        Telerik/Kendo resources
+    *@
+    <partial name="_KendoHeadPartial" />
+    @*
+        Application Insights Scripts
+    *@
+    @Html.Raw(JavaScriptSnippet.FullScript)
+</head>
+<body>
+    @RenderBody()
+
+    <script id="verToolTip" type="text/x-kendo-template">
+        <h5>C/CMS Version Information</h5>
+        <div class='card-body'>
+        <p>Assembly: @assemblyName.Name</p>
+        <p>Version: @assemblyName.Version</p>
+        <p>@Assembly.GetEntryAssembly()</p>
+        <p>Cosmos CMS is an open source project on
+         <a target="_blank" href="https://github.com/CosmosSoftware/Cosmos.Cms">GitHub</a>.</p>
+    </script>
+    @(Html.Kendo().Tooltip()
+    .For("#versInfo")
+    .ContentTemplateId("verToolTip")
+    .Position(TooltipPosition.Top)
+    .Width(400)
+    .Height(320)
+    )
+     @*
+        Cosmos toolbar is added last to make sure it is overlayed over everything at the top of this page.
+    *@
+    <nav id="k-ccms-ToolBar" class="navbar navbar-expand-md fixed-top" style="height: 52px; background-color:#363636 !important">
+        <div class="container-fluid">
+            @(Html.Kendo().ToolBar()
+            .Name("ccms-kendo-toolBar")
+            .Items(items =>
+            {
+            items.Add().Type(CommandType.SplitButton).Text("Menu").Id("menuBtn").ImageUrl("/images/CosmosBearIcon.png").MenuButtons(menuButtons =>
+            {
+            menuButtons.Add().Text("Home Page");
+            menuButtons.Add().Text("Help");
+            if (Model != null && controllerName == "Home" && actionName == "Index" && (isAuthor && articleViewModel?.Published == null || isEditor || isAdministrator))
+            {
+            menuButtons.Add().Text("Edit");
+            }
+            if (isAdministrator || isEditor || isAuthor)
+            {
+            menuButtons.Add().Text("Files");
+            menuButtons.Add().Text("Pages");
+            }
+            if (isAdministrator)
+            {
+            menuButtons.Add().Text("Templates");
+            //menuButtons.Add().Text("Preload");
+            menuButtons.Add().Text("Publish");
+            menuButtons.Add().Text("Layouts");
+            menuButtons.Add().Text("Logs");
+            }
+            if (isAdministrator)
+            {
+            menuButtons.Add().Text("Users");
+            
+            }
+            if (User.Identity.IsAuthenticated)
+            {
+            menuButtons.Add().Text("User Account");
+            menuButtons.Add().Text("Log Out");
+            }
+            }).Click("bgCmsClick");
+            items.Add().Type(CommandType.Button).Text("Time Zone").Id("timeZone");
+
+            items.Add().Template("<div><span id='versInfo' style='margin-right:10px;font-size:0.6em;'>" + @assemblyName.Version + "</span> </div>");
+            items.Add().Type(CommandType.Button).Click("hideToolBar").Text("<span title='Collapse toolbar'>&laquo;</span>");
+
+            })
+            )
+            @* This button is required to by the Chat Component *@
+            @if (options.Value.SiteSettings.AllowSetup == false)
+            {
+                <partial name="_ChatButtonPartial" />
+            }
+        </div>
+    </nav>
+    <div id="k-ccms-showBar" class="navbar fixed-top" style="display:none;">
+        @(Html.Kendo().Button().Name("btnShowToolBar").Events(eve => eve.Click("showToolBar")).Content("<span title='Expand toolbar'>&raquo;</span>"))
+    </div>
+    <style>
+        #ccms-kendo-toolBar {
+            width: 100%;
+        }
+    </style>
+    <script>
+        function hideToolBar(e){
+            $("#k-ccms-ToolBar").hide();
+            $("#k-ccms-showBar").show();
+        }
+        function showToolBar(e){
+            $("#k-ccms-ToolBar").show();
+            $("#k-ccms-showBar").hide();
+        }
+
+        var popupNotification;
+
+        function toggleToolBar(e) {
+            var target = $(e.event.target).closest(".k-button").attr("id");
+            var toolBar = $("#ccmsToolBar");
+            var btnCcmsShowToolBar = $("#btnCcmsShowToolBar");
+            var btnCcmsHideToolBar = $("#btnCcmsHideToolBar");
+            if (target === "btnCcmsHideToolBar") {
+                toolBar.hide();
+                btnCcmsHideToolBar.hide();
+                btnCcmsShowToolBar.show();
+            } else {
+                toolBar.show();
+                btnCcmsHideToolBar.show();
+                btnCcmsShowToolBar.hide();
+            }
+        }
+
+        function getLocalTimeZone() {
+            var datetime = new Date();
+            var dateTimeString = datetime.toString();
+            var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
+            return timezone;
+        }
+
+        function convertUtcToLocalDateTime(utcDateTime) {
+
+            if (utcDateTime === null || typeof (utcDateTime) === "undefined" || utcDateTime === "") {
+                return "";
+            }
+
+            // ReSharper disable once QualifiedExpressionMaybeNull
+            if (utcDateTime instanceof Date || utcDateTime.endsWith("Z")) {
+                var localStateTime = new Date(utcDateTime);
+                return localStateTime;
+            }
+
+            // This will turn UTC to local time
+            // ReSharper disable once UseOfImplicitGlobalInFunctionScope
+            var datTimeString = kendo.toString(new Date(utcDateTime), "G");
+            var formattedLocalDateTime = datTimeString + " UTC";
+            return new Date(formattedLocalDateTime);
+        }
+
+        // Handles button bar click - menu button.
+        function bgCmsClick(e) {
+            var command = e.target.text();
+            switch (command) {
+            case "Home Page":
+                window.location.href = "@Url.Content("~/")";
+                break;
+            case "Edit":
+                window.location.href = "@Url.Action("Versions", "Editor", new { Id = articleViewModel?.ArticleNumber })";
+                break;
+            case "Files":
+                window.location.href = "@Url.Action("Index", "FileManager")";
+                break;
+            case "Pages":
+                window.location.href = "@Url.Action("Index", "Editor")";
+                break;
+            case "Layouts":
+                window.location.href = "@Url.Action("Index", "Layouts")";
+                break;
+            case "Templates":
+                window.location.href = "@Url.Action("Index", "Templates")";
+                break;
+            case "Logs":
+                window.location.href = "@Url.Action("Logs", "Editor")";
+                break;
+            case "Preload":
+                window.location.href = "@Url.Action("Preload", "Editor")";
+                break;
+            case "Publish":
+                window.location.href = "@Url.Action("Publish", "Editor")";
+                break;
+            case "Users":
+                window.location.href = "@Url.Action("Index", "Users")";
+                break;
+            case "Setup":
+                window.location.href = "@Url.Action("Index", "Setup")";
+                break;
+            case "Diagnostics":
+                window.location.href = "@Url.Action("Diagnostics", "Setup")";
+                break;
+            case "Configure":
+                window.location.href = "@Url.Action("ConfigWizard", "Setup")";
+                break;
+            case "Reset Site":
+                window.location.href = "@Url.Action("TrainingReset", "Setup")";
+                break;
+            case "User Account":
+                window.location.href = "@Url.Page("/Account/Manage/Index", new {area = "Identity"})";
+                break;
+            case "Log Out":
+                $("#frmLogout").submit();
+                break;
+            case "Help":
+                    window.open("https://github.com/CosmosSoftware/Cosmos.Cms");
+                break;
+            }
+        }
+
+        $(document).ready(function() {
+
+            var timeZoneElement = $("#timeZone");
+            timeZoneElement.html(getLocalTimeZone());
+
+            $(timeZoneElement).kendoTooltip({
+                content: "This is the time zone for dates and times shown here."
+            });
+
+            $("#userAcctMenu").kendoTooltip({
+                content: "You are using this account. Click down arrow for profile or log out."
+            });
+
+            $("#menuBtn").kendoTooltip({
+                content: "This is the main menu. Click down arrow for options."
+            });
+
+            popupNotification = $("#c-n-notifications").kendoNotification({
+                autoHideAfter: 1000
+            }).data("kendoNotification");
+        });
+    </script>
+    <form id="frmLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})"></form>
+
+    @if (options.Value.SiteSettings.AllowSetup == false)
+    {
+        <partial name="_ChatComponentsPartial" />
+    }
+    @*
+        Application Insights Scripts
+    *@
+    @await RenderSectionAsync("Scripts", false)
+</body>
+</html>

@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Account Created";
+    Layout = Url.Content("~/Areas/Identity/Pages/_Layout.cshtml");
+}
+
+<div class="container mt-5 mb-5 pt-2">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-light text-dark">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        @ViewData["Title"]
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        An administrator account was just created.
+                    </p>
+                    <p>
+                        Please <a asp-area="Identity" class="text-dark" asp-page="/Account/Login">login</a> to complete setup.
+                    </p>
+                    <p><a class="btn btn-sm btn-primary" asp-area="Identity" asp-page="/Account/Login">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

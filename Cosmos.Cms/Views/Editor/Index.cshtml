@@ -1,0 +1,121 @@
+﻿@using Kendo.Mvc.UI
+@using Cosmos.Cms.Services
+@{
+    ViewData["Title"] = "Page List";
+
+    var publisherUrl = ViewData["PublisherUrl"];
+
+    var versions = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Versions", "Editor")}/#: ArticleNumber #\" title=\"See a list of versions for this page\"><span class='fa fa-files-o'></span> Edit</a>";
+    var copyUrl = "<button class=\"clipboard btn btn-sm btn-primary\" data-clipboard-text=\"#: UrlPath #\"  title='Click to copy url'><span class='fa fa-clipboard'></span> Copy URL</button>";
+    var btnGroup = "<div class=\"btn-group btn-group-sm\" role=\"group\" aria-label=\"Basic example\">#= getNewHomeButton(IsDefault, LastPublished, ArticleNumber) #" +
+                   versions + copyUrl + "#= getStatusBadge(LastPublished, UrlPath) #</div>";
+
+    var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
+}
+<script src="~/js/clipboard.min.js"></script>
+<div class="container mt-5 pt-2">
+    <div class="row">
+        <div class="col">
+            <h3>@ViewData["Title"]</h3>
+            <hr />
+            @if (canEdit || User.IsInRole("Authors"))
+            {
+                <a class="btn btn-sm btn-primary" asp-action="Create">New Page</a>
+                <a asp-action="Redirects">Manage Redirects</a>
+            }
+            @(
+                Html.Kendo().Grid<ArticleListItem>()
+                .Name("grid")
+                .Columns(col =>
+                {
+                    col.Bound(b => b.ArticleNumber);
+                    col.Template(btnGroup).Title("Menu").Width(300);
+                    col.Template("#= formatPublishedDate(LastPublished) #").Title("Published");
+                    col.Bound(b => b.Title).Width(260);
+                    col.Command(com => com.Destroy().IconClass("fa fa-trash")).Visible(canEdit).Title("Trash Page");
+            })
+            .ToolBar(t => { t.Search(); })
+            .Pageable(pager => pager
+            .Input(true)
+            .Numeric(true)
+            .Info(true)
+            .PreviousNext(true)
+            .Refresh(true)
+            .Position(GridPagerPosition.Top)
+            )
+            .Sortable()
+            .Editable(editable => editable.Mode(GridEditMode.InLine).ConfirmDelete("Are you sure you want to trash this article?").CancelDelete("Do not trash article."))
+            .Filterable()
+            .Search(s => s.Field("Title"))
+            .DataSource(dataSource =>
+            {
+            dataSource.Ajax()
+                    .Model(m => m.Id("ArticleNumber"))
+                    .Read(read => read.Action("Read_Articles", "Editor"))
+            .Destroy(trash => trash.Action("Trash_Article", "Editor"));
+            })
+            .Events(eve => eve.DataBound("onDataBound"))
+            )
+            <form>
+                <input id="selected" type="hidden" />
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var canEdit = @canEdit.ToString().ToLower();
+    var clipboard = new ClipboardJS('.clipboard');
+    clipboard.on('success',
+        function(e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+            alert("Copied: " + e.text);
+            e.clearSelection();
+        });
+
+    function getStatusBadge(published, urlPath) {
+        if (published === null) {
+            return "<a title=\"This page not published.\" class='btn btn-sm btn-secondary'><span class='fa fa-circle-o-notch'></span></a>";
+        }
+        var url = urlPath.replace("root", "");
+        return "<a target=\"_blank\" title=\"This page was published as of " + kendo.toString(published, "G") + ". Click to view.\" class='btn btn-sm btn-primary' href=\"" + url + "\"><span class=\"fa fa-external-link\"></span></a>";
+    }
+
+    function getNewHomeButton(isDefault, published, articleNumber) {
+        if (isDefault === null || isDefault === false) {
+            if (published === null) {
+                return "<div onclick=\"clickAlert('This page cannot be made the home page until it is published.')\" class='btn btn-sm btn-warning' title='This page cannot be made the home page until it is published.'><span class='fa fa-power-off'></span></div>";
+            } else {
+                if (canEdit) {
+                    return "<a href='@Url.Action("NewHome")/" + articleNumber + "' title='Set this page as the new home page.' class='btn btn-sm btn-secondary'><span class='fa fa-home'></span></a>";
+                } else {
+                    return "<div onclick=\"clickAlert('Only administrators or editors can change the home page.')\" class='btn btn-sm btn-warning' title='Only administrators or editors can change the home page.'><span class='fa fa-power-off'></span></div>";
+                }
+            }
+        }
+        return "<div class='btn btn-sm btn-success' title='Is now the home page for this website.'><span class='fa fa-home'></span></div>";
+    }
+
+    function getHtmlEditBtn(usesHtmlEditor) {
+        if (usesHtmlEditor !== null && usesHtmlEditor === true) {
+
+        }
+    }
+
+    function clickAlert(msg) {
+        alert(msg);
+    }
+
+    function formatPublishedDate(published) {
+        if (published === null) {
+            return "Draft";
+        } else {
+            return kendo.toString(published, 'G');
+        }
+    }
+
+    function onDataBound(e) {
+        var rows = e.sender.dataSource.total();
+    }
+</script>

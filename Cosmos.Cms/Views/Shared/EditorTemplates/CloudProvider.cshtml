@@ -1,0 +1,24 @@
+﻿@using Kendo.Mvc.UI
+@model SelectListItem
+@(Html.Kendo().DropDownListFor(m => m)
+    .DataTextField("Text")
+    .DataValueField("Value")
+    .OptionLabel("Select cloud...")
+    .Template("<span style='min-width:200px'>#: data.Text # (#: data.Value #)</span>")
+    .HtmlAttributes(new {style = "width: 100%"})
+    .AutoBind(true)
+    .Filter(FilterType.Contains)
+    .BindTo(new List<SelectListItem>
+    {
+        new()
+        {
+            Text = "Azure",
+            Value = "azure"
+        },
+        new()
+        {
+            Text = "Amazon",
+            Value = "amazon"
+        }
+    })
+    )

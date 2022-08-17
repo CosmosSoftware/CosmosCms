@@ -1,0 +1,34 @@
+﻿@model TemplateCodeEditorViewModel
+@addTagHelper *, Kendo.Mvc
+@{
+    Layout = "_LayoutCodeEditor";
+    ViewData["Title"] = Model.EditorTitle;
+}
+
+<form id="codeForm" asp-action="EditCode" asp-controller="Templates">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="EditorTitle" />
+    <input type="hidden" asp-for="Content" />
+</form>
+<script>
+    function showValue() {
+        alert(editor.getValue());
+    }
+
+    function btnCustomClick(e) {
+        switch (e.target.text()) {
+        case "Preview":
+            // Open in new window.
+            window.open("@Url.Action("Preview", "Templates", new {Model.Id})");
+            break;
+        }
+    }
+
+    function closeEditor() {
+        window.location.href = "@Url.Action("Index", "Templates", new {Model.Id})";
+    }
+
+    function editHtml() {
+        window.location.href = "@Url.Action("Edit", "Editor", new {Model.Id})";
+    }
+</script>

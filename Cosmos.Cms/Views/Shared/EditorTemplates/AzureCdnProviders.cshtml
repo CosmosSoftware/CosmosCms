@@ -1,0 +1,34 @@
+﻿@using Kendo.Mvc.UI
+@model SelectListItem
+@(Html.Kendo().DropDownListFor(m => m)
+    .DataTextField("Text")
+    .DataValueField("Value")
+    .OptionLabel("Select CDN provider ...")
+    .Template("<span style='min-width:200px'>#: data.Text # (#: data.Value #)</span>")
+    .HtmlAttributes(new {style = "width: 100%"})
+    .AutoBind(true)
+    .Filter(FilterType.Contains)
+    .BindTo(new List<SelectListItem>
+    {
+        new()
+        {
+            Text = "Standard Akamai",
+            Value = "StandardAkamai"
+        },
+        new()
+        {
+            Text = "Standard Microsoft",
+            Value = "StandardMicrosoft"
+        },
+        new()
+        {
+            Text = "Standard Verizon",
+            Value = "StandardVerizon"
+        },
+        new()
+        {
+            Text = "Premium Verizon",
+            Value = "PremiumVerizon"
+        }
+    })
+    )

@@ -1,0 +1,13 @@
+﻿@using Kendo.Mvc.UI
+@using System.Collections
+@model SelectListItem
+@(Html.Kendo().DropDownListFor(m => m)
+    .DataTextField("Text")
+    .DataValueField("Value")
+    .Template("<span><span class=\"#: data.Text #\"></span> #: data.Text #</span>")
+    .ValueTemplate("<span><span class=\"#: data.Text #\"></span> #: data.Text #</span>")
+    .HtmlAttributes(new {style = "width: 100%"})
+    .AutoBind(true)
+    .Filter(FilterType.Contains)
+    .BindTo((IEnumerable) ViewData["FontIcons"])
+    )

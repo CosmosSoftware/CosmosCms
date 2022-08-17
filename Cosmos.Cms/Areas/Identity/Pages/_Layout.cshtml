@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        .nav-link {
+            color: white;
+        }
+
+        .nav-link:hover {
+            color: yellow;
+        }
+        a:hover {
+            color: yellow;
+        }
+        a {
+            color: wheat;
+        }
+    </style>
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+</head>
+<body class="bg-dark text-light">
+    <header class="site-header" role="banner" style="position: sticky;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="d-flex flex-grow-1">
+                <span class="w-100 d-lg-none d-block">
+                    <!-- hidden spacer to center brand on mobile -->
+                </span>
+                <a class="navbar-brand" href="/">
+                    <span class="h3">Cosmos CMS</span>
+                </a>
+                <div class="w-100 text-right">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar7">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar7">
+            </div>
+        </nav>
+    </header>
+    <div id="main-content" class="main-content">
+        <div class="container m-y-lg">
+            <main class="main-primary">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <footer id="footer" class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="three-quarters">
+                    <ul class="footer-links">
+                        <li>
+                            <a href="#skip-to-content">Back to Top</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="quarter text-right">
+                    <ul class="socialsharer-container">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", false)
+</body>
+</html>

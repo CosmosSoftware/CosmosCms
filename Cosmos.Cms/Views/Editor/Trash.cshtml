@@ -1,0 +1,59 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Pages";
+}
+<script src="~/js/clipboard.min.js"></script>
+<div class="container mt-5 pt-2">
+    <div class="row">
+        <div class="offset-md-1 col-md-9">
+            <h1>Deleted Page List</h1>
+            <p>The following is a list of pages on this website.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="offset-md-1 col-md-9">
+            @(
+        Html.Kendo().Grid<ArticleListItem>()
+            .Name("grid")
+            .Columns(col =>
+            {
+                col.Bound(b => b.Status).Hidden(true);
+                col.Bound(b => b.ArticleNumber).Hidden(true);
+                col.Bound(b => b.LastPublished)
+                    .ClientTemplate("#= getStatusBadge(LastPublished) #").Title("Status");
+                col.Bound(b => b.Updated).Format("{0:MM/dd/yy H:mm:ss}");
+                col.Bound(b => b.Title).Width(260);
+            })
+            .ToolBar(t => t.Search())
+            .Pageable()
+            .Sortable()
+            .Filterable()
+            .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Get_TrashedArticles", "Editor")); })
+            .Search(s => s.Field("Title"))
+            .Filterable()
+            .Sortable()
+                )
+            <form>
+                <input id="selected" type="hidden"/>
+            </form>
+            <script>
+                var clipboard = new ClipboardJS('.cbtn');
+                clipboard.on('success',
+                    function(e) {
+                        console.info('Action:', e.action);
+                        console.info('Text:', e.text);
+                        console.info('Trigger:', e.trigger);
+                        alert(e.text);
+                        e.clearSelection();
+                    });
+
+                function getStatusBadge(published) {
+                    if (published === null) {
+                        return "<div class='btn btn-sm btn-secondary'>Not Published</div>";
+                    }
+                    return "<div class='btn btn-sm btn-success'>Published <span class='badge badge-light'>" + kendo.toString(new Date(published), "d") + "</span></div>";
+                }
+            </script>
+        </div>
+    </div>
+</div>

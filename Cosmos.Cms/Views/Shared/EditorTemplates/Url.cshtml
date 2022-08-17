@@ -1,0 +1,12 @@
+﻿@using Kendo.Mvc.UI
+@using System.Collections
+@model SelectListItem
+@(Html.Kendo().ComboBoxFor(m => m)
+    .DataTextField("Text")
+    .DataValueField("Value")
+    .Template("<span style='min-width:200px'>#: data.Text # (#: data.Value #)</span>")
+    .HtmlAttributes(new {style = "width: 100%"})
+    .AutoBind(true)
+    .Filter(FilterType.Contains)
+    .BindTo((IEnumerable) ViewData["PageUrls"])
+    )

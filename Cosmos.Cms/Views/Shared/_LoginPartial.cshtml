@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="btn-group btn-group-sm" role="group" aria-label="login functions">
+            <button id="btnGroupDrop2" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                User Account
+            </button>
+            <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity.Name</a>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div>
+            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a> |
+            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </div>
+    }
+</div>

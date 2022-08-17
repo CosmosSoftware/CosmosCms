@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<UserSecretsId>e1a86c21-4832-4fdb-8709-f0a8e1879f01</UserSecretsId>
+		<AnalysisLevel>5.0</AnalysisLevel>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<StartupObject>Cosmos.Cms.Website.Program</StartupObject>
+		<RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+		<AssemblyVersion>6.3.14.2</AssemblyVersion>
+		<FileVersion>6.3.14.2</FileVersion>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+		<ApplicationInsightsResourceId>/subscriptions/aec61f6c-81f1-4589-b4a5-c743876b4847/resourceGroups/CosmosCMS/providers/microsoft.insights/components/cosmos-cms</ApplicationInsightsResourceId>
+		<Version>6.3.14.2</Version>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<Optimize>false</Optimize>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Views\Shared\Components\**" />
+	  <Content Remove="Views\Shared\Components\**" />
+	  <EmbeddedResource Remove="Views\Shared\Components\**" />
+	  <None Remove="Views\Shared\Components\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="wwwroot\.well-known\microsoft-identity-association.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\.dockerignore" Link=".dockerignore">
+	    <DependentUpon>$(DockerDefaultDockerfile)</DependentUpon>
+	  </None>
+	  <None Include="Views\Shared\Error.cshtml" />
+	  <None Include="Views\Shared\_CosmosLayout.cshtml" />
+	  <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.15" />
+		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
+		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.8" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.8" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Cosmos.Cms.Common\Cosmos.Cms.Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="CA-Response-Portal-bfc617b86937.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Views\Home\Index.cshtml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\ccms\js\cosmosUtils.js">
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+</Project>
