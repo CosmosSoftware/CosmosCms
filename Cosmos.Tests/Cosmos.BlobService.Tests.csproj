@@ -36,7 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CDT.Cosmos.BlobService\CDT.Cosmos.BlobService.csproj" />
+    <ProjectReference Include="..\Cosmos.BlobService\Cosmos.BlobService.csproj" />
+    <ProjectReference Include="..\Cosmos.Cms.Common\Cosmos.Cms.Common.csproj" />
   </ItemGroup>
 
 </Project>
