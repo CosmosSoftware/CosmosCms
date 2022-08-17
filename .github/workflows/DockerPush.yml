@@ -37,10 +37,10 @@ jobs:
               username: ${{ secrets.DOCKERLOGIN }}
               password: ${{ secrets.DOCKERPASSWORD }}
     - name: Build Editor Docker image
-      run: docker build . --file /home/runner/work/Cosmos.Cms/Cosmos.Cms/Cosmos.Cms/Dockerfile --tag toiyabe/cosmoscmseditor:${TAGNAME}
+      run: docker build . --file /home/runner/work/CosmosCms/CosmosCms/Cosmos.Cms/Dockerfile --tag toiyabe/cosmoscmseditor:${TAGNAME}
     - name: Docker push Editor image
       run:  docker push toiyabe/cosmoscmseditor:${TAGNAME}
     - name: Build Publisher Docker image
-      run: docker build . --file /home/runner/work/Cosmos.Cms/Cosmos.Cms/Cosmos.Cms.Website/Dockerfile --tag toiyabe/cosmoscmspublisher:${TAGNAME}
+      run: docker build . --file /home/runner/work/CosmosCms/CosmosCms/Cosmos.Cms.Website/Dockerfile --tag toiyabe/cosmoscmspublisher:${TAGNAME}
     - name: Docker push Publisher image
       run:  docker push toiyabe/cosmoscmspublisher:${TAGNAME}
