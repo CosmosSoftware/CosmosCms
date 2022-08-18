@@ -7,7 +7,7 @@ EXPOSE 443
 
 # Add Node here
 FROM node:lts-buster-slim AS node_base
-FROM mcr.microsoft.com/dotnet/sdk:6.0-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 COPY --from=node_base . .
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
