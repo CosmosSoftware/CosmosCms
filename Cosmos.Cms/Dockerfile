@@ -13,7 +13,9 @@ COPY ["Cosmos.Cms.Common/Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
 COPY ["Cosmos.BlobService/Cosmos.BlobService.csproj", "Cosmos.BlobService/"]
 COPY . .
 
+# https://stackoverflow.com/questions/45700361/net-core-docker-image-for-spa-applications
 # Install NodeJS
+RUN apt-get update; apt-get install curl
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
