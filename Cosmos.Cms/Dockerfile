@@ -7,10 +7,10 @@ EXPOSE 443
 
 # https://stackoverflow.com/questions/45700361/net-core-docker-image-for-spa-applications
 # Install NodeJS
-RUN apt-get -qq update
+RUN apt-get -qq update -y 
 #RUN apt-get -qq -y install curl
 #RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install nodejs
+RUN apt-get install  -y nodejs 
 
 RUN npm install
 RUN npm run test-docker
