@@ -12,9 +12,9 @@ RUN apt-get -qq update -y
 #RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install  -y nodejs 
 
-RUN npm install
-RUN npm run test-docker
-RUN npm run build
+#RUN npm install
+#RUN npm run test-docker
+#RUN npm run build
 
 # FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
