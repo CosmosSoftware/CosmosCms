@@ -5,6 +5,11 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+# Add Node here
+FROM node:lts-buster-slim AS node_base
+FROM mcr.microsoft.com/dotnet/sdk:6.0-buster-slim AS build
+COPY --from=node_base . .
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
@@ -12,8 +17,13 @@ COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
 COPY ["Cosmos.Cms.Common/Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
 COPY ["Cosmos.BlobService/Cosmos.BlobService.csproj", "Cosmos.BlobService/"]
 COPY . .
+
 WORKDIR "/src/Cosmos.Cms"
-# RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
+ENV NODE_ENV=production
+RUN npm ci
+RUN npm run build
+
+RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "Cosmos.Cms.csproj" -c Release -o /app/publish
@@ -22,4 +32,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "CDT.Cosmos.Cms.dll"]
+ENTRYPOINT ["dotnet", "Cosmos.Cms.dll"]
