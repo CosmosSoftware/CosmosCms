@@ -21,7 +21,7 @@ COPY . .
 WORKDIR "/src/Cosmos.Cms"
 ENV NODE_ENV=production
 RUN npm install -g npm @latest.
-RUN npm ci
+# RUN npm ci
 # RUN npm run build
 
 RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
