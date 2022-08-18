@@ -7,7 +7,7 @@ EXPOSE 443
 
 # Add Node here
 FROM node:current-alpine3.15 AS node_base
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 COPY --from=node_base . .
 
 # FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
@@ -24,7 +24,7 @@ ENV NODE_ENV=production
 # RUN npm ci
 # RUN npm run build
 
-# RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
+RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "Cosmos.Cms.csproj" -c Release -o /app/publish
