@@ -20,7 +20,7 @@ COPY . .
 
 WORKDIR "/src/Cosmos.Cms"
 ENV NODE_ENV=production
-RUN npm install npm@latest -g
+RUN npm update -g
 # RUN npm ci
 # RUN npm run build
 
