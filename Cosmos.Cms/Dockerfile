@@ -16,12 +16,6 @@ COPY ["Cosmos.BlobService/Cosmos.BlobService.csproj", "Cosmos.BlobService/"]
 COPY . .
 
 WORKDIR "/src/Cosmos.Cms"
-ENV NODE_ENV=production
-# RUN npm update -g
-# RUN npm ci
-# RUN npm run build
-
-
 RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
