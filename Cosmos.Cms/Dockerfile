@@ -7,7 +7,7 @@ EXPOSE 443
 
 # Add Node here
 FROM node:current-alpine3.15 AS node_base
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS build
 COPY --from=node_base . .
 
 # FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
