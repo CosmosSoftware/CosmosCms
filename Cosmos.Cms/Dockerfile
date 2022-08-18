@@ -10,7 +10,7 @@ FROM node:lts-buster-slim AS node_base
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 COPY --from=node_base . .
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
 COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
@@ -23,7 +23,7 @@ ENV NODE_ENV=production
 RUN npm ci
 RUN npm run build
 
-RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
+# RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "Cosmos.Cms.csproj" -c Release -o /app/publish
