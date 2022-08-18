@@ -15,8 +15,9 @@ COPY . .
 
 # https://stackoverflow.com/questions/45700361/net-core-docker-image-for-spa-applications
 # Install NodeJS
-RUN apt-get install curl
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get -qq update
+#RUN apt-get -qq -y install curl
+#RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install nodejs
 
 RUN npm install
