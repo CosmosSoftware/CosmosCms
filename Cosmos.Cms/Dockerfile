@@ -5,24 +5,20 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-# https://stackoverflow.com/questions/45700361/net-core-docker-image-for-spa-applications
-# Install NodeJS
-RUN apt-get -qq update -y 
-# RUN apt-get install -qq -y curl
-# RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install  -y nodejs 
-
-#RUN npm install
-#RUN npm run test-docker
-#RUN npm run build
-
-# FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
 COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
 COPY ["Cosmos.Cms.Common/Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
 COPY ["Cosmos.BlobService/Cosmos.BlobService.csproj", "Cosmos.BlobService/"]
 COPY . .
+
+# https://stackoverflow.com/questions/45700361/net-core-docker-image-for-spa-applications
+# Install NodeJS
+RUN apt-get -qq update -y 
+# RUN apt-get install -qq -y curl
+# RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install  -y nodejs 
 
 WORKDIR "/src/Cosmos.Cms"
 
