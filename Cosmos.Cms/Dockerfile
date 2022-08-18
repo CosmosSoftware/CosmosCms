@@ -21,9 +21,9 @@ COPY . .
 WORKDIR "/src/Cosmos.Cms"
 ENV NODE_ENV=production
 RUN npm ci
-RUN npm run build
+# RUN npm run build
 
-# RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
+RUN dotnet build "Cosmos.Cms.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "Cosmos.Cms.csproj" -c Release -o /app/publish
