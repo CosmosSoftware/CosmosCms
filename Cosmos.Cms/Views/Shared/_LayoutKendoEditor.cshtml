@@ -1,7 +1,7 @@
 ﻿@using Cosmos.Cms.Common.Services.Configurations
 @using Cosmos.Cms.Services
 @using Microsoft.AspNetCore.Routing
-@using Microsoft.Extensions.Options;
+@using Microsoft.Extensions.Options
 @using System.Reflection
 @inject IOptions<CosmosConfig> options
 @model ArticleViewModel
@@ -462,6 +462,7 @@
         var ccmsEditorSelection;
         var ccmsEditorHtmlSelection;
         var ccmsEditorRange;
+        var editorType = "ArticleEditor";
 
         function insertItemTool(editor, e) {
             ccmsEditorSelection = editor.getSelection();
@@ -948,7 +949,7 @@
                         $("#pendingChangesBadge").hide();
                         if (response.IsValid) {
                             $("#previewItem").show();
-                            ccmsSendSignal("ArticleSaved"); // Defined in the chat componets partial
+                            ccmsSendSignal("ArticleSaved"); // Defined in the chat components partial
                             if (response.CdnResult !== null && typeof (response.CdnResult) !== "undefined" && response.CdnResult !== "") {
                                 cdnProgress(response.CdnResult.EstimatedSeconds, response.CdnResult.Detail);
                             }

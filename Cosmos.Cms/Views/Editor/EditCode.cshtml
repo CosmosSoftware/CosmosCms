@@ -1,6 +1,7 @@
 ﻿@model EditCodePostModel
 @addTagHelper *, Kendo.Mvc
 @{
+    // /Views/Editor/EditCode
     Layout = "_LayoutCodeEditor";
     ViewData["Title"] = Model.EditorTitle;
 }
@@ -12,12 +13,15 @@
     <input type="hidden" asp-for="Title" />
     <input type="hidden" asp-for="Published" />
     <input type="hidden" asp-for="RoleList" />
-    <input type="hidden" asp-for="HeaderJavaScript" />
+    <input type="hidden" asp-for="IsValid" />
+    <input type="hidden" asp-for="HeadJavaScript" />
     <input type="hidden" asp-for="FooterJavaScript" />
+    <input type="hidden" asp-for="EditorType" />
 </form>
 
 <script>
     var editorSaveSignal = "ArticleSaved";
+    var editorType = "ArticleEditor";
 
     function btnCustomClick(e) {
         switch (e.target.text()) {
@@ -41,7 +45,7 @@
              if (ccmsEditorIsLocked === true) {
                 alert("Import page while it is locked by another.");
              } else {
-                ccmsSendSignal("SetArticleLock");
+                    ccmsSendSignal("SetItemLock");
                 window.open("@Url.Action("ImportPage", "FileManager", new {Model.Id})", '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
              }
             break;
@@ -51,15 +55,25 @@
     // Used by signalR to re-load an article
     function ccmsLoadModel(model) {
 
-        var id = $("#Id");
-        var content = $("#Content");
-        var hjs = $("#HeaderJavaScript");
-        var fjs = $("#FooterJavaScript");
+        // get all the inputs into an array.
+        var inputs = [ @(Html.Raw(string.Join(",", Model.EditorFields.Select(s => "\"" + s.FieldId + "\"").ToArray()))) ];
 
-        id.val(model.Id);
-        content.val(model.Content);
-        hjs.val(model.HeaderJavaScript);
-        fjs.val(model.FooterJavaScript);
+        // not sure if you wanted this, but I thought I'd add it.
+        // get an associative array of just the values.
+        inputs.forEach(function (item) {
+            var c = model[item];
+            $("#" + item).val(c);
+        });
+        
+        //$("#Id").val(model.Id);
+        //var id = $("#Id");
+        //var content = $("#Content");
+        //var hjs = $("#HeaderJavaScript");
+        //var fjs = $("#FooterJavaScript");
+
+        //content.val(model.Content);
+        //hjs.val(model.HeaderJavaScript);
+        //fjs.val(model.FooterJavaScript);
 
         var activeTab = $(".tabitem.nav-link.active");
         var name = $(activeTab).attr("data-ccms-fieldname");

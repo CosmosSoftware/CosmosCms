@@ -16,10 +16,14 @@ namespace Cosmos.Cms.Common.Models
         /// <returns></returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var dateTime = (DateTime?)value;
+            var t = value.GetType();
+            if (t == typeof(DateTime?) || t == typeof(DateTime))
+            {
+                var dateTime = (DateTime?)value;
 
-            if (dateTime.HasValue && dateTime.Value.Kind != DateTimeKind.Utc)
-                return new ValidationResult($"Must be DateTimeKind.Utc, not {dateTime.Value.Kind}.");
+                if (dateTime.HasValue && dateTime.Value.Kind != DateTimeKind.Utc)
+                    return new ValidationResult($"Must be DateTimeKind.Utc, not {dateTime.Value.Kind}.");
+            }
 
             return ValidationResult.Success;
         }

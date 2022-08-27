@@ -1,0 +1,86 @@
+﻿@using Cosmos.Cms.Common.Data
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Script Inventory";
+
+    var versions = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Versions", "Code")}/#: EndPoint #\" title=\"See a list of versions for this page\"><span class='fa fa-files-o'></span> Edit</a>";
+    var copyUrl = "<button class=\"clipboard btn btn-sm btn-primary\" data-clipboard-text=\"#: EndPoint #\"  title='Click to copy url'><span class='fa fa-clipboard'></span> Copy URL</button>";
+    var btnGroup = "<div class=\"btn-group btn-group-sm\" role=\"group\" aria-label=\"Basic example\">" +
+                   versions + copyUrl + "#= getStatusBadge(Published, EndPoint) #</div>";
+
+    var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
+}
+
+<h1>Index</h1>
+
+<div class="container mt-5 pt-2">
+    <div class="row">
+        <div class="col">
+            <h3>@ViewData["Title"]</h3>
+            <hr />
+            @if (canEdit || User.IsInRole("Authors"))
+            {
+                <a class="btn btn-sm btn-primary" asp-action="Create">New Script</a>
+            }
+            @(
+                Html.Kendo().Grid<ScriptCatalogEntry>()
+                .Name("grid")
+                .Columns(col =>
+                {
+                    col.Bound(b => b.Id).Hidden(true);
+                    col.Template(btnGroup).Title("Menu").Width(260);
+                    col.Bound(b => b.EndPoint);
+                    col.Template("#= formatPublishedDate(Published) #").Title("Published");
+                    col.Template("#= formatPublishedDate(Updated) #").Title("Updated");
+                    col.Command(com => com.Destroy().IconClass("fa fa-trash")).Visible(canEdit).Title("Trash Page");
+                })
+                .ToolBar(t => { t.Search(); })
+                .Pageable(pager => pager
+                .Input(true)
+                .Numeric(true)
+                .Info(true)
+                .PreviousNext(true)
+                .Refresh(true)
+                .Position(GridPagerPosition.Top)
+                )
+                .Sortable()
+                .Editable(editable => editable.Mode(GridEditMode.InLine).ConfirmDelete("Are you sure you want to trash this article?").CancelDelete("Do not trash article."))
+                .Filterable()
+                .Search(s => s.Field("Title"))
+                .DataSource(dataSource =>
+                {
+                    dataSource.Ajax()
+                    .Model(m => m.Id("Id"))
+                    .Read(read => read.Action("Read_Scripts", "Code"))
+                    .Destroy(trash => trash.Action("Trash_Script", "Code"));
+                })
+                .Events(eve => eve.DataBound("onDataBound"))
+                )
+            <form>
+                <input id="selected" type="hidden" />
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+
+    function getStatusBadge(published, endPoint) {
+        if (published === null) {
+            return "<a title=\"This page not published.\" class='btn btn-sm btn-secondary'><span class='fa fa-circle-o-notch'></span></a>";
+        }
+        var url = endPoint.replace("root", "");
+        return "<a target=\"_blank\" title=\"This page was published as of " + kendo.toString(published, "G") + ". Click to view.\" class='btn btn-sm btn-primary' href=\"" + url + "\"><span class=\"fa fa-external-link\"></span></a>";
+    }
+
+    function formatPublishedDate(published) {
+        if (published === null) {
+            return "Draft";
+        } else {
+            return kendo.toString(published, 'G');
+        }
+    }
+
+    function onDataBound(e) {
+        var rows = e.sender.dataSource.total();
+    }
+</script>

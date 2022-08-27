@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.15" />
+    <PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.16" />
     <PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.0" />

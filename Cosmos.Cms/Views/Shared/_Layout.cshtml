@@ -92,23 +92,25 @@
     *@
     <nav id="k-ccms-ToolBar" class="navbar navbar-expand-md fixed-top" style="height: 52px; background-color:#363636 !important">
         <div class="container-fluid">
-            @(Html.Kendo().ToolBar()
-            .Name("ccms-kendo-toolBar")
-            .Items(items =>
-            {
-            items.Add().Type(CommandType.SplitButton).Text("Menu").Id("menuBtn").ImageUrl("/images/CosmosBearIcon.png").MenuButtons(menuButtons =>
-            {
-            menuButtons.Add().Text("Home Page");
-            menuButtons.Add().Text("Help");
-            if (Model != null && controllerName == "Home" && actionName == "Index" && (isAuthor && articleViewModel?.Published == null || isEditor || isAdministrator))
-            {
-            menuButtons.Add().Text("Edit");
-            }
-            if (isAdministrator || isEditor || isAuthor)
-            {
-            menuButtons.Add().Text("Files");
-            menuButtons.Add().Text("Pages");
-            }
+            @(
+                Html.Kendo().ToolBar()
+                .Name("ccms-kendo-toolBar")
+                .Items(items =>
+                {
+                    items.Add().Type(CommandType.SplitButton).Text("Menu").Id("menuBtn").ImageUrl("/images/CosmosBearIcon.png").MenuButtons(menuButtons =>
+                {
+                    menuButtons.Add().Text("Home Page");
+                    menuButtons.Add().Text("Help");
+                    if (Model != null && controllerName == "Home" && actionName == "Index" && (isAuthor && articleViewModel?.Published == null || isEditor || isAdministrator))
+                    {
+                        menuButtons.Add().Text("Edit");
+                    }
+                    if (isAdministrator || isEditor || isAuthor)
+                    {
+                        menuButtons.Add().Text("Files");
+                        menuButtons.Add().Text("Pages");
+                        menuButtons.Add().Text("Scripts");
+                    }
             if (isAdministrator)
             {
             menuButtons.Add().Text("Templates");
@@ -219,6 +221,9 @@
                 break;
             case "Pages":
                 window.location.href = "@Url.Action("Index", "Editor")";
+                break;
+            case "Scripts":
+                window.location.href = "@Url.Action("Index", "Code")";
                 break;
             case "Layouts":
                 window.location.href = "@Url.Action("Index", "Layouts")";

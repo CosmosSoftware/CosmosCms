@@ -28,7 +28,7 @@
                 .Name("grid")
                 .Columns(col =>
                 {
-                    col.Bound(b => b.ArticleNumber);
+                    col.Bound(b => b.ArticleNumber).Hidden(true);
                     col.Template(btnGroup).Title("Menu").Width(300);
                     col.Template("#= formatPublishedDate(LastPublished) #").Title("Published");
                     col.Bound(b => b.Title).Width(260);

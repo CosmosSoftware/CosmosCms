@@ -1,4 +1,5 @@
 ﻿@addTagHelper *, Kendo.Mvc
+@using Cosmos.Cms.Models.Interfaces
 @using Cosmos.Cms.Services
 @using Kendo.Mvc.UI
 @using Newtonsoft.Json
@@ -13,7 +14,7 @@
     var kendo = assemblies.FirstOrDefault(a => a.Name.Contains("kendo", StringComparison.CurrentCultureIgnoreCase));
     var kendoVersion = $"{kendo.Version.Major}.{kendo.Version.Minor}.{kendo.Version.Build}";
 
-    var isArticleEditor = Model.GetType() == typeof(EditCodePostModel);
+    var isArticleEditor = Model.GetType() == typeof(EditCodePostModel) || Model.GetType() == typeof(EditScriptPostModel);
 
     // Used for ChatBot
     var userName = Context.User.Identity.Name;
@@ -92,7 +93,7 @@
             {
                 item.Add().Type(CommandType.Button).Text("<span id='btnPublish'></span>").Click("openSchedulerDialog").Hidden(isAuthor);
                 item.Add().Template("<span>Title: </span>");
-                item.Add().Template(Html.Kendo().TextBox().Name("tbTitle").Value(((EditCodePostModel) Model).Title).HtmlAttributes(new {style = "width: 32vw;"}).ToHtmlString());
+                        item.Add().Template(Html.Kendo().TextBox().Name("tbTitle").Value(((ICodeEditorViewModel)Model).EditorTitle).HtmlAttributes(new { style = "width: 32vw;" }).ToHtmlString());
             }
             item.Add().Text("Help").Type(CommandType.SplitButton)
             .MenuButtons(btn =>
@@ -310,6 +311,7 @@
     </kendo-dialog>
     
     <partial name="_ChatComponentsPartial" />
+
     <script>
         var editor;
         var fieldId;
@@ -525,7 +527,7 @@
                 createAndLoadEditor(fieldInfo.FieldName);
                 // Refresh locks for everyone including self.
                 setTimeout(function () {
-                    ccmsSendSignal("NotifyRoomOfLock"); 
+                    ccmsSendSignal("NotifyRoomOfLock");
                 }, 2000);
             }
             loadPublishLocalDateTime();

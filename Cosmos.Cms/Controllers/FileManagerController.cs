@@ -843,7 +843,7 @@ namespace Cosmos.Cms.Controllers
 
                 return View(new FileManagerEditCodeViewModel
                 {
-                    Id = Guid.NewGuid(),
+                    Id = path,
                     Path = path,
                     EditorTitle = Path.GetFileName(Path.GetFileName(path)),
                     EditorFields = new List<EditorField>
@@ -991,7 +991,7 @@ namespace Cosmos.Cms.Controllers
 
                 return View(new FileManagerEditCodeViewModel
                 {
-                    Id = Guid.NewGuid(),
+                    Id = path,
                     Path = path,
                     EditorTitle = Path.GetFileName(Path.GetFileName(path)),
                     EditorFields = new List<EditorField>

@@ -1,4 +1,5 @@
 ﻿using Cosmos.Cms.Common.Models;
+using Cosmos.Cms.Models.Interfaces;
 using System;
 
 namespace Cosmos.Cms.Models
@@ -62,5 +63,10 @@ namespace Cosmos.Cms.Models
         ///     CDN Purge Result
         /// </summary>
         public CdnPurgeViewModel CdnResult { get; set; }
+
+        /// <summary>
+        /// Editor type
+        /// </summary>
+        public string EditorType { get; set; } = nameof(ArticleEditViewModel);
     }
 }

@@ -1,9 +1,8 @@
 ﻿@using Kendo.Mvc.UI
 @using Cosmos.Cms.Services
-@addTagHelper *, Kendo.Mvc
 @{
-    // /Views/Editor/Versions
-    ViewData["Title"] = @ViewData["ArticleTitle"] + "Page Versions";
+    // /Views/Code/Versions
+    ViewData["Title"] = @ViewData["ArticleTitle"] + " Versions";
     var isReviewer = User.IsInRole("Reviewers");
     var isAuthor = User.IsInRole("Authors");
 }
@@ -24,29 +23,27 @@
             @if (!isReviewer)
             {
                 <a id="btnNewVersion" class="btn btn-primary"
-               title="Creates a new version of this article using the lastest version, and puts it in edit mode."
+               title="Creates a new version of this article using the latest version, and puts it in edit mode."
                asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">
                     Create new version from latest version
                 </a>
             }
-            @(
-                Html.Kendo().Grid<ArticleVersionInfo>().Name("grid")
+            @(Html.Kendo().Grid<NodeScriptItemViewModel>().Name("grid")
                 .Columns(c =>
                 {
                     c.Bound(b => b.Id).Hidden(true);
-                    c.Template("v.#: VersionNumber #").Title("");
-                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"javascript:showEditDialog('HTML', '#: Id #', '#: Published #') \" title=\"Edit online with Kendo WSYWIG (HTML) editor.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, UsesHtmlEditor) #><i class='fa-brands fa-html5'></i></a> <a class=\"btn btn-sm btn-secondary\" href=\"javascript:showEditDialog('CODE', '#: Id #', '#: Published #')\" title=\"Edit code using Monaco code editor.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><i class='fa-solid fa-code'></i></a>").Title("Edit Tools");
-                    c.Template($"<a target=\"_blank\" class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Preview", "Home")}/#: Id #\" title=\"Click to preview\"><span class=\"fas fa-search\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Duplicate", "Editor")}/#: Id #\" title=\"Create a new web page based on this version.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Editor")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Title("Preview/New Page/Download");
+                    c.Template("v.#: Version #").Title("");
+                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Code")}/#: Id #\" title=\"Edit code using Monaco code editor.\"><i class='fa-solid fa-code'></i></a>").Title("Edit Tool");
+                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"{ Url.Action("Duplicate", "Code") }/#: Id #\" title=\"Create a new web page based on this version.\"><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Code")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Title("New Page/Download");
                     c.Template("#= formatPublishedDate(Published) #").Title("Published");
                     c.Template("#= kendo.toString(Updated, 'G') #").Title("Last Edited");
                     c.Template("#= formatExpiredDate(Expires) #").Title("Expires");
-                    c.Template($"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={ViewData["ArticleId"]}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Title("Promote").Width(50);
-
+                    c.Template($"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={Model}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Title("Promote").Width(50);
                 })
                 .Sortable()
                 .Filterable()
                 .Pageable()
-                .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Get_Versions", "Editor", new { id = (int)ViewData["ArticleId"] })); })
+                .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Read_Versions", "Code", new { Id = ViewData["EndPoint"] })); })
                 )
         </div>
     </div>
@@ -157,6 +154,7 @@
         </form>
     </content>
 </kendo-dialog>
+
 <script>
     function visibleStyle(isReviewer, isAuthor, isPublished, usesEditor) {
         if (isReviewer === "True" || usesEditor === false || (isAuthor === "True" && isPublished !== null)) {
@@ -165,8 +163,7 @@
         return "";
     }
 
-    var editHtmlUrl = "@Url.Action("Edit", "Editor")";
-    var editCodeUrl = "@Url.Action("EditCode", "Editor")";
+    var editCodeUrl = "@Url.Action("Edit", "Code")";
     var editorChoice; // HTML or CODE
     var entityId; // Article id (entity id) being edited
 
@@ -176,6 +173,7 @@
     // than editing the already published pages.
     //
     function showEditDialog(editor, id, isPublished) {
+
         editorChoice = editor;
         entityId = id;
 
@@ -223,13 +221,9 @@
     //
     function openEditor(newVersion) {
         if (newVersion === true) {
-            window.location.href = "@Url.Action("CreateVersion", "Editor")/@ViewData["ArticleId"]";
+            window.location.href = "@Url.Action("CreateVersion", "Code")/@Model";
         } else {
-            if (editorChoice === "HTML") {
-                window.location.href = editHtmlUrl + "/" + entityId;
-            } else {
-                window.location.href = editCodeUrl + "/" + entityId;
-            }
+            window.location.href = editCodeUrl + "/@Model";
         }
     }
 

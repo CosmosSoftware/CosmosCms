@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Data;
+﻿using Cosmos.BlobService;
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +7,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Hubs
@@ -17,18 +21,21 @@ namespace Cosmos.Cms.Hubs
     [Authorize]
     public class ChatHub : Hub
     {
-        private ApplicationDbContext _dbContext;
-        private ArticleEditLogic _articleLogic;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ArticleEditLogic _articleLogic;
+        private readonly StorageContext _storageContext;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="articleLogic"></param>
-        public ChatHub(ApplicationDbContext dbContext, ArticleEditLogic articleLogic)
+        /// <param name="storageContext"></param>
+        public ChatHub(ApplicationDbContext dbContext, ArticleEditLogic articleLogic, StorageContext storageContext)
         {
             _dbContext = dbContext;
             _articleLogic = articleLogic;
+            _storageContext = storageContext;
         }
 
         #region CHAT METHODS
@@ -75,39 +82,94 @@ namespace Cosmos.Cms.Hubs
         /// Signal other members of the group that a page was just saved, and to reload page.
         /// </summary>
         /// <param name="id">Article RECORD ID</param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
-        public async Task ArticleSaved(string id)
+        public async Task ArticleSaved(string id, string editorType)
         {
-            var idno = Guid.Parse(id);
-            var model = await _articleLogic.Get(idno, Controllers.EnumControllerName.Edit);
+            var result = await GetContent(id, editorType);
             await ClearLocks(id);
-            await Clients.OthersInGroup(id).SendAsync("ArticleReload", JsonConvert.SerializeObject(model));
+            await Clients.OthersInGroup(id).SendAsync("ArticleReload", result);
         }
 
         /// <summary>
         /// Signifies an article has been loaded, and everyone needs to refresh.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
-        public async Task ArticleImported(string id)
+        public async Task ArticleImported(string id, string editorType)
         {
-            var idno = Guid.Parse(id);
-            var model = await _articleLogic.Get(idno, Controllers.EnumControllerName.Edit);
+            var result = await GetContent(id, editorType);
             await ClearLocks(id);
-            await Clients.Group(id).SendAsync("ArticleReload", JsonConvert.SerializeObject(model));
+            await Clients.Group(id).SendAsync("ArticleReload", result);
         }
 
         /// <summary>
         /// Abandon edits, make everyone reload original.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
-        public async Task AbandonEdits(string id)
+        public async Task AbandonEdits(string id, string editorType)
         {
-            var idno = Guid.Parse(id);
-            var model = await _articleLogic.Get(idno, Controllers.EnumControllerName.Edit);
-            await Clients.Group(id).SendAsync("ArticleReload", JsonConvert.SerializeObject(model));
+            var result = await GetContent(id, editorType);
+            await Clients.Group(id).SendAsync("ArticleReload", result);
             await ClearLocks(id);
+        }
+
+        /// <summary>
+        /// Gets content for a editor
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="editorType"></param>
+        /// <returns></returns>
+        private async Task<string> GetContent(string id, string editorType)
+        {
+            switch(editorType)
+            {
+                case "ScriptEditor":
+                    {
+                        var model = await _dbContext.NodeScripts.FindAsync(Guid.Parse(id));
+                        return JsonConvert.SerializeObject(model);
+                    }
+                case "FileEditor":
+                    {
+                        // Open a stream
+                        await using var memoryStream = new MemoryStream();
+
+                        await using (var stream = await _storageContext.OpenBlobReadStreamAsync(id))
+                        {
+                            // Load into memory and release the blob stream right away
+                            await stream.CopyToAsync(memoryStream);
+                        }
+
+                        var model = new FileManagerEditCodeViewModel()
+                        {
+                            Id = id, // ID is file path
+                            Path = id,
+                            EditorTitle = Path.GetFileName(Path.GetFileName(id)),
+                            Content = Encoding.UTF8.GetString(memoryStream.ToArray()),
+                            EditingField = "Content",
+                            CustomButtons = new List<string>()
+                        };
+                        return JsonConvert.SerializeObject(model);
+                    }
+                case "LayoutEditor":
+                    {
+                        var model = await _dbContext.Layouts.FindAsync(Guid.Parse(id));
+                        return JsonConvert.SerializeObject(model);
+                    }
+                case "TemplateEditor":
+                    {
+                        var model = await _dbContext.Templates.FindAsync(Guid.Parse(id));
+                        return JsonConvert.SerializeObject(model);
+                    }
+                default:
+                    {
+                        var model = await _articleLogic.Get(Guid.Parse(id), Controllers.EnumControllerName.Edit);
+                        return JsonConvert.SerializeObject(model);
+                    }
+            }
         }
 
         /// <summary>
@@ -115,7 +177,7 @@ namespace Cosmos.Cms.Hubs
         /// </summary>
         /// <param name="id">Article record number is the room name.</param>
         /// <returns></returns>
-        public async Task JoinRoom(string id)
+        public async Task JoinRoom(string id, string editorType)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -127,8 +189,9 @@ namespace Cosmos.Cms.Hubs
         /// Notifies everyone on this editing room of any article lock.
         /// </summary>
         /// <param name="id">Article record ID</param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
-        public async Task NotifyRoomOfLock(string id)
+        public async Task NotifyRoomOfLock(string id, string editorType)
         {
             var idno = Guid.Parse(id);
             var model = await _dbContext.ArticleLocks.Where(w => w.ArticleId == idno).Select(l => new ArticleLockViewModel()
@@ -137,7 +200,8 @@ namespace Cosmos.Cms.Hubs
                 Id = l.Id,
                 LockSetDateTime = l.LockSetDateTime,
                 UserEmail = l.UserEmail,
-                ConnectionId = Context.ConnectionId
+                ConnectionId = Context.ConnectionId,
+                EditorType = l.EditorType
             }).FirstOrDefaultAsync();
             string message = JsonConvert.SerializeObject(model);
             await Clients.Group(id).SendAsync("ArticleLock", message);
@@ -176,8 +240,9 @@ namespace Cosmos.Cms.Hubs
         /// Announces that someone has started edting an article.
         /// </summary>
         /// <param name="id">Article RECORD ID.</param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
-        public async Task SetArticleLock(string id)
+        public async Task SetArticleLock(string id, string editorType)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -198,7 +263,7 @@ namespace Cosmos.Cms.Hubs
                     _dbContext.ArticleLocks.Add(articleLock);
                     await _dbContext.SaveChangesAsync();
                 }
-                await NotifyRoomOfLock(id);
+                await NotifyRoomOfLock(id, editorType);
             }
         }
 
@@ -225,7 +290,7 @@ namespace Cosmos.Cms.Hubs
                         await Groups.RemoveFromGroupAsync(connectionId, item.ArticleId.ToString());
                         _dbContext.ArticleLocks.RemoveRange(articleLocks);
                         await _dbContext.SaveChangesAsync();
-                        await NotifyRoomOfLock(id.ToString());
+                        await NotifyRoomOfLock(id.ToString(), item.EditorType);
                     }
                 }
             } 

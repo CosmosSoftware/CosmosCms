@@ -9,10 +9,6 @@ namespace Cosmos.Cms.Models.Interfaces
     public interface ICodeEditorViewModel
     {
         /// <summary>
-        /// Item ID
-        /// </summary>
-        public Guid Id { get; set; }
-        /// <summary>
         /// Editing field
         /// </summary>
         public string EditingField { get; set; }
@@ -32,5 +28,10 @@ namespace Cosmos.Cms.Models.Interfaces
         /// Array of custom buttons
         /// </summary>
         public IEnumerable<string> CustomButtons { get; set; }
+
+        /// <summary>
+        /// Type of editor
+        /// </summary>
+        public string EditorType { get; set; }
     }
 }

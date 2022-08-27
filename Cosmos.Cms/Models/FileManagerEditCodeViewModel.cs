@@ -26,7 +26,7 @@ namespace Cosmos.Cms.Models
         /// File ID
         /// </summary>
         [Key]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         /// <summary>
         /// Editing field
         /// </summary>
@@ -47,5 +47,10 @@ namespace Cosmos.Cms.Models
         /// Code is valid
         /// </summary>
         public bool IsValid { get; set; }
+
+        /// <summary>
+        /// Editor type
+        /// </summary>
+        public string EditorType { get; set; } = nameof(FileManagerEditCodeViewModel);
     }
 }

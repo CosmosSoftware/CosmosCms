@@ -34,5 +34,14 @@ namespace Cosmos.Cms.Common.Data
         /// </summary>
         public DateTimeOffset LockSetDateTime{ get; set; }
 
+        /// <summary>
+        /// Editor type for this lock
+        /// </summary>
+        public string EditorType { get; set; }
+
+        /// <summary>
+        /// File path for this lock (if applicable)
+        /// </summary>
+        public string FilePath { get; set; }
     }
 }

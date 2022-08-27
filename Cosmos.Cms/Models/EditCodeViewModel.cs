@@ -56,7 +56,7 @@ namespace Cosmos.Cms.Models
         /// Content injected into the HEAD tag
         /// </summary>
         [DataType(DataType.Html)]
-        public string HeaderJavaScript { get; set; }
+        public string HeadJavaScript { get; set; }
 
         /// <summary>
         /// Content injected just above the closing BODY tag below the Content inject.
@@ -92,5 +92,10 @@ namespace Cosmos.Cms.Models
         /// Array of custom buttons for this editor
         /// </summary>
         public IEnumerable<string> CustomButtons { get; set; }
+
+        /// <summary>
+        /// Editor type
+        /// </summary>
+        public string EditorType { get; set; } = nameof(EditCodePostModel);
     }
 }

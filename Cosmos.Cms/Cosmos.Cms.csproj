@@ -49,12 +49,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.15" />
+		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.16" />
 		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
-		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.77" />
+		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.81" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.3.0" />
 		<PackageReference Include="CDT.Akamai.Cdn" Version="6.0.0.4" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.45" />
 		<PackageReference Include="IntelliTect.AspNetCore.SignalR.SqlServer" Version="1.0.1" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />

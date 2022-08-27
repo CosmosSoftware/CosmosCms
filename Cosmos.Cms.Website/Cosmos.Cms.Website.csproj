@@ -43,7 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.15" />
+		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.16" />
 		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />

@@ -1,55 +1,54 @@
-﻿@model FileManagerEditCodeViewModel
+﻿@model EditScriptPostModel
 @addTagHelper *, Kendo.Mvc
-@{
+@{ 
+    // /Views/Code/Edit
     Layout = "_LayoutCodeEditor";
     ViewData["Title"] = Model.EditorTitle;
 }
 
-<form id="codeForm" asp-action="EditCode" method="post">
-    @Html.AntiForgeryToken()
+<form id="codeForm" asp-action="EditCode">
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="EditingField" />
-    <input type="hidden" asp-for="Content" />
-    <input type="hidden" asp-for="Path" />
-    <input type="hidden" asp-for="EditorMode" />
-    <input type="hidden" asp-for="EditingField" />
+    <input type="hidden" asp-for="Code" />
+    <input type="hidden" asp-for="Config" />
+    <input type="hidden" asp-for="InputVars" />
+    <input type="hidden" asp-for="Title" />
+    <input type="hidden" asp-for="Version" />
     <input type="hidden" asp-for="EditorTitle" />
-    <input type="hidden" asp-for="EditorFields" />
+    <input type="hidden" asp-for="EndPoint" />
+    <input type="hidden" asp-for="IsValid" />
+    <input type="hidden" asp-for="Published" />
+    <input type="hidden" asp-for="RoleList" />
     <input type="hidden" asp-for="EditorType" />
 </form>
 
 <script>
-
-    var editorSaveSignal = "FileSaved";
-    var editorType = "FileEditor";
+    var editorSaveSignal = "ArticleSaved";
+    var editorType = "ScriptEditor";
 
     function btnCustomClick(e) {
-        //switch (e.target.text()) {
-        //case "Preview":
-        //    // Open in new window.
-        //    window.open("@Url.Action("Preview", "Home", new {Model.Id})");
-        //    break;
-        //case "Html":
-        //    $("#htmlEditorDialog").data("kendoDialog").open();
-        //    break;
-        //case "Versions":
-        //    $("#versionsDialog").data("kendoDialog").open();
-        //    break;
-        //case "Help":
-        //    //window.open("https://cosmos.azureedge.net/edit_page#CodeEditor");
-        //    break;
-        //case "Export":
-        //    window.location.href = "@Url.Action("ExportPage", "Editor")/@Model.Id";
-        //    break;
-        //case "Import":
-        //     if (ccmsEditorIsLocked === true) {
-        //        alert("Import page while it is locked by another.");
-        //     } else {
-        //        ccmsSendSignal("SetItemLock");
-        //        window.open("@Url.Action("ImportPage", "FileManager", new {Model.Id})", '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
-        //     }
-        //    break;
-        //}
+        switch (e.target.text()) {
+        case "Debug":
+            openRunScript();
+            break;
+        case "Versions":
+            $("#versionsDialog").data("kendoDialog").open();
+            break;
+        case "Help":
+            //window.open("https://cosmos.azureedge.net/edit_page#CodeEditor");
+            break;
+        case "Export":
+            window.location.href = "@Url.Action("ExportPage", "Editor")/@Model.Id";
+            break;
+        case "Import":
+             if (ccmsEditorIsLocked === true) {
+                alert("Import page while it is locked by another.");
+             } else {
+                ccmsSendSignal("SetItemLock");
+                window.open("@Url.Action("ImportPage", "FileManager", new {Model.Id})", '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
+             }
+            break;
+        }
     }
 
     // Used by signalR to re-load an article
@@ -71,14 +70,11 @@
     }
 
     function closeEditor() {
-        window.location.href = "@Url.Action("Index", "FileManager")";
-    }
-
-    function htmlEditor() {
-        //window.location.href = "@Url.Action("Edit", "Editor", new {Model.Id})";
+        window.location.href = "@Url.Action("Versions", "Code", new {endPoint = Model.EndPoint})";
     }
 
     function goVersions() {
+        window.location.href = "@Url.Action("Versions", "Editor", new {endPoint = Model.EndPoint})";
     }
 
     // PUBLISHING METHODS
@@ -129,6 +125,24 @@
         $("#schedulingDialog").data("kendoDialog").open();
     }
 
+    function openRunScript() {
+        var frmDebugScript = $("#frmDebugScript");
+        frmDebugScript.empty();
+        var fields = $("#InputVars").val().split(",");
+
+        fields.forEach(function(item){
+            frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
+            var fieldName = "#ccms-" + item;
+            $(fieldName).kendoTextBox({
+                placeholder: item,
+                label: "Set '" + item + "' parameter."
+            });
+        });
+
+        $("#runScriptDialog").data("kendoDialog").open();
+    }
+
+
     function cancelPublish() {
         var dateTimePicker = $("#dtPublished").data("kendoDateTimePicker");
         dateTimePicker.value("");
@@ -164,22 +178,6 @@
     };
 </script>
 
-<kendo-dialog name="htmlEditorDialog" title="Edit Code" modal="true" visible="false" min-width="500">
-    <content>
-        <p>You are about to leave this page.</p>
-        <p><span class="badge badge-warning">Warning:</span> Any unsaved changes will be lost!</p>
-    </content>
-    <actions>
-        <action text="Cancel">
-        </action>
-        <action action="htmlEditor" primary="true" text="Yes" title="Confirm">
-        </action>
-    </actions>
-    <popup-animation>
-        <open duration="500" effects="fade:in" />
-        <close duration="500" effects="fade:out" />
-    </popup-animation>
-</kendo-dialog>
 <kendo-dialog name="versionsDialog" title="Versions" modal="true" visible="false" min-width="500">
     <content>
         <p>You are about to leave this page.</p>
@@ -201,7 +199,7 @@
         <h4><span class="fa fa-calendar"></span> Publishing Date/Time</h4>
         <hr />
         <p></p>
-        <p>Set the day and time when this page will be made visible on the web.</p>
+        <p>Set the day and time when this script will be made active.</p>
         <p>Tips:</p>
         <ul>
             <li>Pick now or a date/time in the past to publish right away.</li>
@@ -209,7 +207,7 @@
             <li>
                 Removing or clearing out the date/time will &quot;un-publish&quot; this version.
                 <ul>
-                    <li>If no prior version exists, this page will not appear on the web.</li>
+                    <li>If no prior version exists, this script will not be active.</li>
                     <li>Otherwise, the prior <em>published</em> version will appear instead.</li>
                 </ul>
             </li>
@@ -244,4 +242,24 @@
         <action action="savePublishDateTime" text="Set Date/Time" title="Save Date/Time">
         </action>
     </actions>
+</kendo-dialog>
+<kendo-dialog name="runScriptDialog" title="Debug Script" modal="true" visible="false" min-width="700">
+    <content>
+        <div class="k-d-flex k-justify-content-center" style="padding-top: 54px;">
+            <form id="frmDebugScript">
+               
+            </form>
+        </div>
+    </content>
+</kendo-dialog>
+<kendo-dialog name="inputVarsDialog" title="Input Variables" modal="true" visible="false" min-width="700">
+    <content>
+        <div class="k-d-flex k-justify-content-center" style="padding-top: 54px;">
+            <form id="frmInputVariables">
+                <div class="mb-3">
+
+                </div>
+            </form>
+        </div>
+    </content>
 </kendo-dialog>

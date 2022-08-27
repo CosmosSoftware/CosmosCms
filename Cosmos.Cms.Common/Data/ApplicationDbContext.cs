@@ -56,6 +56,11 @@ namespace Cosmos.Cms.Common.Data
                 .HasPartitionKey(log => log.ArticleId)
                 .HasKey(log => log.Id);
 
+            modelBuilder.Entity<NodeScript>()
+                .ToContainer(nameof(NodeScript))
+                .HasPartitionKey(node => node.EndPoint)
+                .HasKey(node => node.Id);
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -84,14 +89,21 @@ namespace Cosmos.Cms.Common.Data
         public DbSet<ArticleLog> ArticleLogs { get; set; }
 
         /// <summary>
+        ///     Website layouts
+        /// </summary>
+        public DbSet<Layout> Layouts { get; set; }
+
+        /// <summary>
+        /// Node Scripts
+        /// </summary>
+        public DbSet<NodeScript> NodeScripts { get; set; }
+
+        /// <summary>
         ///     Web page templates
         /// </summary>
         public DbSet<Template> Templates { get; set; }
 
-        /// <summary>
-        ///     Website layouts
-        /// </summary>
-        public DbSet<Layout> Layouts { get; set; }
+        public DbSet<ScriptCatalogEntry> ScriptCatalog { get; set; }
 
         #endregion
     }

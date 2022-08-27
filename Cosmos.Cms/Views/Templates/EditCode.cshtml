@@ -9,8 +9,12 @@
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="EditorTitle" />
     <input type="hidden" asp-for="Content" />
+    <input type="hidden" asp-for="EditorType" />
 </form>
 <script>
+
+    var editorType = "TemplateEditor";
+
     function showValue() {
         alert(editor.getValue());
     }
@@ -30,5 +34,33 @@
 
     function editHtml() {
         window.location.href = "@Url.Action("Edit", "Editor", new {Model.Id})";
+    }
+
+    // Used by signalR to re-load an article
+    function ccmsLoadModel(model) {
+
+        // get all the inputs into an array.
+        var inputs = [@(Html.Raw(string.Join(",", Model.EditorFields.Select(s => "\"" + s.FieldId + "\"").ToArray()))) ];
+
+        // not sure if you wanted this, but I thought I'd add it.
+        // get an associative array of just the values.
+        inputs.forEach(function (item) {
+            var c = model[item];
+            $("#" + item).val(c);
+        });
+
+        //$("#Id").val(model.Id);
+        //var id = $("#Id");
+        //var content = $("#Content");
+        //var hjs = $("#HeaderJavaScript");
+        //var fjs = $("#FooterJavaScript");
+
+        //content.val(model.Content);
+        //hjs.val(model.HeaderJavaScript);
+        //fjs.val(model.FooterJavaScript);
+
+        var activeTab = $(".tabitem.nav-link.active");
+        var name = $(activeTab).attr("data-ccms-fieldname");
+        createAndLoadEditor(name);// tabOnSelect on _LayoutCodeEditor
     }
 </script>

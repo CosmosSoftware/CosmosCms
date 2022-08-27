@@ -6,7 +6,6 @@ using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
 using HtmlAgilityPack;
-using Kendo.Mvc;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -21,17 +20,15 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Cosmos.Cms.Controllers
 {
     /// <summary>
     /// Editor controller
     /// </summary>
-    [Authorize(Roles = "Reviewers, Administrators, Editors, Authors, Team Members")]
+    [Authorize(Roles = "Reviewers, Administrators, Editors, Authors")]
     public class EditorController : BaseController
     {
         private readonly ArticleEditLogic _articleLogic;
@@ -744,8 +741,8 @@ namespace Cosmos.Cms.Controllers
                 {
                     new EditorField
                     {
-                        FieldId = "HeaderJavaScript",
-                        FieldName = "Header Block",
+                        FieldId = "HeadJavaScript",
+                        FieldName = "Head Block",
                         EditorMode = EditorMode.Html,
                         IconUrl = "/images/seti-ui/icons/html.svg",
                         ToolTip = "Content to appear at the bottom of the <head> tag."
@@ -767,10 +764,10 @@ namespace Cosmos.Cms.Controllers
                         ToolTip = "Content to appear at the bottom of the <body> tag."
                     }
                 },
-                HeaderJavaScript = article.HeadJavaScript,
+                HeadJavaScript = article.HeadJavaScript,
                 FooterJavaScript = article.FooterJavaScript,
                 Content = article.Content,
-                EditingField = "HeaderJavaScript",
+                EditingField = "HeadJavaScript",
                 CustomButtons = new[] { "Preview", "Html", "Export", "Import" }
             });
         }
@@ -805,7 +802,7 @@ namespace Cosmos.Cms.Controllers
 
             // Strip Byte Order Marks (BOM)
             model.Content = StripBOM(model.Content);
-            model.HeaderJavaScript = StripBOM(model.HeaderJavaScript);
+            model.HeadJavaScript = StripBOM(model.HeadJavaScript);
             model.FooterJavaScript = StripBOM(model.FooterJavaScript);
 
             // Validate HTML
@@ -822,11 +819,11 @@ namespace Cosmos.Cms.Controllers
                 {
                     articleViewModel.Content = model.Content;
 
-                    if (string.IsNullOrEmpty(model.HeaderJavaScript) ||
-                    string.IsNullOrWhiteSpace(model.HeaderJavaScript))
+                    if (string.IsNullOrEmpty(model.HeadJavaScript) ||
+                    string.IsNullOrWhiteSpace(model.HeadJavaScript))
                         articleViewModel.HeadJavaScript = string.Empty;
                     else
-                        articleViewModel.HeadJavaScript = model.HeaderJavaScript.Trim();
+                        articleViewModel.HeadJavaScript = model.HeadJavaScript.Trim();
 
                     if (string.IsNullOrEmpty(model.FooterJavaScript) ||
                         string.IsNullOrWhiteSpace(model.FooterJavaScript))
@@ -887,7 +884,7 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Preload the website (useful if CDN configured).
+        /// Pre-load the website (useful if CDN configured).
         /// </summary>
         /// <returns></returns>
         [HttpGet]

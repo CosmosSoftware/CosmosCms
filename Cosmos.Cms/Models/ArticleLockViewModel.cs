@@ -34,5 +34,14 @@ namespace Cosmos.Cms.Models
         /// </summary>
         public DateTimeOffset LockSetDateTime { get; set; } = DateTimeOffset.Now;
 
+        /// <summary>
+        /// View path for this lock
+        /// </summary>
+        public string ViewPath { get; set; }
+
+        /// <summary>
+        /// Editor type name
+        /// </summary>
+        public string EditorType { get; set; }
     }
 }

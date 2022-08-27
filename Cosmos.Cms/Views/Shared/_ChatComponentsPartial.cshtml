@@ -119,9 +119,14 @@
         /// <item>SetArticleLock</item>
         /// </list>
         var id = $("#Id").val();
+
+        if (editorType === null || typeof (editorType) === "undefined" || editorType === "") {
+            editorType = "ArticleEditor";
+        }
+
         if (id !== null && typeof(id) !== "undefined" && id !== "") {
             try {
-                await ccsmsChatHub.invoke(method, id);
+                await ccsmsChatHub.invoke(method, id, editorType);
                 console.log("Send signal: " + method + ", id: " + id);
             } catch (err) {
                 console.log(err);

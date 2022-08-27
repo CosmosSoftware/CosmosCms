@@ -51,5 +51,10 @@ namespace Cosmos.Cms.Models
         /// Model is valid.
         /// </summary>
         public bool IsValid { get; set; }
+
+        /// <summary>
+        /// Editor type
+        /// </summary>
+        public string EditorType { get; set; } = nameof(LayoutCodeViewModel);
     }
 }

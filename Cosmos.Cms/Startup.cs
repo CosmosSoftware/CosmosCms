@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Threading.Tasks;
 
 namespace Cosmos.Cms
 {
@@ -179,9 +180,25 @@ namespace Cosmos.Cms
             services.ConfigureApplicationCookie(options =>
             {
                 // This section docs are here: https://docs.microsoft.com/en-us/aspnet/core/security/authentication/scaffold-identity?view=aspnetcore-3.1&tabs=visual-studio#full
-                options.LoginPath = "/Identity/Account/Login";
-                options.LogoutPath = "/Identity/Account/Logout";
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                // The following is when using Docker container with a proxy like
+                // Azure front door. It ensures relative paths for redirects
+                // which is necessary when the public DNS at Front door is www.mycompany.com 
+                // and the DNS of the App Service is something like myappservice.azurewebsites.net.
+                options.Events.OnRedirectToLogin = x =>
+                {
+                    x.Response.Redirect("/Identity/Account/Login");
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToLogout = x =>
+                {
+                    x.Response.Redirect("/Identity/Account/Logout");
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = x =>
+                {
+                    x.Response.Redirect("/Identity/Account/AccessDenied");
+                    return Task.CompletedTask;
+                };
             });
 
             // BEGIN
