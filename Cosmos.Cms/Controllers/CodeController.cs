@@ -41,7 +41,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         public CodeController(INodeJSService nodeJSService, IOptions<CosmosConfig> cosmosConfig,
-            ApplicationDbContext dbContext, ILogger logger) : base(nodeJSService, cosmosConfig, dbContext, logger)
+            ApplicationDbContext dbContext, ILogger<CodeController> logger) : base(nodeJSService, cosmosConfig, dbContext, logger)
         {
             _nodeJSService = nodeJSService;
             _cosmosConfig = cosmosConfig;

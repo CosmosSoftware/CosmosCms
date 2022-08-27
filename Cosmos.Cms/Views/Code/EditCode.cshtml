@@ -1,6 +1,6 @@
 ﻿@model EditScriptPostModel
 @addTagHelper *, Kendo.Mvc
-@{ 
+@{
     // /Views/Code/Edit
     Layout = "_LayoutCodeEditor";
     ViewData["Title"] = Model.EditorTitle;
@@ -28,26 +28,29 @@
 
     function btnCustomClick(e) {
         switch (e.target.text()) {
-        case "Debug":
-            openRunScript();
-            break;
-        case "Versions":
-            $("#versionsDialog").data("kendoDialog").open();
-            break;
-        case "Help":
-            //window.open("https://cosmos.azureedge.net/edit_page#CodeEditor");
-            break;
-        case "Export":
-            window.location.href = "@Url.Action("ExportPage", "Editor")/@Model.Id";
-            break;
-        case "Import":
-             if (ccmsEditorIsLocked === true) {
-                alert("Import page while it is locked by another.");
-             } else {
-                ccmsSendSignal("SetItemLock");
-                window.open("@Url.Action("ImportPage", "FileManager", new {Model.Id})", '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
-             }
-            break;
+            case "Debug":
+                openRunScript();
+                break;
+            case "Inputs":
+                openInputVars();
+                break;
+            case "Versions":
+                $("#versionsDialog").data("kendoDialog").open();
+                break;
+            case "Help":
+                //window.open("https://cosmos.azureedge.net/edit_page#CodeEditor");
+                break;
+            case "Export":
+                window.location.href = "@Url.Action("ExportPage", "Editor")/@Model.Id";
+                break;
+            case "Import":
+                if (ccmsEditorIsLocked === true) {
+                    alert("Import page while it is locked by another.");
+                } else {
+                    ccmsSendSignal("SetItemLock");
+                    window.open("@Url.Action("ImportPage", "FileManager", new {Model.Id})", '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
+                }
+                break;
         }
     }
 
@@ -70,11 +73,11 @@
     }
 
     function closeEditor() {
-        window.location.href = "@Url.Action("Versions", "Code", new {endPoint = Model.EndPoint})";
+        window.location.href = "@Url.Action("Versions", "Code", new { Id = Model.EndPoint})";
     }
 
     function goVersions() {
-        window.location.href = "@Url.Action("Versions", "Editor", new {endPoint = Model.EndPoint})";
+        window.location.href = "@Url.Action("Versions", "Code", new { Id = Model.EndPoint})";
     }
 
     // PUBLISHING METHODS
@@ -125,12 +128,17 @@
         $("#schedulingDialog").data("kendoDialog").open();
     }
 
+    $("#frmInputVariables").submit(function (event) {
+        alert("Handler for .submit() called.");
+        event.preventDefault();
+    });
+
     function openRunScript() {
         var frmDebugScript = $("#frmDebugScript");
         frmDebugScript.empty();
         var fields = $("#InputVars").val().split(",");
 
-        fields.forEach(function(item){
+        fields.forEach(function (item) {
             frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
             var fieldName = "#ccms-" + item;
             $(fieldName).kendoTextBox({
@@ -142,6 +150,16 @@
         $("#runScriptDialog").data("kendoDialog").open();
     }
 
+    function openInputVars() {
+        var textbox = $("#ccms-Inputs").data("kendoTextBox");
+        textbox.value($("#InputVars").val());
+        $("#inputVarsDialog").data("kendoDialog").open();
+    }
+
+    function setParameters() {
+        var textbox = $("#ccms-Inputs").data("kendoTextBox");
+        $("#InputVars").val(textbox.value());
+    }
 
     function cancelPublish() {
         var dateTimePicker = $("#dtPublished").data("kendoDateTimePicker");
@@ -243,23 +261,39 @@
         </action>
     </actions>
 </kendo-dialog>
-<kendo-dialog name="runScriptDialog" title="Debug Script" modal="true" visible="false" min-width="700">
+<kendo-dialog name="runScriptDialog" title="Debug Script" modal="true" visible="false" min-width="800" min-height="500">
     <content>
         <div class="k-d-flex k-justify-content-center" style="padding-top: 54px;">
             <form id="frmDebugScript">
-               
             </form>
         </div>
     </content>
 </kendo-dialog>
-<kendo-dialog name="inputVarsDialog" title="Input Variables" modal="true" visible="false" min-width="700">
+<kendo-dialog name="inputVarsDialog" title="Input Parameters" modal="true" visible="false" min-width="800">
     <content>
         <div class="k-d-flex k-justify-content-center" style="padding-top: 54px;">
             <form id="frmInputVariables">
                 <div class="mb-3">
-
+                    <p>List the input parameters required by your API (GET or POST) below:</p>
+                </div>
+                <div class="mb-3">
+                    @(Html.Kendo().TextBox()
+                        .Name("ccms-Inputs")
+                        .Label(l => l.Content("Comma delimited list:"))
+                        .HtmlAttributes(new { style = "width: 100%" })
+                        )
                 </div>
             </form>
         </div>
     </content>
+    <actions>
+        <action text="Cancel">
+        </action>
+        <action action="setParameters" primary="true" text="Set" title="Set">
+        </action>
+    </actions>
+    <popup-animation>
+        <open duration="500" effects="fade:in" />
+        <close duration="500" effects="fade:out" />
+    </popup-animation>
 </kendo-dialog>
