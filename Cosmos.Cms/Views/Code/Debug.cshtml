@@ -1,0 +1,22 @@
+﻿@model DebugViewModel
+
+<!--
+   Code highlighting 
+   https://highlightjs.org/
+   -->
+<link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+@{
+    ViewData["Title"] = "Debug";
+}
+
+<h1>Input Data</h1>
+<pre><code class="language-json hljs">
+@Html.Raw(Model.Data)
+</code></pre>
+
+<pre><code class="language-json hljs">
+@Html.Raw(Model.ApiResult.JsonData)
+</code></pre>

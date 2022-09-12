@@ -137,15 +137,28 @@
         var frmDebugScript = $("#frmDebugScript");
         frmDebugScript.empty();
         var fields = $("#InputVars").val().split(",");
+        
 
         fields.forEach(function (item) {
-            frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
+            //frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
+            
+            var itemid = "ccms-" + item;
+
             var fieldName = "#ccms-" + item;
-            $(fieldName).kendoTextBox({
-                placeholder: item,
-                label: "Set '" + item + "' parameter."
-            });
+
+            var frm = "<div class='mb-3'>";
+            frm += "<label for='" + itemid + "' class='k-label k-input-label'>Input: " + item + "</label>";
+
+            frm += "<span class='k-input k-textbox k-input-solid k-input-md k-rounded-md' style='width: 100%;'>";
+            frm += "<input class='k-input-inner' id='" + itemid + "' >";
+            frm += "</span>";
+
+            frm += "</div>";
+
+            frmDebugScript.append(frm);
+
         });
+        
 
         $("#runScriptDialog").data("kendoDialog").open();
     }
@@ -194,6 +207,42 @@
         loadPublishLocalDateTime();
         $("#schedulingDialog").data("kendoDialog").close();
     };
+
+    function cancelDebug() {
+        loadPublishLocalDateTime();
+        $("#runScriptDialog").data("kendoDialog").close();
+    }
+
+    function executeDebug() {
+        var id = $("#Id").val();
+
+        var fields = $("#InputVars").val().split(",");
+
+        var data = "{";
+
+        var separator = "";
+
+        fields.forEach(function (item) {
+            //frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
+            
+            var itemid = "#ccms-" + item;
+
+            data += separator + "\"" + item + "\"" + " : \"" + $(itemid).val() + "\"";
+
+            separator = ", ";
+        });
+
+        data += "}";
+
+        var json = JSON.parse(data);
+
+        $.post("@Url.Action("Debug")/" + id, json,
+            function (data, status, xhr) {   // success callback function
+                alert('status: ' + status + ', data: ' + data.responseData);
+            },
+            'json'
+        );
+    }
 </script>
 
 <kendo-dialog name="versionsDialog" title="Versions" modal="true" visible="false" min-width="500">
@@ -261,13 +310,28 @@
         </action>
     </actions>
 </kendo-dialog>
-<kendo-dialog name="runScriptDialog" title="Debug Script" modal="true" visible="false" min-width="800" min-height="500">
+<kendo-dialog name="runScriptDialog" title="Script Debugger" modal="true" width="900" visible="false">
     <content>
-        <div class="k-d-flex k-justify-content-center" style="padding-top: 54px;">
-            <form id="frmDebugScript">
-            </form>
+        <div>
+            <div>
+                <form class="form">
+                    <p>Enter parameter values then press &quot;Go&quot;.</p>
+                    <div id="frmDebugScript">
+                    </div>
+                </form>
+            </div>
         </div>
     </content>
+    <popup-animation>
+        <open duration="500" effects="fade:in" />
+        <close duration="500" effects="fade:out" />
+    </popup-animation>
+    <actions>
+        <action action="cancelDebug" text="Cancel">
+        </action>
+        <action action="executeDebug" text="Go">
+        </action>
+    </actions>
 </kendo-dialog>
 <kendo-dialog name="inputVarsDialog" title="Input Parameters" modal="true" visible="false" min-width="800">
     <content>

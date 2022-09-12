@@ -9,11 +9,11 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ namespace Cosmos.Cms.Controllers
     /// </summary>
     [AllowAnonymous]
     [Authorize(Roles = "Administrators, Editors, Authors")]
-    public class CodeController : ApiController
+    public class CodeController : Controller
     {
 
         private readonly INodeJSService _nodeJSService;
@@ -41,7 +41,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         public CodeController(INodeJSService nodeJSService, IOptions<CosmosConfig> cosmosConfig,
-            ApplicationDbContext dbContext, ILogger<CodeController> logger) : base(nodeJSService, cosmosConfig, dbContext, logger)
+            ApplicationDbContext dbContext, ILogger<CodeController> logger)
         {
             _nodeJSService = nodeJSService;
             _cosmosConfig = cosmosConfig;
@@ -134,6 +134,74 @@ namespace Cosmos.Cms.Controllers
             }
 
             return View(model);
+        }
+
+        /// <summary>
+        /// Runs the script
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Debug(Guid Id, string data)
+        {
+
+            var debugResult = new DebugViewModel()
+            {
+                Id = Id,
+                Data = data
+            };
+
+            try
+            {
+                var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id); ;
+
+                var values = GetArgs(script);
+
+                // Send the module string to NodeJS where it's compiled, invoked and cached.
+                var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: values);
+
+                debugResult.ApiResult = new ApiResult(result)
+                {
+                    IsSuccess = true
+                };
+            }
+            catch (Exception e)
+            {
+                var error = new ApiResult("Error")
+                {
+                    IsSuccess = false
+                };
+
+                error.Errors.Add("Error", e.Message);
+
+                debugResult.ApiResult = error;
+            }
+
+            return Json(debugResult);
+        }
+
+        private ApiArgument[] GetArgs(NodeScript script)
+        {
+            if (Request.Method == "POST")
+            {
+                return Request.Form.Where(a => script.InputVars.Contains(a.Key))
+                    .Select(s => new ApiArgument()
+                    {
+                        Key = s.Key,
+                        Value = s.Value
+                    }).ToArray();
+            }
+            else if (Request.Method == "GET")
+            {
+                return Request.Query.Where(a => script.InputVars.Contains(a.Key))
+                    .Select(s => new ApiArgument()
+                    {
+                        Key = s.Key,
+                        Value = s.Value
+                    }).ToArray();
+            }
+            return null;
         }
 
         /// <summary>
