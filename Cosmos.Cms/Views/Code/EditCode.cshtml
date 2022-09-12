@@ -5,6 +5,13 @@
     Layout = "_LayoutCodeEditor";
     ViewData["Title"] = Model.EditorTitle;
 }
+<!--
+   Code highlighting
+   https://highlightjs.org/
+   -->
+<link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+
 
 <form id="codeForm" asp-action="EditCode">
     <input type="hidden" asp-for="Id" />
@@ -134,6 +141,7 @@
     });
 
     function openRunScript() {
+
         var frmDebugScript = $("#frmDebugScript");
         frmDebugScript.empty();
         var fields = $("#InputVars").val().split(",");
@@ -213,7 +221,11 @@
         $("#runScriptDialog").data("kendoDialog").close();
     }
 
-    function executeDebug() {
+    async function executeDebug() {
+
+        // Save the script first
+        await $("#codeForm").submit();
+
         var id = $("#Id").val();
 
         var fields = $("#InputVars").val().split(",");
@@ -238,7 +250,9 @@
 
         $.post("@Url.Action("Debug")/" + id, json,
             function (data, status, xhr) {   // success callback function
-                alert('status: ' + status + ', data: ' + data.responseData);
+                $("#runOutput").html(data.ApiResult.JsonData);
+                hljs.highlightAll();
+                $("#runResultsWin").data("kendoWindow").open();
             },
             'json'
         );
@@ -361,3 +375,15 @@
         <close duration="500" effects="fade:out" />
     </popup-animation>
 </kendo-dialog>
+
+<kendo-window name="runResultsWin"
+              title="Debug Output"
+              draggable="true"
+              resizable="true"
+              width="600">
+<content>
+<pre><code id="runOutput" class="language-json hljs">
+</code></pre>
+</content>
+    <popup-animation enabled="false" />
+</kendo-window>

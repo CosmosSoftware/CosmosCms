@@ -21,7 +21,7 @@
 
     // Permissions configuration
     var isAuthor = false;
-    
+
     if (User != null && User.IsInRole("Authors"))
     {
         isAuthor = true;
@@ -71,44 +71,44 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             @(Html.Kendo().ToolBar().Name("tbar")
-            .HtmlAttributes(new {style = "border: 0px;background-color:inherit;height:38px;"})
-            .Items(item =>
-            {
-            item.Add().Text("Code Editor").Type(CommandType.SplitButton)
-            .MenuButtons(btn =>
-            {
-            btn.Add().Text("Save");
-            btn.Add().Text("Close");
-            btn.Add().Text("Files");
-            foreach (var button in buttons)
-            {
-            btn.Add().Text(button);
-            }
-            }).Click("btnMainClick");
+                .HtmlAttributes(new { style = "border: 0px;background-color:inherit;height:38px;" })
+                .Items(item =>
+                {
+                    item.Add().Text("Code Editor").Type(CommandType.SplitButton)
+                    .MenuButtons(btn =>
+                    {
+                        btn.Add().Text("Save");
+                        btn.Add().Text("Close");
+                        btn.Add().Text("Files");
+                        foreach (var button in buttons)
+                        {
+                            btn.Add().Text(button);
+                        }
+                    }).Click("btnMainClick");
 
-            item.Add().Type(CommandType.Button).Text("Ready to Edit").Id("ccms-edit-lock-btn").Click("ccmsEditButtonOnClick"); // ccmsEditButtonOnClick found on _ChatComponentPartial
-            item.Add().Template("<div><span id='versInfo' style='margin-right:10px;font-size:0.6em;'>" + @assemblyName.Version + "</span> </div>");
-            
-            if (isArticleEditor)
-            {
-                item.Add().Type(CommandType.Button).Text("<span id='btnPublish'></span>").Click("openSchedulerDialog").Hidden(isAuthor);
-                item.Add().Template("<span>Title: </span>");
+                    item.Add().Type(CommandType.Button).Text("Ready to Edit").Id("ccms-edit-lock-btn").Click("ccmsEditButtonOnClick"); // ccmsEditButtonOnClick found on _ChatComponentPartial
+                    item.Add().Template("<div><span id='versInfo' style='margin-right:10px;font-size:0.6em;'>" + @assemblyName.Version + "</span> </div>");
+
+                    if (isArticleEditor)
+                    {
+                        item.Add().Type(CommandType.Button).Text("<span id='btnPublish'></span>").Click("openSchedulerDialog").Hidden(isAuthor);
+                        item.Add().Template("<span>Title: </span>");
                         item.Add().Template(Html.Kendo().TextBox().Name("tbTitle").Value(((ICodeEditorViewModel)Model).EditorTitle).HtmlAttributes(new { style = "width: 32vw;" }).ToHtmlString());
-            }
-            item.Add().Text("Help").Type(CommandType.SplitButton)
-            .MenuButtons(btn =>
-            {
-            btn.Add().Text("Basic Editing");
-            btn.Add().Text("Code Navigation");
-            btn.Add().Text("Reformatting Code");
-            btn.Add().Text("About Monaco");
-            }).Click("btnHelpClick");
-                        @*item.Add().Type(CommandType.Separator);
-                    item.Add().Template(@"<div><strong>Editing:</strong> " + Model.EditorTitle + "</div>");*@
-                        @*item.Add().Template(@"<div><strong>Version:</strong> " + ViewData["Version"] + "</div>");
-                    item.Add().Template("<span title=\"Edit sessions\" id=\"pubLbl\">Session info: </span><span id=\"articleChat\"></span>");*@
-            })
-            )
+                    }
+                    item.Add().Text("Help").Type(CommandType.SplitButton)
+                    .MenuButtons(btn =>
+                    {
+                        btn.Add().Text("Basic Editing");
+                        btn.Add().Text("Code Navigation");
+                        btn.Add().Text("Reformatting Code");
+                        btn.Add().Text("About Monaco");
+                    }).Click("btnHelpClick");
+                    @*item.Add().Type(CommandType.Separator);
+            item.Add().Template(@"<div><strong>Editing:</strong> " + Model.EditorTitle + "</div>");*@
+                    @*item.Add().Template(@"<div><strong>Version:</strong> " + ViewData["Version"] + "</div>");
+            item.Add().Template("<span title=\"Edit sessions\" id=\"pubLbl\">Session info: </span><span id=\"articleChat\"></span>");*@
+                })
+                )
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navBarTabs"
                     aria-controls="navBarTabs"
@@ -122,16 +122,16 @@
                         var aclass = "active";
                         foreach (var field in fields)
                         {
-                                    <li class="nav-item">
-                                        <a title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" class="tabitem nav-link @aclass" aria-current="page" onclick="tabOnSelect(this)"><span class="pageTabIcon">&lt;&gt;</span>  @field.FieldName</a>
-                                    </li>
+                            <li class="nav-item">
+                                <a title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" class="tabitem nav-link @aclass" aria-current="page" onclick="tabOnSelect(this)"><span class="pageTabIcon">&lt;&gt;</span>  @field.FieldName</a>
+                            </li>
                             aclass = "";
                         }
                     }
                 </ul>
                 <div class="form"></div>
             </div>
-           
+
             @* This button is required to by the Chat Component *@
             <partial name="_ChatButtonPartial" />
         </div>
@@ -182,33 +182,33 @@
                             var errors = values[i].Errors.ToList();
                             if (errors.Count > 0)
                             {
-                                        <li>
-                                            @keys[i] :
-                                            <ul>
-                                                @{
+                                <li>
+                                    @keys[i] :
+                                    <ul>
+                                        @{
                                             for (var c = 0; c < errors.Count; c++)
                                             {
-                                                                <li>
-                                                                    @errors[c].ErrorMessage
-                                                                    @if (errors[c].Exception != null)
+                                                <li>
+                                                    @errors[c].ErrorMessage
+                                                    @if (errors[c].Exception != null)
                                                     {
-                                                                        <br />
-                                                                        <br />
-                                                                        <button class="btn btn-sm btn-dark" onclick="onClickShowError('@("#exception" + i + c)')">View Details</button>
-                                                                        <div @("id=\"exception" + i + c + "\"") style="display: none">
-                                                                            <div style="display: block; font-family: Courier New;">
-                                                                                @errors[c].Exception.Message
-                                                                            </div>
-                                                                            <code>
-                                                                                @errors[c].Exception.InnerException
-                                                                            </code>
-                                                                        </div>
+                                                        <br />
+                                                        <br />
+                                                        <button class="btn btn-sm btn-dark" onclick="onClickShowError('@("#exception" + i + c)')">View Details</button>
+                                                        <div @("id=\"exception" + i + c + "\"") style="display: none">
+                                                            <div style="display: block; font-family: Courier New;">
+                                                                @errors[c].Exception.Message
+                                                            </div>
+                                                            <code>
+                                                                @errors[c].Exception.InnerException
+                                                            </code>
+                                                        </div>
                                                     }
-                                                                </li>
+                                                </li>
                                             }
-                                                }
-                                            </ul>
-                                        </li>
+                                        }
+                                    </ul>
+                                </li>
                             }
                         }
                     }
@@ -309,7 +309,7 @@
             </action>
         </actions>
     </kendo-dialog>
-    
+
     <partial name="_ChatComponentsPartial" />
 
     <script>
@@ -336,7 +336,7 @@
             }
             createAndLoadEditor(id);
         }
-        
+
         function cancelPublishDateTime() {
             loadPublishLocalDateTime();
             $("#schedulingDialog").data("kendoDialog").close();
@@ -364,15 +364,14 @@
 
             //require.config({ paths: { vs: '/lib/node_modules/monaco-editor/dist' } }); // Emmet Abbr.
             require(['vs/editor/editor.main'],
-                function() {
+                function () {
                     fieldId = id;
                     var fieldInfo = editFields.find(o => o.FieldName === id);
                     fieldId = fieldInfo.FieldId;
 
                     var mode = null;
 
-                    switch(fieldInfo.EditorMode)
-                    {
+                    switch (fieldInfo.EditorMode) {
                         case 0:
                             mode = "javascript"
                             break;
@@ -399,7 +398,7 @@
                         });
                     editor.onDidFocusEditorWidget(function () {
                         if (ccmsEditorIsLocked !== true) {
-                          ccmsSendSignal("SetArticleLock");
+                            ccmsSendSignal("SetArticleLock");
                         } else {
                             event.preventDefault();
                             alert("Cannot edit while locked by another user.");
@@ -409,7 +408,7 @@
                 });
         }
 
-        $("#codeForm").submit(function(e) {
+        $("#codeForm").submit(async function (e) {
             e.preventDefault(); // Prevent the form from doing a post back.
             $("#saveChangesDialog").data("kendoDialog").open();
 
@@ -421,7 +420,7 @@
                 $("#Title").val($("#tbTitle").val());
 
             }
-            
+
             if (editor) {
                 $("#" + fieldId).val(editor.getValue());
             }
@@ -429,25 +428,25 @@
             var form = $('#codeForm');
             var action = form.attr('action');
 
-            $.post(action,
+            var promise = $.post(action,
                 form.serialize(),
-                function(response) {
+                function (response) {
                     $("#saveChangesDialog").data("kendoDialog").close();
                     if (response.IsValid) {
                         ccmsSendSignal(editorSaveSignal); // Defined in the chat components partial
                         $("#changesSavedDialog").data("kendoDialog").open();
-                        setTimeout(function() {
-                                $("#changesSavedDialog").data("kendoDialog").close();
-                            },
+                        setTimeout(function () {
+                            $("#changesSavedDialog").data("kendoDialog").close();
+                        },
                             1000);
                     } else {
                         var errorMsg = "<h5>Error(s) detected while saving:</h5>";
                         // Invalid response.
                         $.each(response.Errors,
-                            function(index, error) {
+                            function (index, error) {
                                 errorMsg = "<p>" + error.Key + "</p><ul>";
                                 $.each(error.Errors,
-                                    function(index, innerError) {
+                                    function (index, innerError) {
                                         errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
                                     });
                                 errorMsg = errorMsg + "</ul>";
@@ -456,7 +455,7 @@
                         $("#saveErrorsDialog").data("kendoDialog").open();
                     }
                 }
-            );
+            ).then();
         });
 
         function btnSelectField(e) {
@@ -466,47 +465,47 @@
 
         function btnMainClick(e) {
             switch (e.target.text()) {
-            //switch (e) {
-            case "Save":
-                if (ccmsEditorIsLocked === true) {
-                    alert("Cannot save while locked by another user.");
-                    return;
-                }
-                $("#codeForm").submit();
-                break;
-            case "Close":
-                $("#closeEditorDialog").data("kendoDialog").open();
-                break;
-            case "Files":
-                if (fileMgrPopup === null) {
-                    fileMgrPopup = window.open('@Url.Action("Popup", "FileManager")', '_blank', 'height=510,width=900,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
-                }
-                else {
-                    fileMgrPopup.focus();
-                }
-                break;
-            default:
-                if (typeof btnCustomClick === "function") {
-                    btnCustomClick(e);
-                }
-                break;
+                //switch (e) {
+                case "Save":
+                    if (ccmsEditorIsLocked === true) {
+                        alert("Cannot save while locked by another user.");
+                        return;
+                    }
+                    $("#codeForm").submit();
+                    break;
+                case "Close":
+                    $("#closeEditorDialog").data("kendoDialog").open();
+                    break;
+                case "Files":
+                    if (fileMgrPopup === null) {
+                        fileMgrPopup = window.open('@Url.Action("Popup", "FileManager")', '_blank', 'height=510,width=900,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
+                    }
+                    else {
+                        fileMgrPopup.focus();
+                    }
+                    break;
+                default:
+                    if (typeof btnCustomClick === "function") {
+                        btnCustomClick(e);
+                    }
+                    break;
             }
         }
 
         function btnHelpClick(e) {
             switch (e.target.text()) {
-            case "Basic Editing":
-                window.open("https://code.visualstudio.com/docs/editor/codebasics", "_blank");
-                break;
-            case "Code Navigation":
-                window.open("https://code.visualstudio.com/docs/editor/editingevolved", "_blank");
-                break;
-            case "Reformatting Code":
-                window.open("https://code.visualstudio.com/docs/editor/refactoring", "_blank");
-                break;
-            case "About Monaco":
-                window.open("https://microsoft.github.io/monaco-editor/index.html", "_blank");
-                break;
+                case "Basic Editing":
+                    window.open("https://code.visualstudio.com/docs/editor/codebasics", "_blank");
+                    break;
+                case "Code Navigation":
+                    window.open("https://code.visualstudio.com/docs/editor/editingevolved", "_blank");
+                    break;
+                case "Reformatting Code":
+                    window.open("https://code.visualstudio.com/docs/editor/refactoring", "_blank");
+                    break;
+                case "About Monaco":
+                    window.open("https://microsoft.github.io/monaco-editor/index.html", "_blank");
+                    break;
             }
         }
 
@@ -520,7 +519,7 @@
             $("#editCodeDialog").data("kendoDialog").open();
         }
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             var fieldId = "@Model.EditingField";
             if (fieldId !== "") {
                 var fieldInfo = editFields.find(o => o.FieldId === fieldId);
@@ -533,21 +532,21 @@
             loadPublishLocalDateTime();
         });
 
-        $(window).bind('keydown', function(event) {
-                if (event.ctrlKey || event.metaKey) {
-                    switch (String.fromCharCode(event.which).toLowerCase()) {
+        $(window).bind('keydown', function (event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch (String.fromCharCode(event.which).toLowerCase()) {
                     case 's':
                         event.preventDefault();
                         $("#codeForm").submit();
                         break;
-                    }
                 }
+            }
         });
 
-        $(window).on("unload", function() {
-           if (fileMgrPopup !== null) {
-               fileMgrPopup.close();
-           }
+        $(window).on("unload", function () {
+            if (fileMgrPopup !== null) {
+                fileMgrPopup.close();
+            }
         });
 
         function onPubNow(e) {
@@ -556,8 +555,8 @@
             $("#Published").val(now);
             loadPublishLocalDateTime();
         }
-        
-        // SCHEDULING PUBLISHING UTILITIES      
+
+        // SCHEDULING PUBLISHING UTILITIES
         function openSchedulerDialog() {
             $("#schedulingDialog").data("kendoDialog").open();
         }
@@ -628,7 +627,7 @@
     <script src="/lib/monaco-editor/min/vs/loader.js"></script>
 
     <script src="~/lib/mdb-ui-kit/mdb.min.js"></script>
-   
+
     <form id="frmLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
         <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
     </form>
