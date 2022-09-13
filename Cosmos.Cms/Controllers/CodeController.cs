@@ -137,19 +137,27 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
+        /// Opens the debug terminal
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult Debug()
+        {
+            return View();
+        }
+
+        /// <summary>
         /// Runs the script
         /// </summary>
         /// <param name="Id"></param>
-        /// <param name="data"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Debug(Guid Id, string data)
+        public async Task<IActionResult> Debug(Guid Id)
         {
 
             var debugResult = new DebugViewModel()
             {
-                Id = Id,
-                Data = data
+                Id = Id
             };
 
             try

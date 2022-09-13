@@ -221,7 +221,13 @@
         $("#runScriptDialog").data("kendoDialog").close();
     }
 
+    var terminal = null;
+
     async function executeDebug() {
+        
+        if (terminal === null) {
+            terminal = await window.open("@Url.Action("Debug")", "Debugger");
+        }
 
         // Save the script first
         await $("#codeForm").submit();
@@ -230,29 +236,40 @@
 
         var fields = $("#InputVars").val().split(",");
 
-        var data = "{";
+        var parameters = "{";
 
         var separator = "";
+
 
         fields.forEach(function (item) {
             //frmDebugScript.append("<div class='mb-3'><div id='ccms-" + item + "'</div>");
             
             var itemid = "#ccms-" + item;
 
-            data += separator + "\"" + item + "\"" + " : \"" + $(itemid).val() + "\"";
+            parameters += separator + "\"" + item + "\"" + " : \"" + $(itemid).val() + "\"";
 
             separator = ", ";
         });
 
-        data += "}";
-
-        var json = JSON.parse(data);
+        parameters += "}";
+        
+        var json = JSON.parse(parameters);
 
         $.post("@Url.Action("Debug")/" + id, json,
-            function (data, status, xhr) {   // success callback function
-                $("#runOutput").html(data.ApiResult.JsonData);
-                hljs.highlightAll();
-                $("#runResultsWin").data("kendoWindow").open();
+            function (data) {   // success callback function
+                
+                var output = terminal.document.getElementById("runOutput");
+                var input = terminal.document.getElementById("runInput");
+
+                input.innerHTML = JSON.stringify(JSON.parse(parameters), undefined, 4);
+
+                if (data.ApiResult.IsSuccess === true) {
+                    output.innerHTML = JSON.stringify(data.ApiResult.JsonData, undefined, 4);
+                } else {
+                    output.innerHTML = JSON.stringify(data, undefined, 4);
+                }
+                
+                terminal.opener.hljs.highlightAll();
             },
             'json'
         );
@@ -375,15 +392,3 @@
         <close duration="500" effects="fade:out" />
     </popup-animation>
 </kendo-dialog>
-
-<kendo-window name="runResultsWin"
-              title="Debug Output"
-              draggable="true"
-              resizable="true"
-              width="600">
-<content>
-<pre><code id="runOutput" class="language-json hljs">
-</code></pre>
-</content>
-    <popup-animation enabled="false" />
-</kendo-window>

@@ -35,7 +35,7 @@
         isAuthor = false;
     }
 }
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head lang="en">
     <meta name="viewport" content="width=device-width" />
@@ -122,9 +122,9 @@
                         var aclass = "active";
                         foreach (var field in fields)
                         {
-                            <li class="nav-item">
-                                <a title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" class="tabitem nav-link @aclass" aria-current="page" onclick="tabOnSelect(this)"><span class="pageTabIcon">&lt;&gt;</span>  @field.FieldName</a>
-                            </li>
+                                                <li class="nav-item">
+                                                    <a title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" class="tabitem nav-link @aclass" aria-current="page" onclick="tabOnSelect(this)"><span class="pageTabIcon">&lt;&gt;</span>  @field.FieldName</a>
+                                                </li>
                             aclass = "";
                         }
                     }
@@ -143,7 +143,7 @@
         </div>
         <div id="right-pane">
             <div class="pane-content">
-                <div id="editspace" class="editor" style="height:600px;width:100%"></div>
+<div id="editspace" class="editor" style="position:absolute; top: 64px; bottom:-1px; width:100%"></div>
             </div>
         </div>
     </div>
@@ -182,33 +182,33 @@
                             var errors = values[i].Errors.ToList();
                             if (errors.Count > 0)
                             {
-                                <li>
-                                    @keys[i] :
-                                    <ul>
-                                        @{
+                                                    <li>
+                                                        @keys[i] :
+                                                        <ul>
+                                                            @{
                                             for (var c = 0; c < errors.Count; c++)
                                             {
-                                                <li>
-                                                    @errors[c].ErrorMessage
-                                                    @if (errors[c].Exception != null)
+                                                                                        <li>
+                                                                                            @errors[c].ErrorMessage
+                                                                                            @if (errors[c].Exception != null)
                                                     {
-                                                        <br />
-                                                        <br />
-                                                        <button class="btn btn-sm btn-dark" onclick="onClickShowError('@("#exception" + i + c)')">View Details</button>
-                                                        <div @("id=\"exception" + i + c + "\"") style="display: none">
-                                                            <div style="display: block; font-family: Courier New;">
-                                                                @errors[c].Exception.Message
-                                                            </div>
-                                                            <code>
-                                                                @errors[c].Exception.InnerException
-                                                            </code>
-                                                        </div>
+                                                                                                <br />
+                                                                                                <br />
+                                                                                                <button class="btn btn-sm btn-dark" onclick="onClickShowError('@("#exception" + i + c)')">View Details</button>
+                                                                                                <div @("id=\"exception" + i + c + "\"") style="display: none">
+                                                                                                    <div style="display: block; font-family: Courier New;">
+                                                                                                        @errors[c].Exception.Message
+                                                                                                    </div>
+                                                                                                    <code>
+                                                                                                        @errors[c].Exception.InnerException
+                                                                                                    </code>
+                                                                                                </div>
                                                     }
-                                                </li>
+                                                                                        </li>
                                             }
-                                        }
-                                    </ul>
-                                </li>
+                                                            }
+                                                        </ul>
+                                                    </li>
                             }
                         }
                     }
@@ -353,6 +353,8 @@
                 $("#msgBox").html("Loading...");
                 editor.dispose();
                 editor = null;
+                // Remove window resize event.
+                window.onresize = null; 
             }
 
             fieldId = null;
@@ -405,6 +407,10 @@
                         }
                     });
                     $("#msgBox").html("");
+
+                    window.onresize = function(){
+                        editor.layout();
+                    };
                 });
         }
 

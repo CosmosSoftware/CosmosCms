@@ -1,22 +1,68 @@
-﻿@model DebugViewModel
-
-<!--
-   Code highlighting 
-   https://highlightjs.org/
-   -->
-<link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
-
+﻿@using System.Reflection
 @{
-    ViewData["Title"] = "Debug";
+    // /Views/Code/Edit
+    Layout = null;
+    ViewData["Title"] = "Debugger";
+    var assem = Assembly.GetExecutingAssembly();
+    var assemblies = assem.GetReferencedAssemblies();
+    var kendo = assemblies.FirstOrDefault(a => a.Name.Contains("kendo", StringComparison.CurrentCultureIgnoreCase));
+    var kendoVersion = $"{kendo.Version.Major}.{kendo.Version.Minor}.{kendo.Version.Build}";
 }
+<!DOCTYPE HTML>
+<html>
+<head lang="en">
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewData["Title"]</title>
 
-<h1>Input Data</h1>
-<pre><code class="language-json hljs">
-@Html.Raw(Model.Data)
-</code></pre>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://kendo.cdn.telerik.com/@kendoVersion/js/jquery.min.js"></script>
+    <!--
+    Code highlighting
+    https://highlightjs.org/
+    -->
+    <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
 
-<pre><code class="language-json hljs">
-@Html.Raw(Model.ApiResult.JsonData)
-</code></pre>
+    <!--
+       Code highlighting
+       https://highlightjs.org/
+       -->
+    <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+</head>
+<body class="bg-dark">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <div class="card bg-dark text-light">
+                    <div class="card-head">
+                        Input
+                    </div>
+                    <div class="card-body" style="overflow-y: auto;">
+<pre><code id="runInput" class="language-json hljs"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card bg-dark text-light">
+                    <div class="card-head">
+                        Output
+                    </div>
+                    <div class="card-body" style="overflow-y: auto;">
+<pre><code id="runOutput" class="language-json hljs"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+</body>
+</html>
