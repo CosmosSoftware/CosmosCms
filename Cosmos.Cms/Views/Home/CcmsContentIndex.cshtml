@@ -1,0 +1,60 @@
+﻿@model Cosmos.Cms.Common.Models.ArticleViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.Title;
+}
+<!DOCTYPE HTML>
+<html lang="@Model.LanguageCode">
+<head>
+    <title>@Model.Title</title>
+
+    @Html.Raw(Model.Layout.Head)
+    @*
+    Page specific header
+    *@
+    @Html.Raw(Model.HeadJavaScript)
+    @*
+    Application Insights Scripts
+    *@
+    @Html.Raw(JavaScriptSnippet.FullScript)
+</head>
+<body>
+    @Html.Raw(Model.Layout.HtmlHeader)
+    @Html.Raw(Model.Content)
+    @Html.Raw(Model.Layout.FooterHtmlContent)
+    @*
+    Page specific
+    *@
+    @Html.Raw(Model.FooterJavaScript)
+
+    @*
+    <script>
+    var identityInfo = @(Html.Raw(ViewData["CCMS-RBAC"]));
+    if (identityInfo != null && identityInfo.IsAuthenticated && identityInfo.RoleMembership.length > 0) {
+    $(document).ready(function () {
+    var items = $("[data-ccms-roles]");
+    $.each(items, function (index, elem) {
+    var elementRoles = $(elem).attr("data-ccms-roles");
+    var show = false;
+    $.each(identityInfo.RoleMembership,
+    function(inner, role) {
+    if (elementRoles.includes(role)) {
+    show = true;
+    }
+    });
+    if (show) {
+    $(elem).show();
+    }
+    });
+    });
+    }
+    </script>
+    <!-- Comment out the following if not using Google Translate v3 -->
+    @if (ViewData["UseGoogleTranslate"] != null && (bool)ViewData["UseGoogleTranslate"])
+    {
+    <script src="~/ccms/js/GoogleTranslations.js" id="ccms-lang-script" data-lang="@Model.LanguageName"></script>
+    }
+    *@
+
+</body>
+</html>

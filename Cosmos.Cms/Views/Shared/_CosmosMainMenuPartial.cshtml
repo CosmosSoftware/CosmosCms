@@ -1,0 +1,91 @@
+﻿@model ArticleViewModel
+@using System.Reflection
+@{
+    var assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+    var isAuthor = false;
+    var isEditor = false;
+    var isAdministrator = false;
+
+    if (User != null && User.IsInRole("Authors"))
+    {
+        isAuthor = true;
+    }
+    else if (User != null && User.IsInRole("Editors"))
+    {
+        isEditor = true;
+    }
+    else if (User != null && User.IsInRole("Administrators"))
+    {
+        isAdministrator = true;
+    }
+}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="z-index: 2;">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img height="28" src="~/images/logos/cosmos-logo.png" /> Cosmos
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="/">Home</a>
+                </li>
+                @if (Model != null)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Editor/Versions/@Model?.ArticleNumber">Edit</a>
+                    </li>
+                }
+                <li class="nav-item">
+                    <a class="nav-link" href="/Editor/Index">Pages</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/FileManager/Index">Files</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Code/Index">Scripts</a>
+                </li>
+                @if (isAdministrator || isEditor)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Layouts/Index">Layouts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Templates/Index">Templates</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Index/Publish">Publish</a>
+                    </li>
+                }
+                <li class="nav-item">
+                    <span class="nav-link">@assemblyName.Version</span>
+                </li>
+                <li class="nav-item">
+                    <span id="timeZone" class="nav-link"></span>
+                </li>
+            </ul>
+            
+            <div class="d-flex">
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </div>
+</nav>
+<script>
+
+    function getLocalTimeZone() {
+        var datetime = new Date();
+        var dateTimeString = datetime.toString();
+        var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
+        return timezone;
+    }
+
+    $(document).ready(function () {
+        var timeZoneElement = $("#timeZone");
+        timeZoneElement.html(getLocalTimeZone());
+    });
+
+</script>

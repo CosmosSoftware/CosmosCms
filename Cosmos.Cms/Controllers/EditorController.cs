@@ -91,10 +91,22 @@ namespace Cosmos.Cms.Controllers
         ///     Edit home page, shows list of pages.
         /// </summary>
         /// <returns></returns>
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
-            return View();
+
+            var model = await _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
+            {
+                ArticleNumber = s.ArticleNumber,
+                Title = s.Title,
+                IsDefault = s.UrlPath == "root",
+                LastPublished = s.Published,
+                UrlPath = s.UrlPath,
+                Status = s.Status,
+                Updated = s.Updated
+            }).ToListAsync();
+
+            return View(model.AsQueryable());
         }
 
         /// <summary>
@@ -1045,15 +1057,12 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Sends an article (or page) to trash bin.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Trash_Article([DataSourceRequest] DataSourceRequest request,
-            ArticleListItem model)
+        public async Task<IActionResult> TrashArticle(int Id)
         {
-            if (model != null) await _articleLogic.TrashArticle(model.ArticleNumber);
-            return Json(await new[] { model }.ToDataSourceResultAsync(request, ModelState));
+            await _articleLogic.TrashArticle(Id);
+            return RedirectToAction("Index", "Editor");
         }
 
         /// <summary>

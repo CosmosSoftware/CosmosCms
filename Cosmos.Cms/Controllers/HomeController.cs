@@ -6,6 +6,7 @@ using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -92,6 +93,57 @@ namespace Cosmos.Cms.Controllers
         /// Editor home index method
         /// </summary>
         /// <returns></returns>
+        [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
+        [ResponseCache(NoStore = true)]
+        public async Task<IActionResult> CcmsContentIndex()
+        {
+            
+            try
+            {
+                //
+                // If yes, do NOT include headers that allow caching.
+                //
+                Response.Headers[HeaderNames.CacheControl] = "no-store";
+                Response.Headers[HeaderNames.Pragma] = "no-cache";
+
+                var urlPath = HttpContext.Request.Path.Value?.Replace("/Home/CcmsContentIndex", "");
+
+                var article = await _articleLogic.GetByUrl(urlPath, HttpContext.Request.Query["lang"]); // ?? await _articleLogic.GetByUrl(id, langCookie);
+
+                // Article not found?
+                // try getting a version not published.
+
+                if (article == null)
+                {
+                    //
+                    // Create your own not found page for a graceful page for users.
+                    //
+                    article = await _articleLogic.GetByUrl("/not_found", HttpContext.Request.Query["lang"]);
+
+                    HttpContext.Response.StatusCode = 404;
+
+                    if (article == null) return NotFound();
+                }
+
+                article.EditModeOn = false;
+                article.ReadWriteMode = true;
+
+                return View(article);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Index page
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
+        [ResponseCache(NoStore = true)]
         public async Task<IActionResult> Index()
         {
             if (_options.Value.SiteSettings.AllowSetup ?? false)
@@ -128,7 +180,7 @@ namespace Cosmos.Cms.Controllers
                         !User.IsInRole("Administrators")) return RedirectToAction("AccessPending");
                 }
 
-                
+
 
                 // If we do not yet have a layout, go to a page where we can select one.
                 if (!await EnsureLayoutExists()) return RedirectToAction("CommunityLayouts", "Layouts");
@@ -162,7 +214,7 @@ namespace Cosmos.Cms.Controllers
                 article.EditModeOn = false;
                 article.ReadWriteMode = true;
 
-                return View("Index", article);
+                return View(article);
             }
             catch (Exception e)
             {
