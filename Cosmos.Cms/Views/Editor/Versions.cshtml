@@ -1,6 +1,6 @@
-﻿@using Kendo.Mvc.UI
-@using Cosmos.Cms.Services
-@addTagHelper *, Kendo.Mvc
+﻿@using Cosmos.Cms.Services
+@using NonFactors.Mvc.Grid
+@model IQueryable<ArticleVersionViewModel>
 @{
     // /Views/Editor/Versions
     ViewData["Title"] = @ViewData["ArticleTitle"] + "Page Versions";
@@ -10,227 +10,81 @@
 
 <div class="container mt-5 pt-2">
     <div class="row">
-        <div class="col-md-12">
-            <h3>@ViewData["ArticleTitle"]</h3>
-            <h5>Version List</h5>
+        <div class="col-md-6">
+            <h3>Versions for: &quot;@ViewData["ArticleTitle"]&quot;</h3>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
     <hr />
     <div class="row">
-        <div class="col-md-12">
-            <p>Shown below are all the different version(s) of this page.  Each shows if it a &quot;drafT&quot; or the data/time when it was &quot;published.&quot;</p>
-            <p>&quot;Expires&quot; date/time is when a previously published version is replaced by a new published version.</p>
-            <br />
+        <div class="col-md-6">
             @if (!isReviewer)
             {
-                <a id="btnNewVersion" class="btn btn-primary"
-               title="Creates a new version of this article using the lastest version, and puts it in edit mode."
-               asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">
-                    Create new version from latest version
-                </a>
+                <a id="btnNewVersion" class="btn btn-sm btn-secondary"
+               title="New version created from the lastest."
+               asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">New</a>
             }
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
+            <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
             @(
-                Html.Kendo().Grid<ArticleVersionInfo>().Name("grid")
-                .Columns(c =>
+                Html.Grid(Model)
+                .Build(c =>
                 {
-                    c.Bound(b => b.Id).Hidden(true);
-                    c.Template("v.#: VersionNumber #").Title("");
-                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"javascript:showEditDialog('HTML', '#: Id #', '#: Published #') \" title=\"Edit online with Kendo WSYWIG (HTML) editor.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, UsesHtmlEditor) #><i class='fa-brands fa-html5'></i></a> <a class=\"btn btn-sm btn-secondary\" href=\"javascript:showEditDialog('CODE', '#: Id #', '#: Published #')\" title=\"Edit code using Monaco code editor.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><i class='fa-solid fa-code'></i></a>").Title("Edit Tools");
-                    c.Template($"<a target=\"_blank\" class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Preview", "Home")}/#: Id #\" title=\"Click to preview\"><span class=\"fas fa-search\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Duplicate", "Editor")}/#: Id #\" title=\"Create a new web page based on this version.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Editor")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Title("Preview/New Page/Download");
-                    c.Template("#= formatPublishedDate(Published) #").Title("Published");
-                    c.Template("#= kendo.toString(Updated, 'G') #").Title("Last Edited");
-                    c.Template("#= formatExpiredDate(Expires) #").Title("Expires");
-                    c.Template($"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={ViewData["ArticleId"]}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Title("Promote").Width(50);
-
+                    c.Add(i => i.Id).Hidden();
+                    c.Add(i => i.VersionNumber).RenderedAs(r => "v." + r.VersionNumber).Titled("").Width("30px").Filterable(false);
+                    // Preview
+                    c.Add(i => i.Id)
+                    .RenderedAs(r => "<a target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>" +
+                    // Code editor (Monaco)
+                    (((isAuthor && r.Published != null) || (isReviewer)) ? "" : "<a title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>") +
+                    // Html WYSIWYG editor
+                    (((isAuthor && r.Published != null) || (isReviewer) || r.UsesHtmlEditor == false) ? "" :
+                    "<a title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>") +
+                    // Export
+                    ((isReviewer) ? "" : "<a title='Open Html WYSIWYG editor' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>")
+                    )
+                    .Titled("")
+                    .Width("90px")
+                    .Encoded(false).Sortable(false).Filterable(false);
+                    c.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone");
+                    c.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT");
+                    c.Add(i => i.Expires).Filterable(GridFilterType.Double).Css("toLocalTimeZone");
+                    // Promoteto new version
+                    c.Add(i => i.Id)
+                    .RenderedAs(r => ((isAuthor && r.Published != null) || (isReviewer)) ? "" :
+                    $"<a title='Promote this version to the latest version and put it in edit mode' href='/Editor/CreateVersion?id={ViewData["ArticleId"]}&entityId=" + r.Id + "'><i class='fa fa-arrow-circle-up'></i></a>")
+                    .Titled("Promote")
+                    .Width("30px")
+                    .Encoded(false).Sortable(false).Filterable(false);
                 })
-                .Sortable()
+                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+                .Empty("No data found")
                 .Filterable()
+                .Sortable()
                 .Pageable()
-                .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Get_Versions", "Editor", new { id = (int)ViewData["ArticleId"] })); })
                 )
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col d-flex justify-content-end">
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
 </div>
 
-<kendo-dialog name="editPublishedPageDialog" title="Editing Published Page" modal="true" visible="false" width="450">
-    <content>
-        <h4>Editing Published Page</h4>
-        <p><span class="badge badge-warning">Warning:</span> You are about to edit a page that already has been published.</p>
-        <hr class="text-light" />
-        <h4>Tip <span class="fa fa-lightbulb-o"></span></h4>
-        <p>
-            Rather than editing a <em>published</em> page, create a new version and
-            edit that. Then publish it when ready
-        </p>
-        <p>That way you can make changes and not affect what people see now.</p>
-        <p>It also lets you control when new content goes live.</p>
-    </content>
-    <popup-animation>
-        <open duration="500" effects="fade:in" />
-        <close duration="500" effects="fade:out" />
-    </popup-animation>
-    <actions>
-        <action text="Cancel">
-        </action>
-        <action action="editNewVersion" text="New Version" title="Edit new version of page">
-        </action>
-        <action action="editPublishedVersion" text="Edit Published" title="Edit already published version of page">
-        </action>
-    </actions>
-</kendo-dialog>
-<kendo-dialog name="duplicateVersionDialog" title="Duplicate" modal="true" visible="false" width="550">
-    <content>
-        <h4>Duplicate Page</h4>
-        <p>Use this dialo to make a duplication of this web page.</p>
-        <form id="dupForm" class="row g-3 needs-validation" novalidate>
-            <div class="col-md-4">
-                <label for="ParentPageUrl" class="form-label">Parent page (optional)</label>
-                @(Html.Kendo().AutoComplete()
-                    .Name("ParentPageUrl")
-                    .Filter("startswith")
-                    .Placeholder("Select country...")
-                    .BindTo(new string[] {
-                "Albania",
-                "Andorra",
-                "Armenia",
-                "Austria",
-                "Azerbaijan",
-                "Belarus",
-                "Belgium",
-                "Bosnia & Herzegovina",
-                "Bulgaria",
-                "Croatia",
-                "Cyprus",
-                "Czech Republic",
-                "Denmark",
-                "Estonia",
-                "Finland",
-                "France",
-                "Georgia",
-                "Germany",
-                "Greece",
-                "Hungary",
-                "Iceland",
-                "Ireland",
-                "Italy",
-                "Kosovo",
-                "Latvia",
-                "Liechtenstein",
-                "Lithuania",
-                "Luxembourg",
-                "Macedonia",
-                "Malta",
-                "Moldova",
-                "Monaco",
-                "Montenegro",
-                "Netherlands",
-                "Norway",
-                "Poland",
-                "Portugal",
-                "Romania",
-                "Russia",
-                "San Marino",
-                "Serbia",
-                "Slovakia",
-                "Slovenia",
-                "Spain",
-                "Sweden",
-                "Switzerland",
-                "Turkey",
-                "Ukraine",
-                "United Kingdom",
-                "Vatican City"
-                    })
-                    .Separator(", ")
-                    )
-                <div class="valid-feedback">
-                    OK
-                </div>
-            </div>
-            <div class="col-md-4">
-                <label for="Title" class="form-label">New title</label>
-                <input type="text" class="form-control" id="Title" value="Mark" required>
-                <div class="valid-feedback">
-                    OK
-                </div>
-            </div>
-        </form>
-    </content>
-</kendo-dialog>
 <script>
-    function visibleStyle(isReviewer, isAuthor, isPublished, usesEditor) {
-        if (isReviewer === "True" || usesEditor === false || (isAuthor === "True" && isPublished !== null)) {
-            return "style=display:none";
-        }
-        return "";
-    }
-
-    var editHtmlUrl = "@Url.Action("Edit", "Editor")";
-    var editCodeUrl = "@Url.Action("EditCode", "Editor")";
-    var editorChoice; // HTML or CODE
-    var entityId; // Article id (entity id) being edited
-
-    //
-    // Opens the show edit dialog, if the user is about to edit a live page.
-    // This dialog suggests creating new versions of pages to edit, rather
-    // than editing the already published pages.
-    //
-    function showEditDialog(editor, id, isPublished) {
-        editorChoice = editor;
-        entityId = id;
-
-        //
-        // If article version is not published, then open editor strait away.
-        //
-        if (isPublished.trim() === "null") {
-            openEditor(false);
-        } else {
-            //
-            // Otherwise, open dialog suggesting user not edit already published
-            // page, but, create a new version instead, and edit that.
-            //
-            var dialog = $("#editPublishedPageDialog").data("kendoDialog");
-            dialog.open();
-        }
-    }
-
-    function editNewVersion() {
-        openEditor(true);
-    }
-
-    function editPublishedVersion() {
-        openEditor(false);
-    }
-
-    function formatPublishedDate(published) {
-        if (published === null) {
-            return "Draft";
-        } else {
-            return kendo.toString(published, 'G');
-        }
-    }
-
-    function formatExpiredDate(published) {
-        if (published === null) {
-            return "";
-        } else {
-            return kendo.toString(published, 'G');
-        }
-    }
-
-    //
-    // Opens either the HTML or code editor.
-    //
-    function openEditor(newVersion) {
-        if (newVersion === true) {
-            window.location.href = "@Url.Action("CreateVersion", "Editor")/@ViewData["ArticleId"]";
-        } else {
-            if (editorChoice === "HTML") {
-                window.location.href = editHtmlUrl + "/" + entityId;
-            } else {
-                window.location.href = editCodeUrl + "/" + entityId;
-            }
-        }
-    }
-
+    $(document).ready(function () {
+        $(".toLocalTimeZone").each(function (index, element) {
+            $(element).html(getLocalTime($(element).html()));
+        });
+    });
 </script>

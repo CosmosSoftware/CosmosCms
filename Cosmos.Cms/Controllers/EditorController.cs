@@ -448,7 +448,19 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["ArticleId"] = id.Value;
 
-            return View();
+            var data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+                .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
+                {
+                    Id = s.Id,
+                    Published = s.Published,
+                    Title = s.Title,
+                    Updated = s.Updated,
+                    VersionNumber = s.VersionNumber,
+                    Expires = s.Expires,
+                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+                }).ToListAsync();
+
+            return View(data.AsQueryable());
         }
 
         /// <summary>
@@ -1058,7 +1070,7 @@ namespace Cosmos.Cms.Controllers
         /// Sends an article (or page) to trash bin.
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> TrashArticle(int Id)
         {
             await _articleLogic.TrashArticle(Id);
