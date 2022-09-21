@@ -1,59 +1,48 @@
-﻿@using Kendo.Mvc.UI
+﻿@using NonFactors.Mvc.Grid
+@model IQueryable<ArticleListItem>
 @{
-    ViewData["Title"] = "Pages";
+    ViewData["Title"] = "Trash";
 }
 <script src="~/js/clipboard.min.js"></script>
 <div class="container mt-5 pt-2">
     <div class="row">
-        <div class="offset-md-1 col-md-9">
-            <h1>Deleted Page List</h1>
-            <p>The following is a list of pages on this website.</p>
+        <div class="col-md-6">
+            <h3>Trashed Articles</h3>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
+    <hr />
     <div class="row">
-        <div class="offset-md-1 col-md-9">
+        <div class="col-md-12">
             @(
-        Html.Kendo().Grid<ArticleListItem>()
-            .Name("grid")
-            .Columns(col =>
-            {
-                col.Bound(b => b.Status).Hidden(true);
-                col.Bound(b => b.ArticleNumber).Hidden(true);
-                col.Bound(b => b.LastPublished)
-                    .ClientTemplate("#= getStatusBadge(LastPublished) #").Title("Status");
-                col.Bound(b => b.Updated).Format("{0:MM/dd/yy H:mm:ss}");
-                col.Bound(b => b.Title).Width(260);
-            })
-            .ToolBar(t => t.Search())
-            .Pageable()
-            .Sortable()
-            .Filterable()
-            .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Get_TrashedArticles", "Editor")); })
-            .Search(s => s.Field("Title"))
-            .Filterable()
-            .Sortable()
+                Html.Grid(Model).Build(col =>
+                {
+                    col.Add(b => b.ArticleNumber).RenderedAs(r => "<a title='Recover from trash' class='btn btn-sm btn-secondary' href='/Editor/Recover/" + r.ArticleNumber +"'><i class='fa-solid fa-trash-arrow-up'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
+                    col.Add(b => b.ArticleNumber).Titled("#");
+                    col.Add(b => b.Title).Width(260);
+                    col.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone").Sortable(false);
+                })
+                .Empty("No items found")
+                .Pageable()
+                .Sortable()
+                .Filterable()
                 )
-            <form>
-                <input id="selected" type="hidden"/>
-            </form>
-            <script>
-                var clipboard = new ClipboardJS('.cbtn');
-                clipboard.on('success',
-                    function(e) {
-                        console.info('Action:', e.action);
-                        console.info('Text:', e.text);
-                        console.info('Trigger:', e.trigger);
-                        alert(e.text);
-                        e.clearSelection();
-                    });
+        </div>
+    </div>
 
-                function getStatusBadge(published) {
-                    if (published === null) {
-                        return "<div class='btn btn-sm btn-secondary'>Not Published</div>";
-                    }
-                    return "<div class='btn btn-sm btn-success'>Published <span class='badge badge-light'>" + kendo.toString(new Date(published), "d") + "</span></div>";
-                }
-            </script>
+    <div class="row">
+        <div class="col d-flex justify-content-end">
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+        $(".toLocalTimeZone").each(function (index, element) {
+            $(element).html(getLocalTime($(element).html()));
+        });
+    });
+</script>

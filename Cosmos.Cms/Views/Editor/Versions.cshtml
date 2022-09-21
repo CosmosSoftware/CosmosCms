@@ -10,10 +10,9 @@
 
 <div class="container mt-5 pt-2">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <h3>Versions for: &quot;@ViewData["ArticleTitle"]&quot;</h3>
-        </div>
-        <div class="col-md-6 d-flex justify-content-end">
+
             <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
@@ -28,8 +27,7 @@
             }
         </div>
         <div class="col-md-6 d-flex justify-content-end">
-            <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
-            <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
+          
         </div>
     </div>
     <div class="row">
@@ -66,7 +64,7 @@
                     .Encoded(false).Sortable(false).Filterable(false);
                 })
                 .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No data found")
+                .Empty("No versions found")
                 .Filterable()
                 .Sortable()
                 .Pageable()
@@ -75,7 +73,7 @@
     </div>
     
     <div class="row">
-        <div class="col d-flex justify-content-end">
+        <div class="col">
             <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>

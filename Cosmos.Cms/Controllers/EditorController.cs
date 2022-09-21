@@ -399,14 +399,32 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
+        /// Recovers an article from trash
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Administrators, Editors, Authors")]
+        public async Task<IActionResult> Recover(int Id)
+        {
+
+            // Get the user's ID for logging.
+            var user = await _userManager.GetUserAsync(User);
+
+            await _articleLogic.RetrieveFromTrash(Id, user.Id);
+
+            return RedirectToAction("Trash");
+        }
+
+
+        /// <summary>
         /// Open trash
         /// </summary>
         /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public IActionResult Trash()
+        [Authorize(Roles = "Administrators, Editors, Authors")]
+        public async Task<IActionResult> Trash()
         {
-            // TODO: Complete the trash bin UI
-            return View();
+            var model = await _articleLogic.GetArticleTrashList();
+            return View(model.AsQueryable());
         }
 
         /// <summary>
@@ -418,17 +436,6 @@ namespace Cosmos.Cms.Controllers
         {
             return View();
         }
-
-        ///// <summary>
-        ///// Update date/time stamps on all published pages (articles).
-        ///// </summary>
-        ///// <returns></returns>
-        //[HttpPost]
-        //[Authorize(Roles = "Administrators, Editors")]
-        //public override async Task<JsonResult> UpdateTimeStamps()
-        //{
-        //    return await base.UpdateTimeStamps();
-        //}
 
         /// <summary>
         ///     Gets all the versions for an article
@@ -536,7 +543,7 @@ namespace Cosmos.Cms.Controllers
                     if (model.Published.HasValue && User.IsInRole("Authors"))
                         return Unauthorized();
 
-                    return View("~/Views/Editor/Index.cshtml", model);
+                    return View(model);
 
                 }
 
@@ -549,6 +556,17 @@ namespace Cosmos.Cms.Controllers
             }
         }
 
+        /// <summary>
+        /// Editor page
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> CcmsContent(Guid Id)
+        {
+            var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
+
+            return View(article);
+        }
 
         /// <summary>
         /// Exports a page as a file
@@ -1191,9 +1209,46 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [Authorize(Roles = "Administrators, Editors")]
-        public IActionResult Redirects()
+        public async Task<IActionResult> Redirects()
         {
-            return View();
+            var model = await _articleLogic.GetArticleRedirects();
+            return View(model.AsQueryable());
+        }
+
+        /// <summary>
+        /// Sends an article (or page) to trash bin.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> RedirectDelete(Guid Id)
+        {
+            var article = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == Id);
+
+            await _articleLogic.TrashArticle(article.ArticleNumber);
+
+            return RedirectToAction("Redirects");
+        }
+
+        /// <summary>
+        /// Updates a redirect
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="FromUrl"></param>
+        /// <param name="ToUrl"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Administrators, Editors")]
+        public async Task<IActionResult> RedirectEdit([FromForm] Guid Id, string FromUrl, string ToUrl)
+        {
+            var redirect = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == Id && f.StatusCode == (int) StatusCodeEnum.Redirect);
+            if (redirect == null)
+                return NotFound();
+
+            redirect.UrlPath = FromUrl;
+            redirect.Content = ToUrl;
+
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("Redirects");
         }
 
         /// <summary>

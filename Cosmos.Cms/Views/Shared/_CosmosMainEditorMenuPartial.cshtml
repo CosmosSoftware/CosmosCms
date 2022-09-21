@@ -1,0 +1,128 @@
+﻿@model ArticleViewModel
+@using System.Reflection
+@{
+    var assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+    var isAuthor = false;
+    var isEditor = false;
+    var isAdministrator = false;
+
+    if (User != null && User.IsInRole("Authors"))
+    {
+        isAuthor = true;
+    }
+    else if (User != null && User.IsInRole("Editors"))
+    {
+        isEditor = true;
+    }
+    else if (User != null && User.IsInRole("Administrators"))
+    {
+        isAdministrator = true;
+    }
+}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="z-index: 2;">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <img height="28" src="~/images/logos/cosmos-logo.png" /> Cosmos
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Menu
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" onclick="bgEditClick('Save')">Save</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" onclick="bgEditClick('Files')">Files</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" onclick="bgEditClick('Preview')">Preview</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" onclick="bgEditClick('Close')">Close</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <input class="form-control me-2 bg-dark text-light" type="datetime-local" id="dateTimePicker" value="@Model.Published" />
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item">
+                    <span class="nav-link">@assemblyName.Version</span>
+                </li>
+                <li class="nav-item">
+                    <span id="timeZone" class="nav-link"></span>
+                </li>
+            </ul>
+
+            <div class="d-flex">
+
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </div>
+</nav>
+<script>
+    function bgEditClick(command) {
+        switch (command) {
+            case "Save":
+                //handlePost();
+                break;
+            case "Code":
+                //$("#editCodeDialog").data("kendoDialog").open();
+                break;
+            case "Files":
+                //ccmsOpenFileMgr();
+                break;
+            case "Versions":
+                //openVersionsDialog();
+                break;
+            case "Close":
+                //showCloseEditorDialog();
+                break;
+            case// "Preview":
+                window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
+                break;
+            case "Permissions":
+                //openPermissionsDialog();
+                break;
+            case "Help":
+                //window.open("https://cosmos.azureedge.net/edit_page#HtmlEditor");
+                break;
+        }
+    }
+
+    function getLocalTimeZone() {
+        var datetime = new Date();
+        var dateTimeString = datetime.toString();
+        var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
+        return timezone;
+    }
+
+    $(document).ready(function () {
+        var timeZoneElement = $("#timeZone");
+        timeZoneElement.html(getLocalTimeZone());
+
+        $('#dateTimePicker').daterangepicker({
+            timePicker: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            minYear: 1901,
+            maxYear: parseInt(moment().format('YYYY'), 10)
+        }, function (start, end, label) {
+            var years = moment().diff(start, 'years');
+            alert("You are " + years + " years old!");
+        });
+    });
+
+</script>

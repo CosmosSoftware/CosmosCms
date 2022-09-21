@@ -1,73 +1,117 @@
-﻿@using Kendo.Mvc.UI
+﻿@model IQueryable<RedirectItemViewModel>
+@using Kendo.Mvc.UI
 @using Cosmos.Cms.Services
+@using NonFactors.Mvc.Grid
 
 <div class="container mt-5 pt-2">
     <div class="row">
-        <div class="col-md-12">
-            <h3>Redirect Management</h3>
+        <div class="col-md-6">
+            <h3>Redirects</h3>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
     <hr />
     <div class="row">
         <div class="col-md-12">
-            <p>The redirects for this website are shown below. Use this page to create, edit or remove redirects as needed.</p>
             <br />
+            @(
+                Html.Grid(Model)
+                .Build(c =>
+                {
+                    c.Add(b => b.Id).RenderedAs(r => "<button type='button' onclick='selectEdit(" + r.Id + ", " + r.FromUrl + ", " + r.ToUrl + ")' class='btn btn-secondary' data-bs-toggle='modal' data-bs-target='#editRedirectModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false).Sortable(false).Filterable(false);
+                    c.Add(b => b.FromUrl);
+                    c.Add(b => b.ToUrl);
+                    // Delete
+                    c.Add(b => b.Id).RenderedAs(r => "<button type='button' onclick='selectRedirect(" + r.Id + ", " + r.FromUrl + ", " + r.ToUrl + ")' class='btn btn-secondary' data-bs-toggle='modal' data-bs-target='#delRedirectModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false).Sortable(false).Filterable(false);
 
-            @(Html.Kendo().Grid<RedirectItemViewModel>().Name("grid")
-            .Columns(c =>
-            {
-            c.Bound(b => b.Id).Hidden(true);
-            c.Bound(b => b.FromUrl);
-            c.Bound(b => b.ToUrl);
-            c.Command(c => c.Edit());
-            c.Command(c => c.Destroy());
-            })
-            .ToolBar(toolbar => {
-            toolbar.Create();
-            toolbar.Save();
-            })
-            .Search(s => s.Field("FromUrl", "contains"))
-            .Sortable()
-            .Filterable()
-            .Editable(GridEditMode.InCell)
-            .Pageable()
-            .DataSource(
-            dataSource => {
-            dataSource.Ajax()
-            .Batch(true)
-            .Events(events => events.Error("error_handler"))
-            .Model(model => model.Id(p => p.Id))
-            .ServerOperation(false)
-            .Read("Read_Redirects", "Editor")
-            .Update("Update_Redirects", "Editor")
-            .Create("Create_Redirects", "Editor")
-            .Destroy("Delete_Redirects", "Editor"); }
-            ))
+                })
+                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+                .Empty("No redirects found")
+                .Filterable()
+                .Sortable()
+                .Pageable()
+                )
         </div>
     </div>
 </div>
+
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editRedirectModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <form asp-action="RedirectEdit" method="post">
+        @Html.AntiForgeryToken()
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirm Delete</h5>
+                </div>
+                <div class="modal-body">
+                    <input id="Id" type="hidden" />
+                    <div class="mb-3">
+                        <label for="fromUrl" class="form-label">From Url:</label>
+                        <input class="form-control" id="FromUrl" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="fromUrl" class="form-label">To Url:</label>
+                        <input class="form-control" id="ToUrl" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" >Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="delRedirectModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm Delete</h5>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this redirect?</p>
+                <div class="mb-3">
+                    <label for="fromUrl" class="form-label">From Url:</label>
+                    <div class="form-control" id="fromUrl"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="fromUrl" class="form-label">To Url:</label>
+                    <div class="form-control" id="toUrl"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendToTrash()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    function error_handler(e) {
-        if (e.errors) {
-            var message = "Errors:\n";
-            $.each(e.errors, function (key, value) {
-                if ('errors' in value) {
-                    $.each(value.errors, function() {
-                        message += this + "\n";
-                    });
-                }
-            });
-            alert(message);
-        }
+    var redirectId;
+
+    function selectEdit(id, fromUrl, toUrl) {
+        redirectId = id;
+        $("#Id").val(id);
+        $("#FromUrl").val(fromUrl);
+        $("#ToUrl").val(toUrl);
+        return true;
     }
 
-    // Prevent sorting when new record without Product Name is added
-    function onSort(e) {
-        var gridData = e.sender.dataSource.data()
-        gridData.forEach(function (element) {
-            if (!element.ProductName) {
-                e.preventDefault()
-            }
-        });
+    function selectRedirect(id, fromUrl, toUrl) {
+        redirectId = id;
+        $("#fromUrl").html(fromUrl);
+        $("#toUrl").html(toUrl);
+        return true;
+    }
+
+    function sendToTrash() {
+        window.location.href = "/Edit/RedirectDelete/" + redirectId;
     }
 </script>

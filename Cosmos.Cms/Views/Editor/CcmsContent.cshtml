@@ -8,6 +8,8 @@
 <head>
     <title>@Model.Title</title>
 
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/balloon-block/ckeditor.js"></script>
+
     @Html.Raw(Model.Layout.Head)
     @*
     Page specific header
@@ -49,7 +51,7 @@
 
         document.addEventListener("DOMContentLoaded", function (event) {
             // Create editors
-            editors = document.querySelectorAll('[contenteditable]');
+            editors = document.querySelectorAll('[data-ccms-ceid]');
 
             editors.forEach(function (e) {
                 BalloonEditor.create(e).catch(error => { console.error(error); });

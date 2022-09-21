@@ -342,15 +342,36 @@ namespace Cosmos.Cms.Data.Logic
                     "Cannot trash the home page.  Replace home page with another, then send to trash.");
             foreach (var article in doomed) article.StatusCode = (int)StatusCodeEnum.Deleted;
 
+            await DbContext.SaveChangesAsync();
+
             await DeleteCatalogEntry(articleNumber);
 
+        }
+
+        /// <summary>
+        /// Permanently deletes an <paramref name="articleNumber"/>, does not trash item.
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public async Task Purge(int articleNumber)
+        {
+            var doomed = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+
+            if (doomed == null) throw new KeyNotFoundException($"Article number {articleNumber} not found.");
+
+            DbContext.Articles.RemoveRange(doomed);
+
             await DbContext.SaveChangesAsync();
+
+            await DeleteCatalogEntry(articleNumber);
         }
 
         /// <summary>
         ///     Retrieves and article and all its versions from trash.
         /// </summary>
         /// <param name="articleNumber"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
         /// <remarks>
         ///     <para>
@@ -366,7 +387,7 @@ namespace Cosmos.Cms.Data.Logic
         ///         <item>The article and all its versions are set to unpublished (<see cref="Article.Published" /> set to null).</item>
         ///     </list>
         /// </remarks>
-        public async Task RetrieveFromTrash(int articleNumber)
+        public async Task RetrieveFromTrash(int articleNumber, string userId)
         {
             var redeemed = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
 
@@ -399,6 +420,13 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             await DbContext.SaveChangesAsync();
+
+            // Update the catalog
+            await UpdateCatalogEntry(articleNumber, StatusCodeEnum.Active);
+
+            // Update the log
+            await HandleLogEntry(redeemed.LastOrDefault(), "Recovered from trash.", userId);
+
         }
 
         #endregion
@@ -1126,35 +1154,33 @@ namespace Cosmos.Cms.Data.Logic
         /// </remarks>
         public async Task<List<ArticleListItem>> GetArticleTrashList()
         {
+            
             var data = await
                 (from x in DbContext.Articles
                  where x.StatusCode == (int)StatusCodeEnum.Deleted
-                 group x by x.ArticleNumber
-                    into g
                  select new
                  {
-                     ArticleNumber = g.Key,
-                     VersionNumber = g.Max(i => i.VersionNumber),
-                     LastPublished = g.Max(m => m.Published),
-                     Status = g.Max(f => f.StatusCode)
+                     x.ArticleNumber,
+                     x.VersionNumber,
+                     x.Published,
+                     x.StatusCode,
+                     x.Title
                  }).ToListAsync();
 
-            var model = new List<ArticleListItem>();
+            var model =
+                (from x in data
+                 where x.StatusCode == (int)StatusCodeEnum.Deleted
+                 group x by x.ArticleNumber
+                    into g
+                 select new ArticleListItem
+                 {
+                     ArticleNumber = g.Key,
+                     Title = g.FirstOrDefault().Title,
+                     VersionNumber = g.Max(i => i.VersionNumber),
+                     LastPublished = g.Max(m => m.Published),
+                     Status = g.Max(f => f.StatusCode) == 0 ? "Active" : "Inactive"
+                 }).ToList();
 
-            foreach (var item in data)
-            {
-                var art = await DbContext.Articles.FirstOrDefaultAsync(
-                    f => f.ArticleNumber == item.ArticleNumber && f.VersionNumber == item.VersionNumber
-                );
-                model.Add(new ArticleListItem
-                {
-                    ArticleNumber = art.ArticleNumber,
-                    LastPublished = item.LastPublished?.ToUniversalTime(),
-                    Title = art.Title,
-                    Updated = art.Updated.ToUniversalTime(),
-                    Status = art.StatusCode == 0 ? "Active" : "Inactive",
-                });
-            }
 
             return model;
         }

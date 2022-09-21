@@ -5,12 +5,7 @@
     ViewData["Title"] = "Page List";
 
     var publisherUrl = ViewData["PublisherUrl"];
-
-    var versions = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Versions", "Editor")}/#: ArticleNumber #\" title=\"See a list of versions for this page\"><span class='fa fa-files-o'></span> Edit</a>";
-    var copyUrl = "<button class=\"clipboard btn btn-sm btn-primary\" data-clipboard-text=\"#: UrlPath #\"  title='Click to copy url'><span class='fa fa-clipboard'></span> Copy URL</button>";
-    var btnGroup = "<div class=\"btn-group btn-group-sm\" role=\"group\" aria-label=\"Basic example\">#= getNewHomeButton(IsDefault, LastPublished, ArticleNumber) #" +
-                   versions + copyUrl + "#= getStatusBadge(LastPublished, UrlPath) #</div>";
-
+    var isReviewer = User.IsInRole("Reviewers");
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
 }
 <script src="~/js/clipboard.min.js"></script>
@@ -19,15 +14,28 @@
         <div class="col">
             <h3>@ViewData["Title"]</h3>
             <hr />
-            @if (canEdit || User.IsInRole("Authors"))
-            {
-                <a class="btn btn-sm btn-primary" asp-action="Create">New Page</a>
-                <a asp-action="Redirects">Manage Redirects</a>
-            }
+        </div>
+    </div>
+    
+    @if (!isReviewer)
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Create">New</a>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
+                <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
+            </div>
+        </div>
+    }
+    
+    <div class="row">
+        <div class="col-md-12">
             @(Html.Grid(Model)
                 .Build(col =>
                 {
-                    col.Add(model => Html.ActionLink("", "Versions", "Editor", new { Id = model.ArticleNumber }, new { @class = "btn btn-sm fa-solid fa-play",title = "Select" })).Width("30px");
+                    col.Add(model => Html.ActionLink("", "Versions", "Editor", new { Id = model.ArticleNumber }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
                     col.Add(b => b.IsDefault).RenderedAs(b => b.IsDefault == true ? "<i title='Is Home Page' class='fa-solid fa-house-user'></i>" : "").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
                     col.Add(b => b.ArticleNumber).Titled("#").Css("text-center").Sortable(false).Filterable(false).Width("80px");
                     col.Add(b => b.Title).Titled("Title").RenderedAs(b => b.LastPublished.HasValue ? "<a target='_blank' href='/" + b.UrlPath + "'>" + b.Title + "</a>" : b.Title).Encoded(false).Filterable(GridFilterCase.Lower);
@@ -35,11 +43,11 @@
                     col.Add(b => b.LastPublished).Titled("Published").Filterable(GridFilterType.Double);
                     if (canEdit)
                     {
-                        col.Add().RenderedAs(b => b.IsDefault == true ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
+                        col.Add().RenderedAs(b => b.IsDefault == true ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
                     }
                 })
                 .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No data found")
+                .Empty("No pages found")
                 .Filterable()
                 .Sortable()
                 .Pageable()
@@ -61,51 +69,6 @@
             alert("Copied: " + e.text);
             e.clearSelection();
         });
-
-    function getStatusBadge(published, urlPath) {
-        if (published === null) {
-            return "<a title=\"This page not published.\" class='btn btn-sm btn-secondary'><span class='fa fa-circle-o-notch'></span></a>";
-        }
-        var url = urlPath.replace("root", "");
-        return "<a target=\"_blank\" title=\"This page was published as of " + kendo.toString(published, "G") + ". Click to view.\" class='btn btn-sm btn-primary' href=\"" + url + "\"><span class=\"fa fa-external-link\"></span></a>";
-    }
-
-    function getNewHomeButton(isDefault, published, articleNumber) {
-        if (isDefault === null || isDefault === false) {
-            if (published === null) {
-                return "<div onclick=\"clickAlert('This page cannot be made the home page until it is published.')\" class='btn btn-sm btn-warning' title='This page cannot be made the home page until it is published.'><span class='fa fa-power-off'></span></div>";
-            } else {
-                if (canEdit) {
-                    return "<a href='@Url.Action("NewHome")/" + articleNumber + "' title='Set this page as the new home page.' class='btn btn-sm btn-secondary'><span class='fa fa-home'></span></a>";
-                } else {
-                    return "<div onclick=\"clickAlert('Only administrators or editors can change the home page.')\" class='btn btn-sm btn-warning' title='Only administrators or editors can change the home page.'><span class='fa fa-power-off'></span></div>";
-                }
-            }
-        }
-        return "<div class='btn btn-sm btn-success' title='Is now the home page for this website.'><span class='fa fa-home'></span></div>";
-    }
-
-    function getHtmlEditBtn(usesHtmlEditor) {
-        if (usesHtmlEditor !== null && usesHtmlEditor === true) {
-
-        }
-    }
-
-    function clickAlert(msg) {
-        alert(msg);
-    }
-
-    function formatPublishedDate(published) {
-        if (published === null) {
-            return "Draft";
-        } else {
-            return kendo.toString(published, 'G');
-        }
-    }
-
-    function onDataBound(e) {
-        var rows = e.sender.dataSource.total();
-    }
 
     var articleNumber;
     var articleTitle;
