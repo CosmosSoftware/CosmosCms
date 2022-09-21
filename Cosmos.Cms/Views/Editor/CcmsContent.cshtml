@@ -31,20 +31,6 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <form id="frmEdit" asp-action="Edit" method="post" kendo-validator="true">
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="ArticleNumber" />
-        <input type="hidden" asp-for="UrlPath" />
-        <input type="hidden" asp-for="VersionNumber" />
-        <input type="hidden" asp-for="Content" />
-        <input type="hidden" asp-for="HeadJavaScript" />
-        <input type="hidden" asp-for="FooterJavaScript" />
-        <input type="hidden" asp-for="Published" />
-        <input type="hidden" asp-for="RoleList" />
-        <input type="hidden" asp-for="Title" />
-        <input type="hidden" id="userName" value="@User.Identity?.Name" />
-    </form>
-
     <script>
 
         var editors;

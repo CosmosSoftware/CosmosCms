@@ -23,17 +23,16 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="z-index: 2;">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img height="28" src="~/images/logos/cosmos-logo.png" /> Cosmos
+            <img height="28" src="~/images/logos/cosmos-logo.png" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Menu
+                        Cosmos
                     </a>
                     <ul class="dropdown-menu">
                         <li>
@@ -54,21 +53,24 @@
                     </ul>
                 </li>
             </ul>
-            <input class="form-control me-2 bg-dark text-light" type="datetime-local" id="dateTimePicker" value="@Model.Published" />
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <span class="navbar-text text-muted ms-3">@assemblyName.Version</span>
+            <span id="timeZone" class="navbar-text ms-3 me-3"></span>
 
-                <li class="nav-item">
-                    <span class="nav-link">@assemblyName.Version</span>
-                </li>
-                <li class="nav-item">
-                    <span id="timeZone" class="nav-link"></span>
-                </li>
-            </ul>
-
-            <div class="d-flex">
-
-                <partial name="_LoginPartial" />
-            </div>
+            <form class="d-flex" id="frmSave">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ArticleNumber" />
+                <input type="hidden" asp-for="UrlPath" />
+                <input type="hidden" asp-for="VersionNumber" />
+                <input type="hidden" asp-for="Content" />
+                <input type="hidden" asp-for="HeadJavaScript" />
+                <input type="hidden" asp-for="FooterJavaScript" />
+                <input type="hidden" asp-for="RoleList" />
+                <div class="navbar-text">Title:</div>
+                <input class="form-control ms-2 me-2" name="Title" id="Title" value="@Model.Title" />
+                <div class="navbar-text">Published:</div>
+                <input class="form-control ms-2 me-2" name="Published" id="Published" value="@Model.Published" />
+                <button class="btn btn-success" type="submit">Save</button>
+            </form>
         </div>
     </div>
 </nav>
@@ -90,7 +92,7 @@
             case "Close":
                 //showCloseEditorDialog();
                 break;
-            case// "Preview":
+            case "Preview":
                 window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
                 break;
             case "Permissions":
@@ -113,16 +115,89 @@
         var timeZoneElement = $("#timeZone");
         timeZoneElement.html(getLocalTimeZone());
 
-        $('#dateTimePicker').daterangepicker({
+        $('#Published').daterangepicker({
             timePicker: true,
             singleDatePicker: true,
             showDropdowns: true,
-            minYear: 1901,
-            maxYear: parseInt(moment().format('YYYY'), 10)
-        }, function (start, end, label) {
-            var years = moment().diff(start, 'years');
-            alert("You are " + years + " years old!");
+            locale: {
+                format: 'MM/DD/YYYY hh:mm A'
+            }
         });
     });
 
+    $("#frmSave").submit(function (e) {
+        e.preventDefault();
+
+        var myModal = new bootstrap.Modal(document.getElementById('modalSaving'));
+        myModal.show();
+
+        var contents = $("#ccmsContFrame").contents();
+
+        var div = contents.find("[ccms-content-id='@Model.Id']");
+
+        $("#Content").val(div.html());
+
+        var form = $('#frmSave');
+
+        var data = $("#frmSave").serialize();
+
+        var promise = $.post("@Url.Action("SaveHtml")",
+            data,
+            function (response) {
+
+                myModal.hide();
+
+                if (response.IsValid === false) {
+                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
+
+                    // Invalid response.
+                    $.each(response.Errors,
+                        function (index, error) {
+                            errorMsg = "<p>" + error.Key + "</p><ul>";
+                            $.each(error.Errors,
+                                function (index, innerError) {
+                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
+                                });
+                            errorMsg = errorMsg + "</ul>";
+                        });
+                    $("#divErrorLog").html(errorMsg);
+                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
+                    errorModal.show();
+                }
+            });
+    }).then();
 </script>
+
+<div class="modal" id="modalSaving" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Saving Page</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Saving page ...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalSavingError" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="divErrorLog"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

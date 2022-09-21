@@ -16,7 +16,18 @@ namespace Cosmos.Cms.Common.Models
         /// <returns></returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            if (value == null)
+            {
+                return ValidationResult.Success;
+            }
+
             var t = value.GetType();
+
+            if (t == typeof(DateTimeOffset))
+            {
+                return ValidationResult.Success;
+            }
+
             if (t == typeof(DateTime?) || t == typeof(DateTime))
             {
                 var dateTime = (DateTime?)value;

@@ -3,6 +3,7 @@ using Cosmos.Cms.Common.Data.Logic;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Cosmos.Cms.Common.Models.Attributes
 {
@@ -51,12 +52,13 @@ namespace Cosmos.Cms.Common.Models.Attributes
             // ReSharper disable once PossibleNullReferenceException
             var articleNumber = (int)property.GetValue(validationContext.ObjectInstance, null);
 
-
-            if (dbContext.Articles.AnyAsync(a =>
+            var result = dbContext.Articles.Where(a =>
                 a.Title.ToLower() == title &&
                 a.ArticleNumber != articleNumber &&
                 a.StatusCode != (int)StatusCodeEnum.Deleted &&
-                a.StatusCode != (int)StatusCodeEnum.Redirect).Result)
+                a.StatusCode != (int)StatusCodeEnum.Redirect).CountAsync().Result;
+
+            if (result > 0)
                 return new ValidationResult("Title is already taken.");
 
 

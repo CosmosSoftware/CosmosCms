@@ -40,17 +40,17 @@
                     c.Add(i => i.VersionNumber).RenderedAs(r => "v." + r.VersionNumber).Titled("").Width("30px").Filterable(false);
                     // Preview
                     c.Add(i => i.Id)
-                    .RenderedAs(r => "<a target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>" +
+                    .RenderedAs(r => "<a class='btn btn-sm btn-secondary' target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>" +
                     // Code editor (Monaco)
-                    (((isAuthor && r.Published != null) || (isReviewer)) ? "" : "<a title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>") +
+                    (((isAuthor && r.Published != null) || (isReviewer)) ? "" : "<a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>") +
                     // Html WYSIWYG editor
                     (((isAuthor && r.Published != null) || (isReviewer) || r.UsesHtmlEditor == false) ? "" :
-                    "<a title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>") +
+                    "<a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>") +
                     // Export
-                    ((isReviewer) ? "" : "<a title='Open Html WYSIWYG editor' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>")
+                    ((isReviewer) ? "" : "<a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>")
                     )
                     .Titled("")
-                    .Width("90px")
+                    .Width("160px")
                     .Encoded(false).Sortable(false).Filterable(false);
                     c.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone");
                     c.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT");
@@ -58,7 +58,7 @@
                     // Promoteto new version
                     c.Add(i => i.Id)
                     .RenderedAs(r => ((isAuthor && r.Published != null) || (isReviewer)) ? "" :
-                    $"<a title='Promote this version to the latest version and put it in edit mode' href='/Editor/CreateVersion?id={ViewData["ArticleId"]}&entityId=" + r.Id + "'><i class='fa fa-arrow-circle-up'></i></a>")
+                    $"<a class='btn btn-sm btn-secondary' title='Promote this version to the latest version and put it in edit mode' href='/Editor/CreateVersion?id={ViewData["ArticleId"]}&entityId=" + r.Id + "'><i class='fa fa-arrow-circle-up'></i></a>")
                     .Titled("Promote")
                     .Width("30px")
                     .Encoded(false).Sortable(false).Filterable(false);
