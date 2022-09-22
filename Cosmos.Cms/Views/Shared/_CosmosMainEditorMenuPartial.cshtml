@@ -75,33 +75,54 @@
     </div>
 </nav>
 <script>
+    var next;
+    var fileMgrPopup;
+    var saveFirstModal = null;
+
     function bgEditClick(command) {
+
+        if (saveFirstModal === null) {
+            saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
+        }
+
         switch (command) {
             case "Save":
-                //handlePost();
+                $("#frmSave").submit();
                 break;
             case "Code":
-                //$("#editCodeDialog").data("kendoDialog").open();
+                next = function () {
+                    window.location.href = "@Url.Action("EditCode", "Editor")/@Model.Id";
+                }
+                $("#divSaveFirstDialog").html("Save page before opening code editor?");
+                saveFirstModal.show();
                 break;
             case "Files":
-                //ccmsOpenFileMgr();
-                break;
-            case "Versions":
-                //openVersionsDialog();
+                fileMgrPopup = window.open('@Url.Action("Popup", "FileManager")', '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
                 break;
             case "Close":
-                //showCloseEditorDialog();
+                next = function () {
+                    window.location.href = "@Url.Action("Versions", "Editor")/@Model.ArticleNumber";
+                }
+                $("#divSaveFirstDialog").html("Save page before closing editor?");
+                saveFirstModal.show();
                 break;
             case "Preview":
-                window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
-                break;
-            case "Permissions":
-                //openPermissionsDialog();
-                break;
-            case "Help":
-                //window.open("https://cosmos.azureedge.net/edit_page#HtmlEditor");
+                next = function () {
+                    window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
+                }
+                $("#divSaveFirstDialog").html("Save page before opening preview?");
+                saveFirstModal.show();
                 break;
         }
+    }
+
+    function saveFirst() {
+        saveChanges(saveFirstModal, next);
+    }
+
+    function doNotSave() {
+        saveFirstModal.hide();
+        next();
     }
 
     function getLocalTimeZone() {
@@ -128,8 +149,15 @@
     $("#frmSave").submit(function (e) {
         e.preventDefault();
 
-        var myModal = new bootstrap.Modal(document.getElementById('modalSaving'));
-        myModal.show();
+        saveChanges(null, null);
+
+    });
+
+    function saveChanges(myModal, next) {
+
+        if (typeof (myModel) !== "undefined" && myModel !== null) {
+            myModal.hide();
+        }
 
         var contents = $("#ccmsContFrame").contents();
 
@@ -141,13 +169,21 @@
 
         var data = $("#frmSave").serialize();
 
-        var promise = $.post("@Url.Action("SaveHtml")",
+        var savingModal = new bootstrap.Modal(document.getElementById('modalSaving'));
+        savingModal.show();
+
+        $.post("@Url.Action("SaveHtml")",
             data,
             function (response) {
+                
+                savingModal.hide();
 
-                myModal.hide();
-
-                if (response.IsValid === false) {
+                if (response.IsValid) {
+                    if (typeof (next) !== "undefined" && next !== null) {
+                        next();
+                    }
+                }
+                else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
 
                     // Invalid response.
@@ -165,7 +201,8 @@
                     errorModal.show();
                 }
             });
-    }).then();
+
+    }
 </script>
 
 <div class="modal" id="modalSaving" tabindex="-1">
@@ -197,6 +234,23 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="checkSaveFirst" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save First?</h5>
+            </div>
+            <div class="modal-body">
+                <div id="divSaveFirstDialog"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="saveFirst()" data-bs-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-secondary" onclick="doNotSave()" data-bs-dismiss="modal">No</button>
             </div>
         </div>
     </div>
