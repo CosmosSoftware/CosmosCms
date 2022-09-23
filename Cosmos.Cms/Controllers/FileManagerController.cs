@@ -85,15 +85,133 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Index method
+        /// File manager index page
         /// </summary>
+        /// <param name="target"></param>
+        /// <param name="fileType"></param>
         /// <returns></returns>
-        public IActionResult Index()
+        [HttpGet]
+        public async Task<IActionResult> Index(string target)
         {
             _storageContext.CreateFolder("/pub");
             ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-            return View();
+
+
+            target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
+
+            ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
+
+            //
+            // GET FULL OR ABSOLUTE PATH
+            //
+            var model = await _storageContext.GetFolderContents(target);
+
+            return View(model.AsQueryable());
         }
+
+        #region FILEPOND ENDPOINTS
+
+
+        /// <summary>
+        /// Gets a unique GUID
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult Process([FromForm] string files)
+        {
+            var parsed = JsonConvert.DeserializeObject<FilePondMetadata>(files);
+
+            return Ok(parsed.Path.TrimEnd('/') + "/|" + Guid.NewGuid().ToString());
+        }
+
+        /// <summary>
+        /// Process a chunched upload
+        /// </summary>
+        /// <param name="patch"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [HttpPatch]
+        public async Task<ActionResult> Process(string patch, string options = "")
+        {
+            try
+            {
+                var patchArray = patch.Split('|');
+
+                var contentType = Request.Headers["Content-Type"];
+
+                // 0 based index
+                var uploadOffset = long.Parse(Request.Headers["Upload-Offset"]);
+
+                // File name being uploaded
+                var UploadName = ((string)Request.Headers["Upload-Name"]);
+
+                // Total size of the file in bytes
+                var uploadLenth = long.Parse(Request.Headers["Upload-Length"]);
+
+                // Size of the chunk
+                var contentSize = long.Parse(Request.Headers["Content-Length"]);
+
+                long chunk = 0;
+
+                if (uploadOffset > 0)
+                {
+                    chunk = DivideByAndRoundUp(uploadLenth, uploadOffset);
+                }
+
+                var totalChunks = DivideByAndRoundUp(uploadLenth, contentSize);
+
+
+                var blobName = UrlEncode(UploadName.ToLower());
+
+                var metaData = new FileUploadMetaData()
+                {
+                    ChunkIndex = chunk,
+                    ContentType = contentType,
+                    FileName = blobName,
+                    RelativePath = UrlEncode(patchArray[0].ToLower()).TrimEnd('/') + "/" + blobName,
+                    TotalChunks = totalChunks,
+                    TotalFileSize = uploadLenth,
+                    UploadUid = patchArray[1]
+                };
+
+                // Make sure full folder path exists
+                var pathParts = patchArray[0].ToLower().Trim('/').Split('/');
+                var part = "";
+                for (int i = 0; i < pathParts.Length - 1; i++)
+                {
+                    if (i == 0 && pathParts[i] != "pub")
+                    {
+                        throw new Exception("Must upload folders and files under /pub directory.");
+                    }
+
+                    part = $"{part}/{pathParts[i].ToLower()}";
+                    if (part != "/pub")
+                    {
+                        var folder = part.Trim('/');
+                        _storageContext.CreateFolder(folder);
+                    }
+                }
+
+                using var memoryStream = new MemoryStream();
+                await Request.Body.CopyToAsync(memoryStream);
+
+                _storageContext.AppendBlob(memoryStream, metaData);
+            }
+            catch (Exception e)
+            {
+                var t = e;
+            }
+
+
+            return Ok();
+        }
+
+        private static long DivideByAndRoundUp(long number, long divideBy)
+        {
+            return (long)Math.Ceiling((float)number / (float)divideBy);
+        }
+
+        #endregion
 
         /// <summary>
         /// Imports a page
@@ -915,7 +1033,7 @@ namespace Cosmos.Cms.Controllers
             var bytes = Encoding.Default.GetBytes(model.Content);
 
             using var memoryStream = new MemoryStream(bytes, false);
-            
+
             var formFile = new FormFile(memoryStream, 0, memoryStream.Length, Path.GetFileNameWithoutExtension(model.Path), Path.GetFileName(model.Path));
 
             var metaData = new FileUploadMetaData
@@ -931,7 +1049,7 @@ namespace Cosmos.Cms.Controllers
 
             var uploadPath = model.Path.TrimEnd(metaData.FileName.ToArray()).TrimEnd('/');
 
-            var result = (JsonResult) await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
+            var result = (JsonResult)await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
 
             var resultMode = (FileUploadResult)result.Value;
 

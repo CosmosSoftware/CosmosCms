@@ -4,12 +4,21 @@
   "libraries": [
     {
       "provider": "unpkg",
-      "library": "@microsoft/signalr@6.0.9",
+      "library": "microsoft/signalr@6.0.9",
       "destination": "wwwroot/lib/signalr/"
     },
     {
       "library": "monaco-editor@0.34.0",
       "destination": "wwwroot/lib/monaco-editor/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "filepond-plugin-file-metadata@1.0.8",
+      "destination": "wwwroot/lib/filepond-plugin-file-metadata/"
+    },
+    {
+      "library": "filepond@4.30.4",
+      "destination": "wwwroot/lib/filepond/"
     },
     {
       "library": "jquery@3.6.1",

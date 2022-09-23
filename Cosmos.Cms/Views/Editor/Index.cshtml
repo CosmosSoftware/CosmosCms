@@ -9,6 +9,7 @@
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
 }
 <script src="~/js/clipboard.min.js"></script>
+
 <div class="container mt-5 pt-2">
     <div class="row">
         <div class="col">
@@ -29,7 +30,7 @@
             </div>
         </div>
     }
-    
+   
     <div class="row">
         <div class="col-md-12">
             @(Html.Grid(Model)
@@ -58,7 +59,10 @@
         </div>
     </div>
 </div>
+
+
 <script>
+
     var canEdit = @canEdit.ToString().ToLower();
     var clipboard = new ClipboardJS('.clipboard');
     clipboard.on('success',
