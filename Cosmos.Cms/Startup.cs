@@ -125,9 +125,10 @@ namespace Cosmos.Cms
             var sendGridApiKey = Configuration.GetValue<string>("CosmosSendGridApiKey");
             var sendGridOptions = new SendGridEmailProviderOptions(sendGridApiKey, "eric@moonrise.net");
             services.AddSendGridEmailProvider(sendGridOptions);
-            // End add SendGrid
 
-            services.AddTransient<StorageContext>(); // Blob storage
+            // End add SendGrid
+            services.AddCosmosStorageContext(Configuration);
+
             services.AddTransient<TranslationServices>();
             services.AddTransient<ArticleEditLogic>();
 

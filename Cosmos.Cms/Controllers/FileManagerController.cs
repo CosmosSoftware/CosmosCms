@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs.Specialized;
 using Cosmos.BlobService;
+using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
 using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Services.Configurations;

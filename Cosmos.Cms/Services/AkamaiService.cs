@@ -1,4 +1,5 @@
 ﻿using CDT.Akamai.Cdn;
+using Cosmos.BlobService.Config;
 using Cosmos.Cms.Common.Services.Configurations;
 using Microsoft.Extensions.Options;
 

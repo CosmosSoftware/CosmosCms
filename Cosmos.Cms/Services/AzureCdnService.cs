@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Data;
+﻿using Cosmos.BlobService.Config;
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;

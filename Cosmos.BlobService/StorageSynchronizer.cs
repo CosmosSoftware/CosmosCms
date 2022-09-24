@@ -1,14 +1,11 @@
 ﻿using Cosmos.BlobService.Drivers;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Cosmos.BlobService
 {
-    public class StorageSynchronizer
+    public sealed class StorageSynchronizer
     {
         private readonly ICosmosStorage _source;
         private readonly ICosmosStorage _destination;

@@ -8,8 +8,8 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
-using Cosmos.Cms.Common.Services.Configurations.Storage;
 
 namespace Cosmos.BlobService.Drivers
 {
@@ -296,7 +296,10 @@ namespace Cosmos.BlobService.Drivers
 
             var results = new List<BlobHierarchyItem>();
 
-            await foreach (var blobPage in resultSegment) results.AddRange(blobPage.Values);
+            await foreach (var blobPage in resultSegment)
+            {
+                results.AddRange(blobPage.Values);
+            }
 
             return results;
         }

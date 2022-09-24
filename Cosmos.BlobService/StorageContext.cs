@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Drivers;
 using Cosmos.BlobService.Models;
-using Cosmos.Cms.Common.Services.Configurations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
@@ -14,14 +14,14 @@ namespace Cosmos.BlobService
     /// <summary>
     ///     Multi cloud blob service context
     /// </summary>
-    public class StorageContext
+    public sealed class StorageContext
     {
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="cosmosConfig"></param>
         /// <param name="cache"></param>
-        public StorageContext(IOptions<CosmosConfig> cosmosConfig, IMemoryCache cache)
+        public StorageContext(IOptions<CosmosStorageConfig> cosmosConfig, IMemoryCache cache)
         {
             _config = cosmosConfig;
             _memoryCache = cache;
@@ -230,7 +230,7 @@ namespace Cosmos.BlobService
 
         #region PRIVATE FIELDS AND METHODS
 
-        private readonly IOptions<CosmosConfig> _config;
+        private readonly IOptions<CosmosStorageConfig> _config;
         private readonly IMemoryCache _memoryCache;
 
         private async Task CopyObjectsAsync(string target, string destination, bool deleteSource)

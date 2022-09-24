@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.Services.SendGrid;
+using Cosmos.BlobService.Config;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Identity;

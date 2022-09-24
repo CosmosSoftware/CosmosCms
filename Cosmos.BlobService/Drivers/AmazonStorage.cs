@@ -1,8 +1,8 @@
 ﻿using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
-using Cosmos.Cms.Common.Services.Configurations.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
