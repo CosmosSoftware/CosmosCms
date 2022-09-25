@@ -13,6 +13,7 @@
     {
         pathParts.AddRange(pathPrefix.Trim('/').Split('/'));
     }
+
 }
 <link href="~/lib/filepond/filepond.css" rel="stylesheet" />
 <script src="~/js/clipboard.min.js"></script>
@@ -58,22 +59,38 @@
     </div>
     <div class="row">
         <div class="col-md-12">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
+                <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled>Move</button>
+                <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
             @(Html.Grid(Model)
                 .Build(col =>
                 {
+                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll"));
                     col.Add().RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Name + "'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Path + "'>" + r.Name + "</a>" : "<div>" + r.Name + r.Extension + "</div>").Titled("Name").Encoded(false);
-                    col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("220px");
+                    col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
+
                 })
                 .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
                 .Empty("No pages found")
                 .Filterable()
                 .Sortable()
-                .Pageable()
+                .Pageable(p => p.ShowPageSizes = true)
                 )
         </div>
     </div>
 </div>
+
+<form>
+    @Html.AntiForgeryToken()
+    <input id="frmPathList" name="frmPathList" type="hidden" />
+</form>
 
 <!-- Before the end of the body tag -->
 <script src="~/lib/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.min.js"></script>
@@ -102,9 +119,118 @@
         window.location.href = "@Url.Action("Index")?target=@ViewData["PathPrefix"]";
     });
 
+    let paths = [];
+
     $(document).ready(function () {
         $(".toLocalTimeZone").each(function (index, element) {
-            $(element).html(getLocalTime($(element).html()));
+            var date = new Date($(element).html());
+
+            if (isNaN(date)) {
+                return;
+            }
+
+            $(element).html(date.toLocaleDateString() + " " + date.toLocaleTimeString());
+
+        });
+
+        $(".gridCheckBox").each(function (index, element) {
+            $(element).on("change", function () {
+                var checked = $(this).is(':checked');
+                var path = $(this).attr('data-ccms-blob');
+                if (checked) {
+                    paths.push(path);
+                } else {
+                    paths.splice(paths.indexOf(path));
+                }
+
+                // Get the array length
+                var arrayLength = paths.length;
+
+                if (arrayLength > 0) {
+                    $("#btnMove").prop('disabled', false);
+                    $("#btnMove").prop('title', "Click to move.");
+                    $("#btnDelete").prop('disabled', false);
+                    $("#btnDelete").prop('title', "Click to delete.");
+                    $("#btnRename").prop('title', "Select only one item.");
+                } else {
+                    $("#btnMove").prop('disabled', true);
+                    $("#btnMove").prop('title', "Select one or more items.");
+                    $("#btnDelete").prop('disabled', true);
+                    $("#btnDelete").prop('title', "Select one or more items.");
+                    $("#btnRename").prop('title', "Select one item.");
+                }
+
+                if (arrayLength === 1) {
+                    $("#btnRename").prop('disabled', false);
+                    $("#btnRename").prop('title', "Click to rename.");
+                } else {
+                    $("#btnRename").prop('disabled', true);
+                }
+            });
         });
     });
+
+    var next = null;
+    var checkFirstModal = null;
+
+    function btnClick(command) {
+
+        if (checkFirstModal === null) {
+            checkFirstModal = new bootstrap.Modal(document.getElementById('checkFirstModal'));
+        }
+
+        // Get the array length
+        var arrayLength = paths.length;
+
+        switch (command) {
+            case "delete":
+                $("#checkFirstTitle").html("Delete Verification");
+                if (arrayLength == 1) {
+                    $("#checkFirstDialog").html("Are you sure you want to delete this item?<br />" + paths[0]);
+                } else {
+                    $("#checkFirstDialog").html("Are you sure you want to delete " + arrayLength + " items?");
+                }
+                break;
+            case "rename":
+                $("#checkFirstTitle").html("Rename Verification");
+                $("#checkFirstDialog").html("Are you sure you want to rename this item?<br />/" + paths[0]);
+                break;
+            case "move":
+                $("#checkFirstTitle").html("Move Verification");
+                if (arrayLength == 1) {
+                    $("#checkFirstDialog").html("Are you sure you want to move this item?<br />" + paths[0]);
+                } else {
+                    $("#checkFirstDialog").html("Are you sure you want to move " + arrayLength + " items?");
+                }
+                break;
+        }
+
+        checkFirstModal.show();
+    }
+
+    function cancelAction() {
+        checkFirstModal.hide();
+    }
+
+    function continueAction() {
+
+    }
+
 </script>
+
+<div class="modal" id="checkFirstModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="checkFirstTitle" class="modal-title">Verification</h5>
+            </div>
+            <div class="modal-body">
+                <div id="checkFirstDialog"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="continue()" data-bs-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelAction()" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
