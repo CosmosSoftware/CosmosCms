@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs.Specialized;
+﻿using Amazon.Runtime.Internal;
+using Azure.Storage.Blobs.Specialized;
 using Cosmos.BlobService;
 using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
@@ -23,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using static Grpc.Core.Metadata;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -554,6 +556,48 @@ namespace Cosmos.Cms.Controllers
         #region FILE MANAGER FUNCTIONS
 
         /// <summary>
+        /// New folder action
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NewFolder(NewFolderViewModel model)
+        {
+            var fullPath = string.Join('/', ParsePath(model.ParentFolder, model.FolderName));
+            fullPath = UrlEncode(fullPath.ToLower());
+
+            // Check for duplicate entries
+            var existingEntries = await _storageContext.GetFolderContents(model.ParentFolder);
+
+            if (existingEntries.Any(f => f.Name.Equals(model.FolderName)) == false)
+            {
+                var fileManagerEntry = _storageContext.CreateFolder(fullPath);
+            }
+
+            return RedirectToAction("Index", new { target = model.ParentFolder });
+        }
+
+        /// <summary>
+        /// Download a file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> Download(string path)
+        {
+            var blob = await _storageContext.GetFileAsync(path);
+
+            if (!blob.IsDirectory)
+            {
+                using var stream = await _storageContext.OpenBlobReadStreamAsync(path);
+                using var memStream = new MemoryStream();
+                stream.CopyTo(memStream);
+                return File(memStream.ToArray(), "application/octet-stream", fileDownloadName: blob.Name);
+            }
+
+            return NotFound();
+        }
+
+        /// <summary>
         ///     Creates a new entry, using relative path-ing, and normalizes entry name to lower case.
         /// </summary>
         /// <param name="target"></param>
@@ -566,7 +610,7 @@ namespace Cosmos.Cms.Controllers
             entry.Name = UrlEncode(entry.Name.ToLower());
             entry.Extension = entry.Extension?.ToLower();
 
-            if (!entry.Path.StartsWith("pub", StringComparison.CurrentCultureIgnoreCase))
+            if (!entry.Path.StartsWith("/pub", StringComparison.CurrentCultureIgnoreCase))
             {
                 return Unauthorized("New folders can't be created here using this tool. Please select the 'pub' folder and try again.");
             }
@@ -604,22 +648,26 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="entry">Item to delete using relative path</param>
         /// <returns></returns>
-        public async Task<ActionResult> Destroy(BlobService.FileManagerEntry entry)
+        public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
         {
-            var path = entry.Path.ToLower();
-
-            if (entry.IsDirectory)
+            foreach(var item in model.Paths)
             {
-                if (path == "pub")
-                    return Unauthorized($"Cannot delete folder {path}.");
-                await _storageContext.DeleteFolderAsync(path);
+                var results = await _storageContext.GetObjectsAsync(item);
+                
+                foreach(var result in results)
+                {
+                    if (result.IsDirectory)
+                    {
+                        await _storageContext.DeleteFolderAsync(result.Path);
+                    }
+                    else
+                    {
+                        _storageContext.DeleteFile(result.Path);
+                    }
+                }
             }
-            else
-            {
-                _storageContext.DeleteFile(path);
-            }
-
-            return Json(new object[0]);
+                       
+            return Ok();
         }
 
         /// <summary>
