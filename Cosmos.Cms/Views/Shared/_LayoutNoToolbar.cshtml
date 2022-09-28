@@ -1,74 +1,18 @@
-﻿@addTagHelper *, Kendo.Mvc
-@using Microsoft.AspNetCore.Routing
-@using Kendo.Mvc.UI
-@using System.Reflection
-@using Cosmos.Cms.Services
-@using Microsoft.Extensions.Options;
-@using Cosmos.Cms.Common.Services.Configurations
-@inject IOptions<CosmosConfig> options
-@model object
-@{
-    var assemblyName = Assembly.GetExecutingAssembly().GetName();
-
-    var controllerName = (string)Context.GetRouteData().Values["controller"];
-    var actionName = (string)Context.GetRouteData().Values["action"];
-
-    ArticleViewModel articleViewModel = null;
-
-    //var accountBtnTemplate = "<div id='userAcctMenu' style='font-size:0.8em'><span class='fa fa-user'></span> Account</div>";
-
-    //if (User != null && (User.IsInRole("Authors") || teamMemberLogic?.IsInRole(TeamRoleEnum.Author, teamName) == true))
-    //{
-    //    isAuthor = true;
-    //}
-    //else if (User != null && User.IsInRole("Editors") || teamMemberLogic?.IsInRole(TeamRoleEnum.Editor, teamName) == true)
-    //{
-    //    isEditor = true;
-    //}
-    //else if (User != null && User.IsInRole("Administrators"))
-    //{
-    //    isAdministrator = true;
-    //}
-}
-
-<!DOCTYPE html>
-
+﻿<!DOCTYPE HTML>
 <html lang="en-us">
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag?.Title</title>
-    @if (Model != null && Model.GetType() == typeof(ArticleViewModel))
-    {
-        articleViewModel = (ArticleViewModel)Model;
-        @*
-            Layout specific header content
-        *@
-        @Html.Raw(articleViewModel.Layout.Head)
-        @*
-            Page specific header content
-        *@
-        @Html.Raw(articleViewModel.HeadJavaScript)
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
-    }
-    else
-    {
-        <link rel="stylesheet" href="~/lib/mdb-ui-kit/mdb.min.css" />
-        <script src="~/lib/mdb-ui-kit/mdb.min.js"></script>
-    }
-    @*
-        Telerik/Kendo resources
-    *@
-    <partial name="_KendoHeadPartial" />
-    @*
-        Application Insights Scripts
-    *@
-    @Html.Raw(JavaScriptSnippet.FullScript)
+    <script src="~/ccms/js/TimeUtils.js"></script>
+
 </head>
 <body>
     @RenderBody()
-    @*
-        Application Insights Scripts
-    *@
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script src="~/lib/mvc-grid/mvc-grid.js"></script>
     @await RenderSectionAsync("Scripts", false)
 </body>
 </html>

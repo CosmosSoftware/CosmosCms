@@ -1,40 +1,4 @@
-﻿@addTagHelper *, Kendo.Mvc
-@using Microsoft.AspNetCore.Routing
-@using Kendo.Mvc.UI
-@using System.Reflection
-@using Cosmos.Cms.Services
-@using Microsoft.Extensions.Options;
-@using Cosmos.Cms.Common.Services.Configurations
-@inject IOptions<CosmosConfig> options
-@model object
-@{
-    var assemblyName = Assembly.GetExecutingAssembly().GetName();
-
-    var controllerName = (string)Context.GetRouteData().Values["controller"];
-    var actionName = (string)Context.GetRouteData().Values["action"];
-
-    var isAuthor = false;
-    var isEditor = false;
-    var isAdministrator = false;
-
-    ArticleViewModel articleViewModel = null;
-
-    //var accountBtnTemplate = "<div id='userAcctMenu' style='font-size:0.8em'><span class='fa fa-user'></span> Account</div>";
-
-    if (User != null && User.IsInRole("Authors"))
-    {
-        isAuthor = true;
-    }
-    else if (User != null && User.IsInRole("Editors"))
-    {
-        isEditor = true;
-    }
-    else if (User != null && User.IsInRole("Administrators"))
-    {
-        isAdministrator = true;
-    }
-}
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="en-us">
 <head>
     <meta name="viewport" content="width=device-width" />

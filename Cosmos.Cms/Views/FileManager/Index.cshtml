@@ -16,6 +16,7 @@
 
 }
 <link href="~/lib/filepond/filepond.css" rel="stylesheet" />
+<partial name="_ValidationScriptsPartial" />
 <script src="~/js/clipboard.min.js"></script>
 <div class="container mt-5 pt-2">
     <div class="row">
@@ -32,7 +33,7 @@
                 <input type="file"
                    class="filepond"
                    id="filepond"
-                   name="files" data-file-metadata-path="@ViewData["PathPrefix"]"
+                   name="files" data-file-metadata-path="@pathPrefix"
                    multiple>
             </div>
         </div>
@@ -68,9 +69,9 @@
         <div class="col-md-3">
             @if (pathPrefix.StartsWith("/pub"))
             {
-                <form class="d-flex" asp-action="NewFolder" method="post">
-                    <input type="hidden" name="ParentFolder" id="ParentFolder" value="@ViewData["PathPrefix"]" />
-                    <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" />
+                <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
+                    <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
+                    <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
 
                     <button class="btn btn-sm btn-secondary" type="submit">Create</button>
                 </form>
@@ -82,7 +83,7 @@
             @(Html.Grid(Model)
                 .Build(col =>
                 {
-                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll")).Width("30px");
+                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll")).Width("30px");
                     col.Add().RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Name + "'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Path + "'>" + r.Name + "</a>" : "<a href=\"javascript:download('" + r.Path + "')\">" + r.Name + r.Extension + "</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
@@ -107,7 +108,69 @@
 <script src="~/lib/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.min.js"></script>
 <script src="~/lib/filepond/filepond.min.js"></script>
 
+<div class="modal" id="checkFirstModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="checkFirstTitle" class="modal-title">Verification</h5>
+            </div>
+            <div class="modal-body">
+                <div id="checkFirstDialog"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="continueAction()" data-bs-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelAction()" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="renameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="frmChangeName" asp-action="Rename" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="BlobRootPath" name="BlobRootPath" value="@pathPrefix" />
+                <input type="hidden" id="FromBlobName" name="FromBlobName" value="@pathPrefix" />
+                <div class="modal-header">
+                    <h5 id="checkFirstTitle" class="modal-title">Rename Item</h5>
+                </div>
+                <div class="modal-body">
+                    <label for="FromBobName" class="form-label">Original name:</label>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon3">/pub/</span>
+                        <input class="form-control" id="ctrlFromBlobName" aria-describedby="emailHelp" disabled>
+                    </div>
+                    <label for="ToBlobName" class="form-label">Change to:</label>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon3">/pub/</span>
+                        <input title="Enter the new name of the item" class="form-control" id="ToBlobName" name="ToBlobName" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="btnSubmitChange" type="submit" value="submit" class="btn btn-secondary">Change</button>
+                    <div id="extAlert" class="alert alert-warning" role="alert" style="display:none"><i class="fa-solid fa-triangle-exclamation"></i> Warning: file extension does not match original.</div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ <div class="modal" id="folderModal">
+        <div class="modal-dialog">
+            <!-- Modal body -->
+            <div class="modal-body">
+            <iframe width="560" height="315" src="@Url.Action("Index", new { target = pathPrefix })" 
+            title="YouTube video player" frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
 <script>
+
     // Get a reference to the file input element
     const inputElement = document.querySelector('input[type="file"]');
 
@@ -127,7 +190,7 @@
 
     // Event handlers
     document.addEventListener('FilePond:processfiles', (e) => {
-        window.location.href = "@Url.Action("Index")?target=@ViewData["PathPrefix"]";
+        window.location.href = "@Url.Action("Index")?target=@pathPrefix";
     });
 
     let paths = [];
@@ -160,6 +223,11 @@
                 resetButtons();
             });
         });
+
+
+        //$("#frmChangeName").validate();
+
+
     });
 
     function resetButtons() {
@@ -169,7 +237,7 @@
 
         $(".gridCheckBox").each(function (index, element) {
             if ($(element).is(':checked')) {
-                var path = $(element).attr('data-ccms-blob');
+                var path = $(element).attr('data-ccms-blob') + "|" + $(element).attr('data-ccms-isdir');
                 paths.push(path);
             }
         });
@@ -213,30 +281,42 @@
             case "delete":
                 $("#checkFirstTitle").html("Delete Verification");
                 if (arrayLength == 1) {
-                    $("#checkFirstDialog").html("WARNING: Are you sure you want to permanently delete this item?<br />" + paths[0].split('/'));
+                    $("#checkFirstDialog").html("WARNING: Are you sure you want to permanently delete this item?");
                 } else {
                     $("#checkFirstDialog").html("Are you sure you want to permanently delete " + arrayLength + " items?");
                 }
                 next = function () {
                     $.post('@Url.Action("Delete")',   // url
                         {
-                            ParentPath: '@ViewData["PathPrefix"]',
+                            ParentPath: '@pathPrefix',
                             Paths: paths
                         }, // data to be submit
                         function (data, status, jqXHR) {// success callback
-                            window.location.href = '@Url.Action("Index")?target=@ViewData["PathPrefix"]';
+                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
                         })
                 }
                 break;
             case "rename":
                 $("#checkFirstTitle").html("Rename Verification");
-                $("#checkFirstDialog").html("Are you sure you want to rename or move this item?<br />/" + paths[0]);
+                $("#checkFirstDialog").html("Are you sure you want to rename this item?<br />/" + paths[0].split('|')[0]);
                 next = function () {
-                    $("#originalName").val(paths[0].substring(4));
+                    $("#FromBlobName").val(paths[0].substring(4));
+                    $("#ctrlFromBlobName").val($("#FromBlobName").val());
                     var modal = new bootstrap.Modal(document.getElementById('renameModal'));
                     modal.show();
                 }
                 break;
+            case "move":
+                $("#checkFirstTitle").html("Delete Verification");
+                if (arrayLength == 1) {
+                    $("#checkFirstDialog").html("WARNING: Are you sure you want to move this item?");
+                } else {
+                    $("#checkFirstDialog").html("Are you sure you want to move " + arrayLength + " items?");
+                }
+                next = function () {
+                    var modal = new bootstrap.Modal(document.getElementById("folderModal"));
+                    modal.show();
+                };
         }
 
         checkFirstModal.show();
@@ -256,48 +336,3 @@
 
 </script>
 
-<div class="modal" id="checkFirstModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="checkFirstTitle" class="modal-title">Verification</h5>
-            </div>
-            <div class="modal-body">
-                <div id="checkFirstDialog"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="continueAction()" data-bs-dismiss="modal">Yes</button>
-                <button type="button" class="btn btn-secondary" onclick="cancelAction()" data-bs-dismiss="modal">No</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="renameModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form>
-                @Html.AntiForgeryToken()
-                <div class="modal-header">
-                    <h5 id="checkFirstTitle" class="modal-title">Rename or Move Item</h5>
-                </div>
-                <div class="modal-body">
-                    <label for="originalName" class="form-label">Original name:</label>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">/pub/</span>
-                        <input class="form-control" id="originalName" name="originalName" aria-describedby="emailHelp" disabled>
-                    </div>
-                    <label for="changeToName" class="form-label">Change to:</label>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">/pub/</span>
-                        <input title="Enter the new name of the item" class="form-control" id="changeToName" name="changeToName">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="continue()" data-bs-dismiss="modal">Yes</button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelAction()" data-bs-dismiss="modal">No</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>

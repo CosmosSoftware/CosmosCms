@@ -1,7 +1,5 @@
-﻿using Amazon.Runtime.Internal;
-using Azure.Storage.Blobs.Specialized;
+﻿using Azure.Storage.Blobs.Specialized;
 using Cosmos.BlobService;
-using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
 using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Services.Configurations;
@@ -24,7 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using static Grpc.Core.Metadata;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -91,10 +88,10 @@ namespace Cosmos.Cms.Controllers
         /// File manager index page
         /// </summary>
         /// <param name="target"></param>
-        /// <param name="fileType"></param>
+        /// <param name="directoryOnly"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target)
+        public async Task<IActionResult> Index(string target, bool directoryOnly = false)
         {
             _storageContext.CreateFolder("/pub");
             ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
@@ -108,6 +105,12 @@ namespace Cosmos.Cms.Controllers
             // GET FULL OR ABSOLUTE PATH
             //
             var model = await _storageContext.GetFolderContents(target);
+
+            if (directoryOnly)
+            {
+                model = model.Where(w => w.IsDirectory == true).ToList();
+                return View("FoldersView", model.AsQueryable());
+            }
 
             return View(model.AsQueryable());
         }
@@ -646,17 +649,19 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Deletes a folder, normalizes entry to lower case.
         /// </summary>
-        /// <param name="entry">Item to delete using relative path</param>
+        /// <param name="model">Item to delete using relative path</param>
         /// <returns></returns>
         public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
         {
             foreach(var item in model.Paths)
             {
-                var results = await _storageContext.GetObjectsAsync(item);
+                bool.TryParse(item.Split("|")[1], out var isDirectory);
+
+                var results = await _storageContext.GetObjectsAsync(item.Split("|")[0]);
                 
                 foreach(var result in results)
                 {
-                    if (result.IsDirectory)
+                    if (isDirectory)
                     {
                         await _storageContext.DeleteFolderAsync(result.Path);
                     }
@@ -824,6 +829,31 @@ namespace Cosmos.Cms.Controllers
 
                 return File(thumbnailCreator.Create(fileStream, desiredSize, contentType), contentType);
             }
+        }
+
+        /// <summary>
+        /// Rename a blob item.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Rename(RenameBlobViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.ToBlobName))
+            {
+                bool.TryParse(model.FromBlobName.Split('|')[1], out var isDirectory);
+
+                var ending = (isDirectory ? "/" : "");
+
+                var target = $"{model.BlobRootPath}/{model.FromBlobName.Split('|')[0]}{ending}";
+
+                var dest = $"{model.BlobRootPath}/{UrlEncode(model.ToBlobName.ToLower())}{ending}";
+
+                await _storageContext.RenameAsync(target, dest);
+            }
+
+            return RedirectToAction("Index", new { target = model.BlobRootPath.Trim('/') });
         }
 
         /// <summary>
