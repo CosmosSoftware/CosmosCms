@@ -1,0 +1,16 @@
+﻿@using NonFactors.Mvc.Grid
+@model IQueryable<Cosmos.BlobService.FileManagerEntry>
+@(Html.Grid(Model).AppendCss("folder-grid")
+.Build(col =>
+{
+    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='True' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll")).Width("30px");
+    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&directoryOnly=true'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&directoryOnly=true'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
+    col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
+
+})
+.Empty("No pages found")
+.Filterable()
+.Sortable()
+.Pageable(p => p.ShowPageSizes = true)
+)

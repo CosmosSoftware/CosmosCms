@@ -57,6 +57,7 @@
 		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.89" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.3.0" />
 		<PackageReference Include="CDT.Akamai.Cdn" Version="6.0.0.4" />
+		<PackageReference Include="Cosmos.BlobService" Version="6.3.15" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="IntelliTect.AspNetCore.SignalR.SqlServer" Version="1.0.1" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
@@ -85,7 +86,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Cosmos.BlobService\Cosmos.BlobService\Cosmos.BlobService.csproj" />
 	  <ProjectReference Include="..\Cosmos.Cms.Common\Cosmos.Cms.Common.csproj" />
 	</ItemGroup>
 

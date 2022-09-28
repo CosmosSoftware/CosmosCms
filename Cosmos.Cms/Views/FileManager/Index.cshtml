@@ -9,6 +9,8 @@
     var pathPrefix = (string)ViewData["PathPrefix"];
     var pathParts = new List<string>();
 
+    var containerCss = "container mt-5 pt-2";
+
     if (!string.IsNullOrEmpty(pathPrefix) && pathPrefix != "/")
     {
         pathParts.AddRange(pathPrefix.Trim('/').Split('/'));
@@ -18,7 +20,7 @@
 <link href="~/lib/filepond/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
 <script src="~/js/clipboard.min.js"></script>
-<div class="container mt-5 pt-2">
+<div class="@containerCss">
     <div class="row">
         <div class="col">
             <h3>@ViewData["Title"]</h3>
@@ -62,8 +64,8 @@
         <div class="col-md-9">
             <div class="btn-group" role="group" aria-label="Basic example">
                 <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
-                <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled>Move</button>
                 <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
+                <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled style="display:none">Move</button>
             </div>
         </div>
         <div class="col-md-3">
@@ -84,8 +86,8 @@
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll")).Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Name + "'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? "<a href='/FileManager/Index?target=" + r.Path + "'>" + r.Name + "</a>" : "<a href=\"javascript:download('" + r.Path + "')\">" + r.Name + r.Extension + "</div>").Titled("Name").Encoded(false);
+                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
                 })
@@ -98,6 +100,8 @@
         </div>
     </div>
 </div>
+
+@Html.AjaxGrid(Url.Action("Folders"))
 
 <form>
     @Html.AntiForgeryToken()
@@ -157,19 +161,22 @@
     </div>
 </div>
 
- <div class="modal" id="folderModal">
-        <div class="modal-dialog">
-            <!-- Modal body -->
-            <div class="modal-body">
-            <iframe width="560" height="315" src="@Url.Action("Index", new { target = pathPrefix })" 
-            title="YouTube video player" frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen></iframe>
-            </div>
+<div class="modal" id="folderModal">
+    <div class="modal-dialog modal-fullscreen">
+        <!-- Modal body -->
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button id="btnSubmitChange" type="submit" value="submit" class="btn btn-secondary">Change</button>
+            <div id="extAlert" class="alert alert-warning" role="alert" style="display:none"><i class="fa-solid fa-triangle-exclamation"></i> Warning: file extension does not match original.</div>
         </div>
     </div>
+</div>
 
 <script>
+
+    const folderGridDiv = document.querySelector("#folderGrid");
 
     // Get a reference to the file input element
     const inputElement = document.querySelector('input[type="file"]');
@@ -223,11 +230,6 @@
                 resetButtons();
             });
         });
-
-
-        //$("#frmChangeName").validate();
-
-
     });
 
     function resetButtons() {
@@ -237,8 +239,13 @@
 
         $(".gridCheckBox").each(function (index, element) {
             if ($(element).is(':checked')) {
-                var path = $(element).attr('data-ccms-blob') + "|" + $(element).attr('data-ccms-isdir');
-                paths.push(path);
+                var isDirectory = $(element).attr('data-ccms-isdir');
+                if (isDirectory === "True") {
+                    paths.push($(element).attr('data-ccms-blob') + "/");
+                }
+                else {
+                    paths.push($(element).attr('data-ccms-blob'));
+                }
             }
         });
 
@@ -298,7 +305,7 @@
                 break;
             case "rename":
                 $("#checkFirstTitle").html("Rename Verification");
-                $("#checkFirstDialog").html("Are you sure you want to rename this item?<br />/" + paths[0].split('|')[0]);
+                $("#checkFirstDialog").html("Are you sure you want to rename this item?<br />/" + paths[0]);
                 next = function () {
                     $("#FromBlobName").val(paths[0].substring(4));
                     $("#ctrlFromBlobName").val($("#FromBlobName").val());

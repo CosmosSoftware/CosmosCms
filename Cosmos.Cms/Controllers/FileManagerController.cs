@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -91,11 +92,10 @@ namespace Cosmos.Cms.Controllers
         /// <param name="directoryOnly"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target, bool directoryOnly = false)
+        public async Task<IActionResult> Index(string target)
         {
             _storageContext.CreateFolder("/pub");
             ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-
 
             target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
@@ -106,11 +106,24 @@ namespace Cosmos.Cms.Controllers
             //
             var model = await _storageContext.GetFolderContents(target);
 
-            if (directoryOnly)
-            {
-                model = model.Where(w => w.IsDirectory == true).ToList();
-                return View("FoldersView", model.AsQueryable());
-            }
+            return View(model.AsQueryable());
+        }
+
+        [HttpPost]
+        public  async Task<IActionResult> MoveTo(string target, string selection)
+        {
+            _storageContext.CreateFolder("/pub");
+            ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
+            ViewData["Selection"] = selection;
+
+            target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
+
+            ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
+
+            //
+            // GET FULL OR ABSOLUTE PATH
+            //
+            var model = await _storageContext.GetFolderContents(target);
 
             return View(model.AsQueryable());
         }
@@ -842,13 +855,24 @@ namespace Cosmos.Cms.Controllers
         {
             if (!string.IsNullOrEmpty(model.ToBlobName))
             {
-                bool.TryParse(model.FromBlobName.Split('|')[1], out var isDirectory);
+                // Note rules:
+                // 1. New folder names must end with slash.
+                // 2. New file names must never end with a slash.
+                if (model.FromBlobName.EndsWith("/"))
+                {
+                    if (!model.ToBlobName.EndsWith("/"))
+                    {
+                        model.ToBlobName = model.ToBlobName + "/";
+                    }
+                }
+                else
+                {
+                    model.ToBlobName = model.ToBlobName.TrimEnd('/');
+                }
 
-                var ending = (isDirectory ? "/" : "");
+                var target = $"{model.BlobRootPath}/{model.FromBlobName}";
 
-                var target = $"{model.BlobRootPath}/{model.FromBlobName.Split('|')[0]}{ending}";
-
-                var dest = $"{model.BlobRootPath}/{UrlEncode(model.ToBlobName.ToLower())}{ending}";
+                var dest = $"{model.BlobRootPath}/{UrlEncode(model.ToBlobName.ToLower())}";
 
                 await _storageContext.RenameAsync(target, dest);
             }
