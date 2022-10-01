@@ -38,7 +38,7 @@
             <hr />
             @if (directoryOnly)
             {
-                <p>Please select a folder to continue.</p>
+                <h5>Select the folder where you want to place the file(s).</h5>
             }
         </div>
     </div>
@@ -80,8 +80,8 @@
             <div class="btn-group" role="group" aria-label="Basic example">
                 @if (directoryOnly)
                 {
-                    <button id="btnCancel" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('cancel')" disabled>Cancel</button>
-                    <button id="btnMove" type="button" class="btn btn-sm btn-secondary" title="Move selected items" disabled>Move</button>
+                    <button id="btnCancel" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('cancel')">Cancel</button>
+                    <button id="btnMoveItems" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('moveItems')" title="Move selected items" disabled>Move</button>
                 }
                 else
                 {
@@ -216,7 +216,10 @@
     let paths = [];
 
     function savePath(path) {
-        paths.push(path);
+        // Avoid duplicates
+        if (paths.indexOf(path) == -1) {
+            paths.push(path);
+        }
         localStorage.setItem("paths", JSON.stringify(paths));
     }
 
@@ -242,6 +245,11 @@
     function clearPaths() {
         paths = [];
         localStorage.removeItem("paths");
+    }
+
+    function getItemsToMove() {
+        var items = JSON.parse(localStorage.getItem("itemsToMove"));
+        return items;
     }
 
     function getPath(checkbox) {
@@ -349,10 +357,12 @@
         }
 
         if (arrayLength === 1) {
+            $("#btnMoveItems").prop('disabled', false);
             $("#btnRename").prop('disabled', false);
             $("#btnRename").prop('title', "Click to rename.");
         } else {
             $("#btnRename").prop('disabled', true);
+            $("#btnMoveItems").prop('disabled', true);
         }
     }
 
@@ -389,8 +399,7 @@
                         function (data, status, jqXHR) {// success callback
                             clearPaths();
                             resetButtons();
-                            alert("Item(s) deleted.");
-                            //window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
                         })
                 }
                 break;
@@ -417,6 +426,30 @@
                     clearPaths();
                     window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true'
                 };
+                break;
+            case "moveItems":
+
+                $("#checkFirstTitle").html("Move Items");
+
+                var items = getItemsToMove();
+
+                var itemCount = items.length;
+
+                 $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
+
+                 next = function () {
+                      $.post('@Url.Action("Move")',   // url
+                        {
+                            Destination: paths[0],
+                            Items: items
+                        }, // data to be submit
+                        function (data, status, jqXHR) {// success callback
+                            clearPaths();
+                            resetButtons();
+                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                        })
+                 }
+                break;
         }
 
         checkFirstModal.show();

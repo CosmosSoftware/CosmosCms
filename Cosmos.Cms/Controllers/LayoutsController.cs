@@ -133,12 +133,22 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index()
         {
+
             if (!await _dbContext.Layouts.CosmosAnyAsync())
             {
                 _dbContext.Layouts.AddRange(LayoutDefaults.GetStarterLayouts());
                 await _dbContext.SaveChangesAsync();
             }
-            return View();
+
+            var model = await _dbContext.Layouts.Select(s => new LayoutIndexViewModel
+            {
+                Id = s.Id,
+                IsDefault = s.IsDefault,
+                LayoutName = s.LayoutName,
+                Notes = s.Notes
+            }).ToListAsync();
+
+            return View(model.AsQueryable());
         }
 
         /// <summary>
@@ -163,6 +173,31 @@ namespace Cosmos.Cms.Controllers
             _dbContext.Layouts.Add(layout);
             await _dbContext.SaveChangesAsync();
             return RedirectToAction("EditCode", new { layout.Id });
+        }
+
+        /// <summary>
+        /// Deletes a layout that is not the default layout
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> Delete(Guid Id)
+        {
+            var entity = await _dbContext.Layouts.FindAsync(Id);
+
+            if (!entity.IsDefault)
+            {
+                // also remove pages that go with this layout.
+                var pages = await _dbContext.Templates.Where(t => t.LayoutId == Id).ToListAsync();
+                _dbContext.Templates.RemoveRange(pages);
+                _dbContext.Layouts.Remove(entity);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                return BadRequest("Cannot delete the default layout.");
+            }
+
+            return RedirectToAction("Index");
         }
 
         /// <summary>
@@ -553,24 +588,6 @@ namespace Cosmos.Cms.Controllers
             }
 
             return RedirectToAction("Index", "Layouts");
-        }
-
-        /// <summary>
-        ///     Gets a list of layouts
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Read_Layouts([DataSourceRequest] DataSourceRequest request)
-        {
-            var model = await _dbContext.Layouts.Select(s => new LayoutIndexViewModel
-            {
-                Id = s.Id,
-                IsDefault = s.IsDefault,
-                LayoutName = s.LayoutName,
-                Notes = s.Notes
-            }).ToListAsync();
-
-            return Json(await model.OrderByDescending(o => o.IsDefault).ThenBy(t => t.LayoutName).ToDataSourceResultAsync(request));
         }
 
         /// <summary>

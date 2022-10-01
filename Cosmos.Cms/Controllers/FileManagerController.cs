@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -114,24 +115,44 @@ namespace Cosmos.Cms.Controllers
             return View(model.AsQueryable());
         }
 
-        //[HttpPost]
-        //public  async Task<IActionResult> MoveTo(string target, string selection)
-        //{
-        //    _storageContext.CreateFolder("/pub");
-        //    ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-        //    ViewData["Selection"] = selection;
+        /// <summary>
+        /// Moves items to a new folder.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Move(MoveFilesViewModel model)
+        {
+            _storageContext.CreateFolder("/pub");
 
-        //    target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
+            try
+            {
+                foreach(var item in model.Items)
+                {
+                    string dest;
 
-        //    ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
+                    if (item.EndsWith("/"))
+                    {
+                        // moving a directory
+                        dest = model.Destination + item.TrimEnd('/').Split('/').LastOrDefault();
+                    }
+                    else
+                    {
+                        // moving a file
+                        dest = model.Destination + item.Split('/').LastOrDefault();
+                    }
 
-        //    //
-        //    // GET FULL OR ABSOLUTE PATH
-        //    //
-        //    var model = await _storageContext.GetFolderContents(target);
+                    await _storageContext.RenameAsync(item, dest);
+                }
 
-        //    return View(model.AsQueryable());
-        //}
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            return Ok();
+        }
 
         #region FILEPOND ENDPOINTS
 
@@ -673,20 +694,13 @@ namespace Cosmos.Cms.Controllers
         {
             foreach(var item in model.Paths)
             {
-                bool.TryParse(item.Split("|")[1], out var isDirectory);
-
-                var results = await _storageContext.GetObjectsAsync(item.Split("|")[0]);
-                
-                foreach(var result in results)
+                if (item.EndsWith('/'))
                 {
-                    if (isDirectory)
-                    {
-                        await _storageContext.DeleteFolderAsync(result.Path);
-                    }
-                    else
-                    {
-                        _storageContext.DeleteFile(result.Path);
-                    }
+                    await _storageContext.DeleteFolderAsync(item.TrimEnd('/'));
+                }
+                else
+                {
+                    _storageContext.DeleteFile(item);
                 }
             }
                        
