@@ -92,41 +92,46 @@ namespace Cosmos.Cms.Controllers
         /// <param name="directoryOnly"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target)
+        public async Task<IActionResult> Index(string target, bool directoryOnly = false)
         {
             _storageContext.CreateFolder("/pub");
-            ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
 
             target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
             ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
+            ViewData["DirectoryOnly"] = directoryOnly;
 
             //
             // GET FULL OR ABSOLUTE PATH
             //
             var model = await _storageContext.GetFolderContents(target);
 
-            return View(model.AsQueryable());
-        }
-
-        [HttpPost]
-        public  async Task<IActionResult> MoveTo(string target, string selection)
-        {
-            _storageContext.CreateFolder("/pub");
-            ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-            ViewData["Selection"] = selection;
-
-            target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
-
-            ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
-
-            //
-            // GET FULL OR ABSOLUTE PATH
-            //
-            var model = await _storageContext.GetFolderContents(target);
+            if (directoryOnly)
+            {
+                return View(model.Where(w => w.IsDirectory == true).AsQueryable());
+            }
 
             return View(model.AsQueryable());
         }
+
+        //[HttpPost]
+        //public  async Task<IActionResult> MoveTo(string target, string selection)
+        //{
+        //    _storageContext.CreateFolder("/pub");
+        //    ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
+        //    ViewData["Selection"] = selection;
+
+        //    target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
+
+        //    ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
+
+        //    //
+        //    // GET FULL OR ABSOLUTE PATH
+        //    //
+        //    var model = await _storageContext.GetFolderContents(target);
+
+        //    return View(model.AsQueryable());
+        //}
 
         #region FILEPOND ENDPOINTS
 
@@ -514,14 +519,14 @@ namespace Cosmos.Cms.Controllers
         /// <remarks>
         /// This is suitable for opening the file manager as a popup.
         /// </remarks>
-        public IActionResult Popup(string id)
-        {
-            _storageContext.CreateFolder("/pub");
-            ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-            ViewData["Popup"] = true;
-            ViewData["option"] = id;
-            return View("index");
-        }
+        //public IActionResult Popup(string id)
+        //{
+        //    _storageContext.CreateFolder("/pub");
+        //    ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
+        //    ViewData["Popup"] = true;
+        //    ViewData["option"] = id;
+        //    return View("index");
+        //}
 
         #region PRIVATE FIELDS AND METHODS
 
@@ -538,12 +543,12 @@ namespace Cosmos.Cms.Controllers
         ///     Makes sure all root folders exist.
         /// </summary>
         /// <returns></returns>
-        public void EnsureRootFoldersExist()
-        {
-            //await _storageContext.CreateFolderAsync("/");
+        //public void EnsureRootFoldersExist()
+        //{
+        //    //await _storageContext.CreateFolderAsync("/");
 
-            _storageContext.CreateFolder("/pub");
-        }
+        //    _storageContext.CreateFolder("/pub");
+        //}
 
         /// <summary>
         ///     Encodes a URL
@@ -590,7 +595,7 @@ namespace Cosmos.Cms.Controllers
                 var fileManagerEntry = _storageContext.CreateFolder(fullPath);
             }
 
-            return RedirectToAction("Index", new { target = model.ParentFolder });
+            return RedirectToAction("Index", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
         }
 
         /// <summary>
@@ -694,67 +699,67 @@ namespace Cosmos.Cms.Controllers
         /// <param name="target"></param>
         /// <param name="fileType"></param>
         /// <returns>List of items found at target search, relative</returns>
-        [HttpPost]
-        public async Task<IActionResult> Read(string target, string fileType)
-        {
-            target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
+        //[HttpPost]
+        //public async Task<IActionResult> Read(string target, string fileType)
+        //{
+        //    target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
-            //
-            // GET FULL OR ABSOLUTE PATH
-            //
-            var model = await _storageContext.GetFolderContents(target);
+        //    //
+        //    // GET FULL OR ABSOLUTE PATH
+        //    //
+        //    var model = await _storageContext.GetFolderContents(target);
 
-            //
-            // OPTIONAL FILTER
-            //
-            if (!string.IsNullOrEmpty(fileType))
-            {
-                string[] fileExtensions = null;
+        //    //
+        //    // OPTIONAL FILTER
+        //    //
+        //    if (!string.IsNullOrEmpty(fileType))
+        //    {
+        //        string[] fileExtensions = null;
 
-                switch (fileType)
-                {
-                    case "f":
-                        fileExtensions = AllowedFileExtensions
-                            .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.FileUploads).Split(',')
-                            .Select(s => s.Trim().ToLower()).ToArray();
-                        break;
-                    case "i":
-                        fileExtensions = AllowedFileExtensions
-                            .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.ImageUploads).Split(',')
-                            .Select(s => s.Trim().ToLower()).ToArray();
-                        break;
-                }
+        //        switch (fileType)
+        //        {
+        //            case "f":
+        //                fileExtensions = AllowedFileExtensions
+        //                    .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.FileUploads).Split(',')
+        //                    .Select(s => s.Trim().ToLower()).ToArray();
+        //                break;
+        //            case "i":
+        //                fileExtensions = AllowedFileExtensions
+        //                    .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.ImageUploads).Split(',')
+        //                    .Select(s => s.Trim().ToLower()).ToArray();
+        //                break;
+        //        }
 
-                var filteredModel = new List<BlobService.FileManagerEntry>();
+        //        var filteredModel = new List<BlobService.FileManagerEntry>();
 
-                foreach (var item in model)
-                {
-                    if (item.IsDirectory)
-                    {
-                        filteredModel.Add(item);
-                    }
-                    else if (fileExtensions.Contains(item.Extension.ToLower().TrimStart('.')))
-                    {
-                        filteredModel.Add(item);
-                    }
-                }
+        //        foreach (var item in model)
+        //        {
+        //            if (item.IsDirectory)
+        //            {
+        //                filteredModel.Add(item);
+        //            }
+        //            else if (fileExtensions.Contains(item.Extension.ToLower().TrimStart('.')))
+        //            {
+        //                filteredModel.Add(item);
+        //            }
+        //        }
 
-                return Json(filteredModel);
-            }
+        //        return Json(filteredModel);
+        //    }
 
 
-            return Json(model);
-        }
+        //    return Json(model);
+        //}
 
         /// <summary>
         /// File browser used by Kendo file manager.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public async Task<IActionResult> ImageBrowserRead(string path)
-        {
-            return await FileBrowserRead(path, "i");
-        }
+        //public async Task<IActionResult> ImageBrowserRead(string path)
+        //{
+        //    return await FileBrowserRead(path, "i");
+        //}
 
         /// <summary>
         ///     File browser read used by Kendo editor
@@ -762,87 +767,87 @@ namespace Cosmos.Cms.Controllers
         /// <param name="path"></param>
         /// <param name="fileType"></param>
         /// <returns></returns>
-        public async Task<IActionResult> FileBrowserRead(string path, string fileType = "f")
-        {
-            path = string.IsNullOrEmpty(path) ? "" : HttpUtility.UrlDecode(path);
+        //public async Task<IActionResult> FileBrowserRead(string path, string fileType = "f")
+        //{
+        //    path = string.IsNullOrEmpty(path) ? "" : HttpUtility.UrlDecode(path);
 
-            var model = await _storageContext.GetFolderContents(path);
+        //    var model = await _storageContext.GetFolderContents(path);
 
-            string[] fileExtensions = null;
+        //    string[] fileExtensions = null;
 
-            switch (fileType)
-            {
-                case "f":
-                    fileExtensions = AllowedFileExtensions
-                        .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.FileUploads).Split(',')
-                        .Select(s => s.Trim().ToLower()).ToArray();
-                    break;
-                case "i":
-                    fileExtensions = AllowedFileExtensions
-                        .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.ImageUploads).Split(',')
-                        .Select(s => s.Trim().ToLower()).ToArray();
-                    break;
-            }
+        //    switch (fileType)
+        //    {
+        //        case "f":
+        //            fileExtensions = AllowedFileExtensions
+        //                .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.FileUploads).Split(',')
+        //                .Select(s => s.Trim().ToLower()).ToArray();
+        //            break;
+        //        case "i":
+        //            fileExtensions = AllowedFileExtensions
+        //                .GetFilterForViews(AllowedFileExtensions.ExtensionCollectionType.ImageUploads).Split(',')
+        //                .Select(s => s.Trim().ToLower()).ToArray();
+        //            break;
+        //    }
 
-            var jsonModel = new List<FileBrowserEntry>();
+        //    var jsonModel = new List<FileBrowserEntry>();
 
-            foreach (var entry in model)
-                if (entry.IsDirectory || fileExtensions == null)
-                    jsonModel.Add(new FileBrowserEntry
-                    {
-                        EntryType = entry.IsDirectory ? FileBrowserEntryType.Directory : FileBrowserEntryType.File,
-                        Name = $"{entry.Name}",
-                        Size = entry.Size
-                    });
-                else if (fileExtensions.Contains(entry.Extension.TrimStart('.')))
-                    jsonModel.Add(new FileBrowserEntry
-                    {
-                        EntryType = FileBrowserEntryType.File,
-                        Name = $"{entry.Name}.{entry.Extension.TrimStart('.')}",
-                        Size = entry.Size
-                    });
+        //    foreach (var entry in model)
+        //        if (entry.IsDirectory || fileExtensions == null)
+        //            jsonModel.Add(new FileBrowserEntry
+        //            {
+        //                EntryType = entry.IsDirectory ? FileBrowserEntryType.Directory : FileBrowserEntryType.File,
+        //                Name = $"{entry.Name}",
+        //                Size = entry.Size
+        //            });
+        //        else if (fileExtensions.Contains(entry.Extension.TrimStart('.')))
+        //            jsonModel.Add(new FileBrowserEntry
+        //            {
+        //                EntryType = FileBrowserEntryType.File,
+        //                Name = $"{entry.Name}.{entry.Extension.TrimStart('.')}",
+        //                Size = entry.Size
+        //            });
 
-            return Json(jsonModel.Select(s => new KendoFileBrowserEntry(s)).ToList());
-        }
+        //    return Json(jsonModel.Select(s => new KendoFileBrowserEntry(s)).ToList());
+        //}
 
         /// <summary>
         /// Create an image thumbnail
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "path" })]
-        public async Task<IActionResult> CreateThumbnail(string path)
-        {
-            path = string.IsNullOrEmpty(path) ? "" : HttpUtility.UrlDecode(path);
+        //[ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new[] { "path" })]
+        //public async Task<IActionResult> CreateThumbnail(string path)
+        //{
+        //    path = string.IsNullOrEmpty(path) ? "" : HttpUtility.UrlDecode(path);
 
-            //var searchPath = GetAbsolutePath(path);
+        //    //var searchPath = GetAbsolutePath(path);
 
-            try
-            {
-                await using var fileStream = await _storageContext.OpenBlobReadStreamAsync(path);
-                // 80 x 80
-                var desiredSize = new ImageSizeModel();
+        //    try
+        //    {
+        //        await using var fileStream = await _storageContext.OpenBlobReadStreamAsync(path);
+        //        // 80 x 80
+        //        var desiredSize = new ImageSizeModel();
 
-                const string contentType = "image/png";
+        //        const string contentType = "image/png";
 
-                var thumbnailCreator = new ThumbnailCreator();
+        //        var thumbnailCreator = new ThumbnailCreator();
 
-                return File(thumbnailCreator.Create(fileStream, desiredSize, contentType), contentType);
-            }
-            catch
-            {
-                var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images\\ImageIcon.png");
-                await using var fileStream = System.IO.File.OpenRead(filePath);
-                // 80 x 80
-                var desiredSize = new ImageSizeModel();
+        //        return File(thumbnailCreator.Create(fileStream, desiredSize, contentType), contentType);
+        //    }
+        //    catch
+        //    {
+        //        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images\\ImageIcon.png");
+        //        await using var fileStream = System.IO.File.OpenRead(filePath);
+        //        // 80 x 80
+        //        var desiredSize = new ImageSizeModel();
 
-                const string contentType = "image/png";
+        //        const string contentType = "image/png";
 
-                var thumbnailCreator = new ThumbnailCreator();
+        //        var thumbnailCreator = new ThumbnailCreator();
 
-                return File(thumbnailCreator.Create(fileStream, desiredSize, contentType), contentType);
-            }
-        }
+        //        return File(thumbnailCreator.Create(fileStream, desiredSize, contentType), contentType);
+        //    }
+        //}
 
         /// <summary>
         /// Rename a blob item.
@@ -886,55 +891,55 @@ namespace Cosmos.Cms.Controllers
         /// <param name="entry">The entry.</param>
         /// <returns>An empty <see cref="ContentResult" />.</returns>
         /// <exception cref="Exception">Forbidden</exception>
-        [HttpPost]
-        public async Task<ActionResult> Update(BlobService.FileManagerEntry entry)
-        {
-            entry.Path = entry.Path?.ToLower();
-            entry.Name = entry.Name?.ToLower();
-            entry.Extension = entry.Extension?.ToLower();
+        //[HttpPost]
+        //public async Task<ActionResult> Update(BlobService.FileManagerEntry entry)
+        //{
+        //    entry.Path = entry.Path?.ToLower();
+        //    entry.Name = entry.Name?.ToLower();
+        //    entry.Extension = entry.Extension?.ToLower();
 
-            if (entry.Path == "pub")
-                return Unauthorized($"Cannot rename folder {entry.Path}.");
+        //    if (entry.Path == "pub")
+        //        return Unauthorized($"Cannot rename folder {entry.Path}.");
 
-            //var source = GetAbsolutePath(entry.Path);
-            string newName;
-            if (!string.IsNullOrEmpty(entry.Path) && entry.Path.Contains("/"))
-            {
-                var pathParts = entry.Path.Split("/");
-                // For the following line, see example 3 here: https://stackoverflow.com/questions/3634099/c-sharp-string-array-replace-last-element
-                pathParts[^1] = entry.Name!;
-                newName = string.Join("/", pathParts);
-            }
-            else
-            {
-                newName = entry.Name;
-            }
+        //    //var source = GetAbsolutePath(entry.Path);
+        //    string newName;
+        //    if (!string.IsNullOrEmpty(entry.Path) && entry.Path.Contains("/"))
+        //    {
+        //        var pathParts = entry.Path.Split("/");
+        //        // For the following line, see example 3 here: https://stackoverflow.com/questions/3634099/c-sharp-string-array-replace-last-element
+        //        pathParts[^1] = entry.Name!;
+        //        newName = string.Join("/", pathParts);
+        //    }
+        //    else
+        //    {
+        //        newName = entry.Name;
+        //    }
 
-            if (!entry.IsDirectory)
-            {
-                if (!string.IsNullOrEmpty(entry.Extension) && !newName.ToLower().EndsWith(entry.Extension.ToLower()))
-                {
-                    newName = $"{newName}.{entry.Extension.TrimStart('.')}";
-                }
-            }
+        //    if (!entry.IsDirectory)
+        //    {
+        //        if (!string.IsNullOrEmpty(entry.Extension) && !newName.ToLower().EndsWith(entry.Extension.ToLower()))
+        //        {
+        //            newName = $"{newName}.{entry.Extension.TrimStart('.')}";
+        //        }
+        //    }
 
-            // Encode using our own rules
-            newName = TrimPathPart(UrlEncode(newName));
+        //    // Encode using our own rules
+        //    newName = TrimPathPart(UrlEncode(newName));
 
 
-            if (entry.Path == "pub")
-                throw new UnauthorizedAccessException($"Cannot rename folder {entry.Path}.");
+        //    if (entry.Path == "pub")
+        //        throw new UnauthorizedAccessException($"Cannot rename folder {entry.Path}.");
 
-            await _storageContext.RenameAsync(entry.Path, newName);
+        //    await _storageContext.RenameAsync(entry.Path, newName);
 
-            // File manager is expecting the file name to come back without an extension.
-            entry.Name = Path.GetFileNameWithoutExtension(newName);
-            entry.Path = GetRelativePath(newName);
-            entry.Extension = entry.IsDirectory || string.IsNullOrEmpty(entry.Extension) ? "" : entry.Extension;
+        //    // File manager is expecting the file name to come back without an extension.
+        //    entry.Name = Path.GetFileNameWithoutExtension(newName);
+        //    entry.Path = GetRelativePath(newName);
+        //    entry.Extension = entry.IsDirectory || string.IsNullOrEmpty(entry.Extension) ? "" : entry.Extension;
 
-            // Example: {"Name":"Wow","Size":0,"Path":"Wow","Extension":"","IsDirectory":true,"HasDirectories":false,"Created":"2020-10-30T18:14:16.0772789+00:00","CreatedUtc":"2020-10-30T18:14:16.0772789Z","Modified":"2020-10-30T18:14:16.0772789+00:00","ModifiedUtc":"2020-10-30T18:14:16.0772789Z"}
-            return Json(entry);
-        }
+        //    // Example: {"Name":"Wow","Size":0,"Path":"Wow","Extension":"","IsDirectory":true,"HasDirectories":false,"Created":"2020-10-30T18:14:16.0772789+00:00","CreatedUtc":"2020-10-30T18:14:16.0772789Z","Modified":"2020-10-30T18:14:16.0772789+00:00","ModifiedUtc":"2020-10-30T18:14:16.0772789Z"}
+        //    return Json(entry);
+        //}
 
         #endregion
 
@@ -945,29 +950,29 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        public string GetRelativePath(params string[] fullPath)
-        {
-            var rootPath = "";
+        //public string GetRelativePath(params string[] fullPath)
+        //{
+        //    var rootPath = "";
 
-            var absolutePath = string.Join('/', ParsePath(fullPath));
+        //    var absolutePath = string.Join('/', ParsePath(fullPath));
 
-            if (absolutePath.ToLower().StartsWith(rootPath.ToLower()))
-            {
-                if (rootPath.Length == absolutePath.Length) return "";
-                return TrimPathPart(absolutePath.Substring(rootPath.Length));
-            }
+        //    if (absolutePath.ToLower().StartsWith(rootPath.ToLower()))
+        //    {
+        //        if (rootPath.Length == absolutePath.Length) return "";
+        //        return TrimPathPart(absolutePath.Substring(rootPath.Length));
+        //    }
 
-            return TrimPathPart(absolutePath);
-        }
+        //    return TrimPathPart(absolutePath);
+        //}
 
         /// <summary>
         ///     Gets the public URL of the blob.
         /// </summary>
         /// <returns></returns>
-        public string GetBlobRootUrl()
-        {
-            return $"{_options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/";
-        }
+        //public string GetBlobRootUrl()
+        //{
+        //    return $"{_options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/";
+        //}
 
         /// <summary>
         ///     Parses out a path into a string array.
@@ -1237,40 +1242,40 @@ namespace Cosmos.Cms.Controllers
 
         #region UPLOADER FUNCTIONS
 
-        /// <summary>
-        ///     Removes a file
-        /// </summary>
-        /// <param name="fileNames"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public ActionResult Remove(string[] fileNames, string path)
-        {
-            // Return an empty string to signify success
-            return Content("");
-        }
+        ///// <summary>
+        /////     Removes a file
+        ///// </summary>
+        ///// <param name="fileNames"></param>
+        ///// <param name="path"></param>
+        ///// <returns></returns>
+        //public ActionResult Remove(string[] fileNames, string path)
+        //{
+        //    // Return an empty string to signify success
+        //    return Content("");
+        //}
 
-        /// <summary>
-        ///     Used to directories, with files processed one chunk at a time, and normalizes the blob name to lower case.
-        /// </summary>
-        /// <param name="folders"></param>
-        /// <param name="metaData"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [RequestSizeLimit(
-            6291456)] // AWS S3 multi part upload requires 5 MB parts--no more, no less so pad the upload size by a MB just in case
-        public async Task<ActionResult> UploadDirectory(IEnumerable<IFormFile> folders,
-            string metaData, string path)
-        {
-            return await Upload(folders, metaData, path);
-        }
-        /// <summary>
-        ///     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
-        /// </summary>
-        /// <param name="files"></param>
-        /// <param name="metaData"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        ///// <summary>
+        /////     Used to directories, with files processed one chunk at a time, and normalizes the blob name to lower case.
+        ///// </summary>
+        ///// <param name="folders"></param>
+        ///// <param name="metaData"></param>
+        ///// <param name="path"></param>
+        ///// <returns></returns>
+        //[HttpPost]
+        //[RequestSizeLimit(
+        //    6291456)] // AWS S3 multi part upload requires 5 MB parts--no more, no less so pad the upload size by a MB just in case
+        //public async Task<ActionResult> UploadDirectory(IEnumerable<IFormFile> folders,
+        //    string metaData, string path)
+        //{
+        //    return await Upload(folders, metaData, path);
+        //}
+        ///// <summary>
+        /////     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
+        ///// </summary>
+        ///// <param name="files"></param>
+        ///// <param name="metaData"></param>
+        ///// <param name="path"></param>
+        ///// <returns></returns>
         [HttpPost]
         [RequestSizeLimit(
             6291456)] // AWS S3 multi part upload requires 5 MB parts--no more, no less so pad the upload size by a MB just in case

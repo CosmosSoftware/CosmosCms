@@ -14,5 +14,10 @@
         /// New folder name
         /// </summary>
         public string FolderName { get; set; }
+
+        /// <summary>
+        /// Directory only mode for file browser
+        /// </summary>
+        public bool DirectoryOnly { get; set; }
     }
 }

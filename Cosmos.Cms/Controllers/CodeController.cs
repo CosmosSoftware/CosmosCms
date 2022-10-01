@@ -54,9 +54,11 @@ namespace Cosmos.Cms.Controllers
         /// Script inventory
         /// </summary>
         /// <returns></returns>
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var data = await _dbContext.ScriptCatalog.ToListAsync();
+
+            return View(data.AsQueryable());
         }
 
         /// <summary>
@@ -357,10 +359,23 @@ namespace Cosmos.Cms.Controllers
         /// Script inventory
         /// </summary>
         /// <returns></returns>
-        public IActionResult Versions(string Id)
+        public async Task<IActionResult> Versions(string Id)
         {
             ViewData["EndPoint"] = Id;
-            return View();
+            var data = await _dbContext.NodeScripts
+                .WithPartitionKey(Id)
+                .OrderByDescending(o => o.Version)
+                .Select(s => new NodeScriptItemViewModel
+                {
+                    Id = s.Id,
+                    Published = s.Published,
+                    EndPoint = s.EndPoint,
+                    Updated = s.Updated,
+                    Version = s.Version,
+                    Expires = s.Expires
+                }).ToListAsync();
+
+            return View(data.AsQueryable());
         }
 
         #region GRID DATA

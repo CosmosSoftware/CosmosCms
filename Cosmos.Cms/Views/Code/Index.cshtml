@@ -1,5 +1,6 @@
 ﻿@using Cosmos.Cms.Common.Data
-@using Kendo.Mvc.UI
+@using NonFactors.Mvc.Grid
+@model IQueryable<ScriptCatalogEntry>
 @{
     ViewData["Title"] = "Script Inventory";
 
@@ -22,40 +23,20 @@
             {
                 <a class="btn btn-sm btn-primary" asp-action="Create">New Script</a>
             }
-            @(
-                Html.Kendo().Grid<ScriptCatalogEntry>()
-                .Name("grid")
-                .Columns(col =>
-                {
-                    col.Bound(b => b.Id).Hidden(true);
-                    col.Template(btnGroup).Title("Menu").Width(260);
-                    col.Bound(b => b.EndPoint);
-                    col.Template("#= formatPublishedDate(Published) #").Title("Published");
-                    col.Template("#= formatPublishedDate(Updated) #").Title("Updated");
-                    col.Command(com => com.Destroy().IconClass("fa fa-trash")).Visible(canEdit).Title("Trash Page");
+            @(Html.Grid(Model)
+               .Build(col => {
+                    col.Add(model => Html.ActionLink("", "Versions", "Code", new { Id = model.EndPoint }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
+                    col.Add(b => b.EndPoint).Titled("End Point");
+                    col.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone").Titled("Updated");
+                    col.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT").Titled("Published");
                 })
-                .ToolBar(t => { t.Search(); })
-                .Pageable(pager => pager
-                .Input(true)
-                .Numeric(true)
-                .Info(true)
-                .PreviousNext(true)
-                .Refresh(true)
-                .Position(GridPagerPosition.Top)
-                )
-                .Sortable()
-                .Editable(editable => editable.Mode(GridEditMode.InLine).ConfirmDelete("Are you sure you want to trash this article?").CancelDelete("Do not trash article."))
+                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+                .Empty("No versions found")
                 .Filterable()
-                .Search(s => s.Field("Title"))
-                .DataSource(dataSource =>
-                {
-                    dataSource.Ajax()
-                    .Model(m => m.Id("Id"))
-                    .Read(read => read.Action("Read_Scripts", "Code"))
-                    .Destroy(trash => trash.Action("Trash_Script", "Code"));
-                })
-                .Events(eve => eve.DataBound("onDataBound"))
-                )
+                .Sortable()
+                .Pageable()
+            )
+           
             <form>
                 <input id="selected" type="hidden" />
             </form>
@@ -63,6 +44,7 @@
     </div>
 </div>
 <script>
+
 
     function getStatusBadge(published, endPoint) {
         if (published === null) {
@@ -80,7 +62,4 @@
         }
     }
 
-    function onDataBound(e) {
-        var rows = e.sender.dataSource.total();
-    }
 </script>

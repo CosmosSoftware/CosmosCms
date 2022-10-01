@@ -1,9 +1,20 @@
 ﻿@using NonFactors.Mvc.Grid
 @model IQueryable<Cosmos.BlobService.FileManagerEntry>
 @{
-    ViewData["Title"] = "Files List";
+
 
     var publisherUrl = ViewData["PublisherUrl"];
+    var directoryOnly = (bool)ViewData["DirectoryOnly"];
+
+    if (directoryOnly)
+    {
+        ViewData["Title"] = "Folders";
+    }
+    else
+    {
+        ViewData["Title"] = "Files List";
+    }
+
     var isReviewer = User.IsInRole("Reviewers");
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
     var pathPrefix = (string)ViewData["PathPrefix"];
@@ -25,9 +36,13 @@
         <div class="col">
             <h3>@ViewData["Title"]</h3>
             <hr />
+            @if (directoryOnly)
+            {
+                <p>Please select a folder to continue.</p>
+            }
         </div>
     </div>
-    @if (pathPrefix.StartsWith("/pub"))
+    @if (pathPrefix.StartsWith("/pub") && directoryOnly == false)
     {
         <div class="row">
             <div class="col-md-12">
@@ -63,9 +78,18 @@
     <div class="row">
         <div class="col-md-9">
             <div class="btn-group" role="group" aria-label="Basic example">
-                <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
-                <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
-                <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled style="display:none">Move</button>
+                @if (directoryOnly)
+                {
+                    <button id="btnCancel" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('cancel')" disabled>Cancel</button>
+                    <button id="btnMove" type="button" class="btn btn-sm btn-secondary" title="Move selected items" disabled>Move</button>
+                }
+                else
+                {
+                    <button id="btnClear" type="button" class="btn btn-sm btn-secondary" title="Clear list of selected items" disabled>Clear</button>
+                    <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
+                    <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
+                    <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled>Move</button>
+                }
             </div>
         </div>
         <div class="col-md-3">
@@ -73,6 +97,7 @@
             {
                 <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
                     <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
+                    <input type="hidden" name="DirectoryOnly" id="DirectoryOnly" value="@directoryOnly" />
                     <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
 
                     <button class="btn btn-sm btn-secondary" type="submit">Create</button>
@@ -85,7 +110,7 @@
             @(Html.Grid(Model)
                 .Build(col =>
                 {
-                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled(Html.CheckBox("_checkAll")).Width("30px");
+                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
                     col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
@@ -161,22 +186,10 @@
     </div>
 </div>
 
-<div class="modal" id="folderModal">
-    <div class="modal-dialog modal-fullscreen">
-        <!-- Modal body -->
-        <div class="modal-body">
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button id="btnSubmitChange" type="submit" value="submit" class="btn btn-secondary">Change</button>
-            <div id="extAlert" class="alert alert-warning" role="alert" style="display:none"><i class="fa-solid fa-triangle-exclamation"></i> Warning: file extension does not match original.</div>
-        </div>
-    </div>
-</div>
-
 <script>
 
-    const folderGridDiv = document.querySelector("#folderGrid");
+    // Set mode
+    const directoryOnly = "@directoryOnly" === "True";
 
     // Get a reference to the file input element
     const inputElement = document.querySelector('input[type="file"]');
@@ -202,6 +215,47 @@
 
     let paths = [];
 
+    function savePath(path) {
+        paths.push(path);
+        localStorage.setItem("paths", JSON.stringify(paths));
+    }
+
+    function removePath(path) {
+        var tmp = paths.filter(function (value) {
+            return value !== path;
+        });
+        paths = tmp;
+        localStorage.setItem("paths", JSON.stringify(paths));
+    }
+
+    // Reload selected paths from local storage
+    function reloadPaths() {
+        var data = localStorage.getItem("paths");
+
+        if (typeof (data) === "undefined" || data === null || data === "") {
+            paths = []
+        } else {
+            paths = JSON.parse(data);
+        }
+    }
+
+    function clearPaths() {
+        paths = [];
+        localStorage.removeItem("paths");
+    }
+
+    function getPath(checkbox) {
+
+        var isDirectory = $(checkbox).attr('data-ccms-isdir');
+
+        if (isDirectory === "True") {
+            return $(checkbox).attr('data-ccms-blob') + "/";
+        }
+        else {
+            return $(checkbox).attr('data-ccms-blob');
+        }
+    }
+
     $(document).ready(function () {
         $(".toLocalTimeZone").each(function (index, element) {
             var date = new Date($(element).html());
@@ -214,51 +268,81 @@
 
         });
 
-        $("#zcheckAll").on("change", function () {
+        // Reload selected paths from local storage
+        reloadPaths();
 
-            var checked = $(this).is(':checked');
+        $(".gridCheckBox").each(function (index, element) {
 
-            $(".gridCheckBox").each(function (index, element) {
-                $(element).prop('checked', checked);
+            var path = getPath(element);
+
+            if (path === "pub" || path === "pub/") {
+                $(element).prop('checked', false);
+                $(element).prop('disabled', true);
+            }
+
+            if ((paths.indexOf(path) > -1)) {
+                $(element).prop('checked', true);
+            }
+
+            $(element).on("change", function () {
+                if (directoryOnly) {
+                    var isChecked = $(element).prop('checked');
+                    $(".gridCheckBox").each(function (i, e) {
+                        $(e).prop('checked', false);
+                    });
+                    $(element).prop('checked', true);
+                }
+
+                resetButtons();
             });
 
+        });
+
+        $("#btnClear").click(function () {
+            $(".gridCheckBox").each(function (index, element) {
+                $(element).prop('checked', false);
+            });
+            clearPaths();
             resetButtons();
         });
 
-        $(".gridCheckBox").each(function (index, element) {
-            $(element).on("change", function () {
-                resetButtons();
-            });
+        $("frmChangeName").submit(function (e) {
+            clearPaths();
+            return true;
         });
+
+        resetButtons();
     });
 
     function resetButtons() {
 
         // Reset paths
-        paths = [];
+        // paths = [];
 
         $(".gridCheckBox").each(function (index, element) {
+
+            var path = getPath(element);
+
             if ($(element).is(':checked')) {
-                var isDirectory = $(element).attr('data-ccms-isdir');
-                if (isDirectory === "True") {
-                    paths.push($(element).attr('data-ccms-blob') + "/");
-                }
-                else {
-                    paths.push($(element).attr('data-ccms-blob'));
-                }
+                savePath(path);
+            } else {
+                removePath(path);
             }
+
         });
 
         // Get the array length
         var arrayLength = paths.length;
 
         if (arrayLength > 0) {
+            $("#btnClear").prop('disabled', false);
             $("#btnDelete").prop('disabled', false);
             $("#btnDelete").prop('title', "Click to delete.");
             $("#btnMove").prop('disabled', false);
             $("#btnMove").prop('title', "Click to move.");
             $("#btnRename").prop('title', "Select only one item.");
         } else {
+            $("#btnClear").prop('disabled', true);
             $("#btnDelete").prop('disabled', true);
             $("#btnMove").prop('disabled', true);
             $("#btnRename").prop('title', "Select one item.");
@@ -285,6 +369,10 @@
         var arrayLength = paths.length;
 
         switch (command) {
+            case "cancel":
+                clearPaths();
+                window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                break;
             case "delete":
                 $("#checkFirstTitle").html("Delete Verification");
                 if (arrayLength == 1) {
@@ -299,7 +387,10 @@
                             Paths: paths
                         }, // data to be submit
                         function (data, status, jqXHR) {// success callback
-                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                            clearPaths();
+                            resetButtons();
+                            alert("Item(s) deleted.");
+                            //window.location.href = '@Url.Action("Index")?target=@pathPrefix';
                         })
                 }
                 break;
@@ -314,15 +405,17 @@
                 }
                 break;
             case "move":
-                $("#checkFirstTitle").html("Delete Verification");
+                $("#checkFirstTitle").html("Move Items");
                 if (arrayLength == 1) {
                     $("#checkFirstDialog").html("WARNING: Are you sure you want to move this item?");
                 } else {
                     $("#checkFirstDialog").html("Are you sure you want to move " + arrayLength + " items?");
                 }
+
                 next = function () {
-                    var modal = new bootstrap.Modal(document.getElementById("folderModal"));
-                    modal.show();
+                    localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
+                    clearPaths();
+                    window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true'
                 };
         }
 
