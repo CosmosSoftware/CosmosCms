@@ -1,4 +1,7 @@
 ﻿@using Kendo.Mvc.UI
+@using NonFactors.Mvc.Grid
+@using Cosmos.Cms.Data.Logic
+@model IQueryable<LayoutCatalogItem>
 @{
     ViewData["Title"] = "Import Open Source Layout";
 }
@@ -11,45 +14,37 @@
                 Below is a list of open source layouts pre-packaged for you to use in your Cosmos CMS website.  All are open source
                 and have documentation on how to use them.
             </p>
-            <p>You can also <a class="text-light" href="@Url.Action("Create")">create a new layout of your own</a>.</p>
-
-            @(Html.Kendo().Grid<Cosmos.Cms.Data.Logic.LayoutCatalogItem>().Name("grid")
-            .Columns(col =>
-            {
-            col.Bound(m => m.Name).Title("").ClientTemplate("<a class='btn btn-primary' title='Import community layout.' href='" + @Url.Action("ImportCommunityLayout") + "/#: Id#'>Import</a>");
-            col.Bound(m => m.Id).Title("Preview").ClientTemplate("<a target='_blank' title='Open layout' href='https://cosmos-layouts.moonrise.net/Layouts/#: Id#/layout.html'><img  height='120' src='https://cosmos-layouts.moonrise.net/Layouts/#: Id#/preview.jpg' /></a>");
-            col.Bound(m => m.Name).Title("Name");
-            col.Bound(m => m.License).Encoded(false).Title("License");
-            col.Bound(m => m.Description).Encoded(false).Title("Notes/Description").Width("50%");
-            })
-            .ClientDetailTemplateId("template")
-            .Pageable()
-            .ToolBar(tool => { tool.Search(); })
-            .DataSource(data =>
-            {
-            data.Ajax().Model(m => { m.Id("Id"); }).Read("Read_CommunityLayouts", "Layouts");
-            })
-            )
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Layouts <i class="fa-solid fa-circle-arrow-right"></i></a>
+            @(Html.Grid(Model)
+                .Build(col =>
+                {
+                    col.Add(m => m.Name).Titled("")
+                    .RenderedAs(m => $"<a class='btn btn-sm btn-secondary' title='Import community layout.' href='{@Url.Action("ImportCommunityLayout")}/{m.Id}'>Import</a>")
+                    .Encoded(false)
+                    .Width("60px").Filterable(false).Sortable(false);
+                    col.Add(m => m.Id).Titled("Preview")
+                    .RenderedAs(m => $"<a target='_blank' title='Open layout' href='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/layout.html'><img  height='120' src='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/preview.jpg' /></a>")
+                    .Filterable(false)
+                    .Sortable(false)
+                    .Encoded(false);
+                    col.Add(m => m.Name).Titled("Name");
+                    col.Add(m => m.License).Encoded(false).Titled("License")
+                    .Filterable(false)
+                    .Sortable(false)
+                    .Encoded(false);
+                    col.Add(m => m.Description).Encoded(false).Titled("Notes/Description")
+                    .Filterable(false)
+                    .Sortable(false);
+                })
+                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+                .Empty("No layouts found")
+                .Filterable()
+                .Sortable()
+                .Pageable()
+                )
+            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Layouts <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
 </div>
 
-<script id="template" type="text/kendo-tmpl">
-    <p>Template pages that come with this layout:</p>
-    @(Html.Kendo().Grid<Cosmos.Cms.Data.Logic.Page>()
-             .Name("grid_#=Id#")
-             .Columns(columns =>
-             {
-                columns.Bound(o => o.Title);
-                columns.Bound(o => o.Type);
-                columns.Bound(o => o.Description);
-             })
-             .DataSource(dataSource => dataSource
-                .Ajax()
-                .PageSize(5)
-                .Read(read => read.Action("Read_LayoutTemplatePages", "Layouts", new{ Id = "#=Id#" })))
-            .Pageable()
-            .Sortable()
-            .ToClientTemplate())
-</script>
 

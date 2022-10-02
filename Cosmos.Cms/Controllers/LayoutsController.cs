@@ -157,7 +157,8 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public IActionResult CommunityLayouts()
         {
-            return View();
+            var utilities = new LayoutUtilities();
+            return View(utilities.CommunityCatalog.LayoutCatalog.AsQueryable());
         }
 
         /// <summary>
@@ -198,16 +199,6 @@ namespace Cosmos.Cms.Controllers
             }
 
             return RedirectToAction("Index");
-        }
-
-        /// <summary>
-        /// Edit a layout by its ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            return await GetLayoutWithHomePage(id);
         }
 
         /// <summary>
@@ -588,23 +579,6 @@ namespace Cosmos.Cms.Controllers
             }
 
             return RedirectToAction("Index", "Layouts");
-        }
-
-        /// <summary>
-        /// Reads the community layouts
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Read_CommunityLayouts([DataSourceRequest] DataSourceRequest request)
-        {
-            if (request == null)
-            {
-                return null;
-            }
-
-            var utilities = new LayoutUtilities();
-
-            return Json(await utilities.CommunityCatalog.LayoutCatalog.ToDataSourceResultAsync(request));
         }
 
         /// <summary>

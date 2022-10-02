@@ -3,15 +3,8 @@
 
 @{
     ViewData["Title"] = "Website Layouts";
-    var previewTemplate = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Preview", "Layouts")}/#: Id #\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>";
-    var notesTemplate = $"<a class=\"btn btn-sm  btn-primary\" href=\"{Url.Action("EditNotes", "Layouts")}/#: Id #\" title=\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>";
-    var editCodeTemplate = $"<a class=\"btn btn-sm  btn-primary\" href=\"{Url.Action("EditCode", "Layouts")}/#: Id #\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>";
-
-    var exportTemplate = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("ExportLayout", "Layouts")}/#: Id #\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>";
-
-    var btnGroup = "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">#= getDefaultButton(IsDefault, Id) #" +
-                   previewTemplate + notesTemplate + editCodeTemplate + exportTemplate + "</div>";
 }
+
 <div class="container mt-5 pt-2">
     <div class="row">
         <div class="col">
@@ -20,27 +13,27 @@
             <p>Shown below lists the layouts loaded into your website.  Each gives your website a specific look for each page in your website.</p>
             <p>Click &quot;Create New&quot; to start building your own style.</p>
 
-            <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">New Layout</a>
-            <a class="btn btn-sm btn-primary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
-            <a class="btn btn-sm btn-primary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
-            <a class="btn btn-sm btn-primary" title="Upload custom layout." href="@Url.Action("Upload")">Upload Layout</a>
+            <a class="btn btn-sm btn-secondary" href="@Url.Action("Create")">New Layout</a>
+            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
+            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
+            <a class="btn btn-sm btn-secondary" title="Upload custom layout." href="@Url.Action("Upload")">Upload Layout</a>
             |
-            <a class="btn btn-sm btn-primary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
+            <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
 
             @(Html.Grid(Model)
                 .Build(col =>
                 {
                     col.Add().RenderedAs(m =>
                     m.IsDefault ?
-                    "<div class='btn btn-sm btn-primary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
+                    "<div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
                     $"<a href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><span class='fa fa-check-circle-o'></span></a>").Encoded(false).Titled("");
 
                     col.Add().RenderedAs(m =>
                     "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +
-                    $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
-                    $"<a class=\"btn btn-sm  btn-primary\" href=\"{Url.Action("EditNotes", "Layouts")}/{m.Id}\" title =\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>" +
-                    $"<a class=\"btn btn-sm  btn-primary\" href=\"{Url.Action("EditCode", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
-                    $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("ExportLayout", "Layouts")}/{m.Id}\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>" +
+                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
+                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditNotes", "Layouts")}/{m.Id}\" title =\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>" +
+                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
+                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportLayout", "Layouts")}/{m.Id}\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>" +
                     "</div>"
                     ).Encoded(false).Titled("");
 
@@ -50,8 +43,8 @@
                     col.Add(m => m.Notes).Encoded(false);
                     col.Add().RenderedAs(m => 
                         m.IsDefault ?
-                    "<a class=\"btn btn-sm  btn-primary\" title=\"Cannot delete default layout\"> - </a>" :
-                    $"<a class=\"btn btn-sm  btn-primary\" href=\"{Url.Action("Delete", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>").Encoded(false).Titled("");
+                    "<a class=\"btn btn-sm  btn-secondary\" title=\"Cannot delete default layout\"> - </a>" :
+                    $"<a class=\"btn btn-sm  btn-secondary\" href=\"{Url.Action("Delete", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>").Encoded(false).Titled("");
                 })
                 .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
                 .Empty("No layouts found")
