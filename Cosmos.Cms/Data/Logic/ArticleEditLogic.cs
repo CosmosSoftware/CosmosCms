@@ -435,6 +435,41 @@ namespace Cosmos.Cms.Data.Logic
         #region SAVE ARTICLE METHODS
 
         /// <summary>
+        /// Updates or inserts a 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<ArticleUpdateResult> UpdateOrInsert(HtmlEditorViewModel model, string userId)
+        {
+            ArticleViewModel entity;
+            if (model.ArticleNumber == 0)
+            {
+                entity = new ArticleViewModel()
+                {
+                    ArticleNumber = model.ArticleNumber,
+                    Content = model.Content,
+                    Id = model.Id,
+                    Published = model.Published,
+                    RoleList = model.RoleList,
+                    Title = model.Title,
+                    VersionNumber = model.VersionNumber,
+                    UrlPath = model.UrlPath
+                };
+            }
+            else
+            {
+                entity = await Get(model.Id, EnumControllerName.Edit);
+                entity.Content = model.Content;
+                entity.Published = model.Published;
+                entity.Title = model.Title;
+                entity.RoleList = model.RoleList;
+            }
+
+            return await UpdateOrInsert(entity, userId);
+        }
+
+        /// <summary>
         ///     Updates an existing article, or inserts a new one.
         /// </summary>
         /// <param name="model"></param>
@@ -772,7 +807,7 @@ namespace Cosmos.Cms.Data.Logic
             await ResetVersionExpirations(article.ArticleNumber);
 
             // Update the catalog
-            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum) article.StatusCode);
+            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum)article.StatusCode);
 
             var result = new ArticleUpdateResult
             {
@@ -1155,7 +1190,7 @@ namespace Cosmos.Cms.Data.Logic
         /// </remarks>
         public async Task<List<ArticleListItem>> GetArticleTrashList()
         {
-            
+
             var data = await
                 (from x in DbContext.Articles
                  where x.StatusCode == (int)StatusCodeEnum.Deleted

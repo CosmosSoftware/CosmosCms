@@ -1,5 +1,5 @@
-﻿@model ArticleViewModel
-@using System.Reflection
+﻿@using System.Reflection
+
 @{
     var assemblyName = Assembly.GetExecutingAssembly().GetName();
 
@@ -39,9 +39,6 @@
                             <a class="dropdown-item" onclick="bgEditClick('Save')">Save</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
-                        </li>
-                        <li>
                             <a class="dropdown-item" onclick="bgEditClick('Files')">Files</a>
                         </li>
                         <li>
@@ -55,22 +52,11 @@
             </ul>
             <span class="navbar-text text-muted ms-3">@assemblyName.Version</span>
             <span id="timeZone" class="navbar-text ms-3 me-3"></span>
-
-            <form class="d-flex" id="frmSave">
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="ArticleNumber" />
-                <input type="hidden" asp-for="UrlPath" />
-                <input type="hidden" asp-for="VersionNumber" />
-                <input type="hidden" asp-for="Content" />
-                <input type="hidden" asp-for="HeadJavaScript" />
-                <input type="hidden" asp-for="FooterJavaScript" />
-                <input type="hidden" asp-for="RoleList" />
-                <div class="navbar-text">Title:</div>
-                <input class="form-control ms-2 me-2" name="Title" id="Title" value="@Model.Title" />
-                <div class="navbar-text">Published:</div>
-                <input class="form-control ms-2 me-2" name="Published" id="Published" value="@Model.Published" />
-                <button class="btn btn-success" type="submit">Save</button>
-            </form>
+            <div class="navbar-text">Title:</div>
+            <input class="form-control ms-2 me-2" name="Title" id="Title" value="@Model.Title" />
+            <div class="navbar-text">Published:</div>
+            <input class="form-control ms-2 me-2" name="Published" id="Published" value="@Model.Published" />
+            <button class="btn btn-success" type="submit">Save</button>
         </div>
     </div>
 </nav>
@@ -89,29 +75,20 @@
             case "Save":
                 $("#frmSave").submit();
                 break;
-            case "Code":
-                next = function () {
-                    window.location.href = "@Url.Action("EditCode", "Editor")/@Model.Id";
-                }
-                $("#divSaveFirstDialog").html("Save page before opening code editor?");
-                saveFirstModal.show();
-                break;
+            
             case "Files":
                 fileMgrPopup = window.open('@Url.Action("Popup", "FileManager")', '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
                 break;
-            case "Close":
-                next = function () {
-                    window.location.href = "@Url.Action("Versions", "Editor")/@Model.ArticleNumber";
-                }
-                $("#divSaveFirstDialog").html("Save page before closing editor?");
-                saveFirstModal.show();
-                break;
+            
             case "Preview":
                 next = function () {
                     window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
                 saveFirstModal.show();
+                break;
+            default:
+                bgEditClickCustom(e);
                 break;
         }
     }
@@ -144,65 +121,11 @@
                 format: 'MM/DD/YYYY hh:mm A'
             }
         });
-    });
 
-    $("#frmSave").submit(function (e) {
-        e.preventDefault();
-
-        saveChanges(null, null);
+        saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
 
     });
 
-    function saveChanges(myModal, next) {
-
-        if (typeof (myModel) !== "undefined" && myModel !== null) {
-            myModal.hide();
-        }
-
-        var contents = $("#ccmsContFrame").contents();
-
-        var div = contents.find("[ccms-content-id='@Model.Id']");
-
-        $("#Content").val(div.html());
-
-        var form = $('#frmSave');
-
-        var data = $("#frmSave").serialize();
-
-        var savingModal = new bootstrap.Modal(document.getElementById('modalSaving'));
-        savingModal.show();
-
-        $.post("@Url.Action("SaveHtml")",
-            data,
-            function (response) {
-                
-                savingModal.hide();
-
-                if (response.IsValid) {
-                    if (typeof (next) !== "undefined" && next !== null) {
-                        next();
-                    }
-                }
-                else {
-                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
-
-                    // Invalid response.
-                    $.each(response.Errors,
-                        function (index, error) {
-                            errorMsg = "<p>" + error.Key + "</p><ul>";
-                            $.each(error.Errors,
-                                function (index, innerError) {
-                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
-                                });
-                            errorMsg = errorMsg + "</ul>";
-                        });
-                    $("#divErrorLog").html(errorMsg);
-                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
-                    errorModal.show();
-                }
-            });
-
-    }
 </script>
 
 <div class="modal" id="modalSaving" tabindex="-1">

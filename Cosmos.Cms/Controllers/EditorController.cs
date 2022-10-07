@@ -517,6 +517,19 @@ namespace Cosmos.Cms.Controllers
 
         #region EDIT ARTICLE FUNCTIONS
 
+
+        /// <summary>
+        /// Editor page
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> CcmsContent(Guid Id)
+        {
+            var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
+
+            return View(article);
+        }
+
         /// <summary>
         ///     Gets an article to edit by ID for the HTML (WYSIWYG) Editor.
         /// </summary>
@@ -536,6 +549,9 @@ namespace Cosmos.Cms.Controllers
                     // Get an article, or a template based on the controller name.
                     //
                     var model = await _articleLogic.Get(pageId, EnumControllerName.Edit);
+
+                    ViewData["PageTitle"] = model.Title;
+                    ViewData["Published"] = model.Published;
 
                     // Override defaults
                     model.EditModeOn = true;
@@ -557,46 +573,9 @@ namespace Cosmos.Cms.Controllers
             }
         }
 
-        /// <summary>
-        /// Editor page
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> CcmsContent(Guid Id)
-        {
-            var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
-
-            return View(article);
-        }
 
         /// <summary>
-        /// Exports a page as a file
-        /// </summary>
-        /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> ExportPage(Guid? id)
-        {
-            ArticleViewModel article;
-            if (id.HasValue)
-            {
-                article = await _articleLogic.Get(id.Value, EnumControllerName.Edit);
-            }
-            else
-            {
-                article = await _articleLogic.Create("Blank Page");
-            }
-
-            var html = await _articleLogic.ExportArticle(article, _blobPublicAbsoluteUrl, _viewRenderService);
-
-            var exportName = $"pageid-{article.ArticleNumber}-version-{article.VersionNumber}.html";
-
-            var bytes = Encoding.UTF8.GetBytes(html);
-
-            return File(bytes, "application/octet-stream", exportName);
-        }
-
-        /// <summary>
-        ///     Saves an article via HTTP POST.
+        ///     Saves an article via HTTP POST (AJAX) and returns JSON results.
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -605,7 +584,7 @@ namespace Cosmos.Cms.Controllers
         /// </remarks>
         [HttpPost]
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> SaveHtml(ArticleViewModel model)
+        public async Task<IActionResult> Edit(HtmlEditorViewModel model)
         {
             if (model == null) return NotFound();
 
@@ -689,9 +668,6 @@ namespace Cosmos.Cms.Controllers
                 //
                 // END  SAVE TO  DATABASE ********
 
-
-                model = result.Model;
-
                 // Re-enable editable sections.
                 //model.Content = model.Content.Replace("crx=", "contenteditable=",
                 //    StringComparison.CurrentCultureIgnoreCase);
@@ -716,8 +692,6 @@ namespace Cosmos.Cms.Controllers
                         paths.Add($"/{url.TrimStart('/')}");
                     }
 
-                    var json = await FlushCdn(paths.OrderBy(s => s).Distinct().ToArray());
-                    var cdnResult = (CdnPurgeViewModel)json.Value;
                 }
 
             }
@@ -740,18 +714,6 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Flush CDN (if present).
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<JsonResult> FlushCdn(string[] paths = null)
-        {
-            return await FlushCdn(_logger, paths);
-        }
-
-        /// <summary>
         /// Edit web page code with Monaco editor.
         /// </summary>
         /// <param name="id"></param>
@@ -768,9 +730,8 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["Version"] = article.VersionNumber;
 
-            // Re-enable editable sections.
-            //article.Content = article.Content.Replace("crx=", "contenteditable=",
-            //    StringComparison.CurrentCultureIgnoreCase);
+            ViewData["PageTitle"] = article.Title;
+            ViewData["Published"] = article.Published;
 
             return View(new EditCodePostModel
             {
@@ -924,6 +885,32 @@ namespace Cosmos.Cms.Controllers
             }
 
             return Json(jsonModel);
+        }
+
+        /// <summary>
+        /// Exports a page as a file
+        /// </summary>
+        /// <returns></returns>
+        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
+        public async Task<IActionResult> ExportPage(Guid? id)
+        {
+            ArticleViewModel article;
+            if (id.HasValue)
+            {
+                article = await _articleLogic.Get(id.Value, EnumControllerName.Edit);
+            }
+            else
+            {
+                article = await _articleLogic.Create("Blank Page");
+            }
+
+            var html = await _articleLogic.ExportArticle(article, _blobPublicAbsoluteUrl, _viewRenderService);
+
+            var exportName = $"pageid-{article.ArticleNumber}-version-{article.VersionNumber}.html";
+
+            var bytes = Encoding.UTF8.GetBytes(html);
+
+            return File(bytes, "application/octet-stream", exportName);
         }
 
         /// <summary>

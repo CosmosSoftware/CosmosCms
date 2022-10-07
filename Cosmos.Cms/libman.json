@@ -13,6 +13,11 @@
     },
     {
       "provider": "unpkg",
+      "library": "emmet-monaco-es@5.1.2",
+      "destination": "wwwroot/lib/emmet-monaco-es"
+    },
+    {
+      "provider": "unpkg",
       "library": "filepond-plugin-file-metadata@1.0.8",
       "destination": "wwwroot/lib/filepond-plugin-file-metadata/"
     },
