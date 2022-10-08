@@ -47,9 +47,9 @@
         @{
             foreach (var field in fields)
             {
-                                                                                    <li class="nav-item">
-                                                                        <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-                                                                                    </li>
+                <li class="nav-item">
+                    <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                </li>
                 aclass = "";
             }
         }
@@ -74,7 +74,6 @@
 <script>
     var next;
     var fileMgrPopup = null;
-    var saveFirstModal = null;
 
     var editor;
     var fieldId;
@@ -264,7 +263,7 @@
             }
         });
 
-        $("[data-ccms-fieldname]").click(function(event) {
+        $("[data-ccms-fieldname]").click(function (event) {
             var name = $(event.target).attr("data-ccms-fieldname");
             $("[data-ccms-fieldname]").removeClass("active");
             saveExistingLoadNewEditor(name);
