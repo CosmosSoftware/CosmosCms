@@ -101,6 +101,9 @@
 
     function saveChanges(myModal, next) {
 
+        var savingModal = new bootstrap.Modal(document.getElementById('modalSaving'));
+        savingModal.show();
+
         if (typeof (myModel) !== "undefined" && myModel !== null) {
             myModal.hide();
         }
@@ -118,8 +121,6 @@
 
         var data = $("#frmSave").serialize();
 
-        var savingModal = new bootstrap.Modal(document.getElementById('modalSaving'));
-        savingModal.show();
 
         $.post("@Url.Action("Edit")",
             data,

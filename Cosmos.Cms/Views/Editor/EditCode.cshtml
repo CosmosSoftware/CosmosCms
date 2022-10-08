@@ -172,7 +172,7 @@
             $("#" + fieldId).val(editor.getValue());
         }
 
-        $.post(action,
+        $.post("@Url.Action("EditCode")",
             form.serialize(),
             function (response) {
 
