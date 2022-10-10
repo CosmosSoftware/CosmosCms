@@ -7,9 +7,6 @@
 <html lang="@Model.LanguageCode">
 <head>
     <title>@Model.Title</title>
-
-    <script src="https://cdn.ckeditor.com/ckeditor5/35.1.0/balloon-block/ckeditor.js"></script>
-
     @Html.Raw(Model.Layout.Head)
     @*
     Page specific header
@@ -23,7 +20,7 @@
 <body>
     @Html.Raw(Model.Layout.HtmlHeader)
     <div ccms-content-id="@Model.Id">
-    @Html.Raw(Model.Content)
+        @Html.Raw(Model.Content)
     </div>
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @*
@@ -31,19 +28,36 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
+    <!-- CK Ballon Editor Customized for Cosmos -->
+    <script src="~/lib/ckeditor/build/ckeditor.js"></script>
+
     <script>
 
-        var editors;
+        // Create editors
+        var editors = [];
+        var unmoutCkBox;
 
         document.addEventListener("DOMContentLoaded", function (event) {
-            // Create editors
-            editors = document.querySelectorAll('[data-ccms-ceid]');
-
-            editors.forEach(function (e) {
-                BalloonEditor.create(e).catch(error => { console.error(error); });
-            });
+            createEditors();
         });
 
+        function createEditors() {
+
+            var editorDivs = document.querySelectorAll('[data-ccms-ceid]');
+
+            editorDivs.forEach(function (e) {
+
+                BalloonEditor.create(e,
+                    {
+                        simpleUpload: {
+                            // The URL that the images are uploaded to.
+                            uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
+                            // Enable the XMLHttpRequest.withCredentials property.
+                            withCredentials: true
+                        }
+                    }).catch(error => { console.error(error); });
+            });
+        }
     </script>
 </body>
 </html>

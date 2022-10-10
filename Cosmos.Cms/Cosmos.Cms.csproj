@@ -94,6 +94,10 @@
 	  <ProjectReference Include="..\Cosmos.Cms.Common\Cosmos.Cms.Common.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="wwwroot\lib\ckeditor\" />
+	</ItemGroup>
+
 	<ProjectExtensions>
 		<VisualStudio>
 			<UserProperties libman_1json__JsonSchema="" />

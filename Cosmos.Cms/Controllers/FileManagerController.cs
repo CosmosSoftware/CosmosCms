@@ -1,22 +1,18 @@
-﻿using Azure.Storage.Blobs.Specialized;
-using Cosmos.BlobService;
+﻿using Cosmos.BlobService;
 using Cosmos.BlobService.Models;
 using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
-using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -249,6 +245,59 @@ namespace Cosmos.Cms.Controllers
 
 
             return Ok();
+        }
+
+
+        /// <summary>
+        /// Simple file upload
+        /// </summary>
+        /// <param name="Id">Article Number</param>
+        /// <param name="file">Form file</param>
+        /// <returns></returns>
+        public async Task<IActionResult> SimpleUpload(string Id)
+        {
+
+            var file = Request.Form.Files.FirstOrDefault();
+
+            if (file.Length > (1048576 * 5))
+            {
+                return Json(ReturnSimpleErrorMessage("The image upload failed because the image was too big (max 5MB)."));
+            }
+
+            string fullPath = UrlEncode($"/pub/articles/{Id}/" + file.FileName);
+
+            try
+            {
+                var metaData = new FileUploadMetaData()
+                {
+                    ChunkIndex = 0,
+                    ContentType = file.ContentType,
+                    FileName = file.FileName,
+                    RelativePath = fullPath,
+                    TotalChunks = 1,
+                    TotalFileSize = file.Length,
+                    UploadUid = Guid.NewGuid().ToString()
+                };
+
+
+                using var memoryStream = new MemoryStream();
+                await file.CopyToAsync(memoryStream);
+
+                _storageContext.AppendBlob(memoryStream, metaData);
+            }
+            catch (Exception e)
+            {
+                return Json(ReturnSimpleErrorMessage(e.Message));
+            }
+
+            var imageUrl = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/') + "/" + fullPath;
+
+            return Json(JsonConvert.DeserializeObject<dynamic>("{\"url\": \"" + imageUrl + "\"}"));
+        }
+
+        private dynamic ReturnSimpleErrorMessage(string message)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>("{ \"error\": { \"message\": \"" + message + "\"}}");
         }
 
         private static long DivideByAndRoundUp(long number, long divideBy)
@@ -590,7 +639,7 @@ namespace Cosmos.Cms.Controllers
             var urlEncodedParts = new List<string>();
             foreach (var part in parts) urlEncodedParts.Add(HttpUtility.UrlEncode(part.Replace(" ", "-")));
 
-            return TrimPathPart(string.Join('/', urlEncodedParts));
+            return TrimPathPart(string.Join('/', urlEncodedParts).ToLowerInvariant());
         }
 
         #endregion
@@ -1171,7 +1220,7 @@ namespace Cosmos.Cms.Controllers
 
             var uploadPath = model.Path.TrimEnd(metaData.FileName.ToArray()).TrimEnd('/');
 
-            var result = (JsonResult)await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
+            var result = (JsonResult) await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
 
             var resultMode = (FileUploadResult)result.Value;
 
@@ -1283,13 +1332,14 @@ namespace Cosmos.Cms.Controllers
         //{
         //    return await Upload(folders, metaData, path);
         //}
-        ///// <summary>
-        /////     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
-        ///// </summary>
-        ///// <param name="files"></param>
-        ///// <param name="metaData"></param>
-        ///// <param name="path"></param>
-        ///// <returns></returns>
+
+        /// <summary>
+        ///     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="metaData"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         [HttpPost]
         [RequestSizeLimit(
             6291456)] // AWS S3 multi part upload requires 5 MB parts--no more, no less so pad the upload size by a MB just in case

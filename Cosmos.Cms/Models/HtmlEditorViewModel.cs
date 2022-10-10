@@ -12,11 +12,19 @@ namespace Cosmos.Cms.Models
     /// </summary>
     public class HtmlEditorViewModel
     {
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        public HtmlEditorViewModel()
+        {
+        }
+
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="model"></param>
-        public HtmlEditorViewModel(ArticleViewModel model, CdnPurgeViewModel cdnPurgeModel)
+        public HtmlEditorViewModel(ArticleViewModel model)
         {
             Id = model.Id;
             ArticleNumber = model.ArticleNumber;

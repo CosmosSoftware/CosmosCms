@@ -560,7 +560,7 @@ namespace Cosmos.Cms.Controllers
                     if (model.Published.HasValue && User.IsInRole("Authors"))
                         return Unauthorized();
 
-                    return View(model);
+                    return View(new HtmlEditorViewModel(model));
 
                 }
 

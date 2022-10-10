@@ -57,7 +57,8 @@
 
     <script>
         var next;
-        var fileMgrPopup;
+        var fileMgrPopup = null;
+        var selectedFile = "";
         var saveFirstModal = null;
 
         function bgEditClick(command) {
@@ -131,7 +132,28 @@
             });
         });
 
+        // Displays a 3 second message in a bootstrap toast.
+        function toastMsg(message) {
+            var toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            $("#liveToastMsg").html(message);
+            toast.show();
+            setTimeout(function () {
+                toast.hide();
+            }, 2000);
+        }
+
+        function saving() {
+            var toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            $("#liveToastMsg").html("Saving... <img height='36' src='/images/az-busy.gif' >");
+            toast.show();
+        }
+
+        function doneSaving() {
+            toastMsg("Done.")
+        }
+
     </script>
+
     @RenderBody()
 
     <div class="modal" id="checkSaveFirst" tabindex="-1">
@@ -147,6 +169,14 @@
                     <button type="button" class="btn btn-secondary" onclick="saveFirst()" data-bs-dismiss="modal">Yes</button>
                     <button type="button" class="btn btn-secondary" onclick="doNotSave()" data-bs-dismiss="modal">No</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body" id="liveToastMsg">
+                Saving...
             </div>
         </div>
     </div>
