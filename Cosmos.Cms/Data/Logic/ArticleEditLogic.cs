@@ -166,26 +166,36 @@ namespace Cosmos.Cms.Data.Logic
 
             foreach (var element in elements)
             {
-                if (!element.Attributes.Contains("data-ccms-ceid"))
+                if (element.Name == "div")
                 {
-                    element.Attributes.Add("data-ccms-ceid", Guid.NewGuid().ToString());
-                    count++;
+                    if (!element.Attributes.Contains("data-ccms-ceid"))
+                    {
+                        element.Attributes.Add("data-ccms-ceid", Guid.NewGuid().ToString());
+                        count++;
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(element.Attributes["data-ccms-ceid"].Value))
+                        {
+                            element.Attributes["data-ccms-ceid"].Value = Guid.NewGuid().ToString();
+                        }
+                    }
+
+                    if (element.Attributes.Contains("contenteditable"))
+                    {
+                        element.Attributes.Remove("contenteditable");
+                    }
+                    if (element.Attributes.Contains("crx"))
+                    {
+                        element.Attributes.Remove("crx");
+                    }
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(element.Attributes["data-ccms-ceid"].Value))
+                    if (element.Attributes.Contains("contenteditable"))
                     {
-                        element.Attributes["data-ccms-ceid"].Value = Guid.NewGuid().ToString();
+                        element.Attributes["contenteditable"].Value = "false";
                     }
-                }
-
-                if (element.Attributes.Contains("contenteditable"))
-                {
-                    element.Attributes.Remove("contenteditable");
-                }
-                if (element.Attributes.Contains("crx"))
-                {
-                    element.Attributes.Remove("crx");
                 }
 
             }

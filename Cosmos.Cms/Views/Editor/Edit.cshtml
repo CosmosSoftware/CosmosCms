@@ -113,10 +113,10 @@
         }
 
         var contents = $("#ccmsContFrame").contents();
+
         var editors = contents.find("[data-ccms-ceid]");
         $(editors).css("border", "");
 
-        // Destroy the contents of the editors to get the clean content
 
         var div = contents.find("[ccms-content-id='@Model.Id']");
         var cont = div[0];

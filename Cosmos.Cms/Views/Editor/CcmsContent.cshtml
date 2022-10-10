@@ -16,6 +16,8 @@
     Application Insights Scripts
     *@
     @Html.Raw(JavaScriptSnippet.FullScript)
+    @*<script src="https://cdn.ckeditor.com/ckeditor5/35.2.0/inline/ckeditor.js"></script>*@
+    <script src="/lib/ckeditor/build/ckeditor.js"></script>
 </head>
 <body>
     @Html.Raw(Model.Layout.HtmlHeader)
@@ -28,13 +30,11 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <!-- CK Ballon Editor Customized for Cosmos -->
-    <script src="~/lib/ckeditor/build/ckeditor.js"></script>
-
     <script>
 
         // Create editors
         var editors = [];
+        var editorsIndex = [];
         var unmoutCkBox;
 
         document.addEventListener("DOMContentLoaded", function (event) {
@@ -46,16 +46,16 @@
             var editorDivs = document.querySelectorAll('[data-ccms-ceid]');
 
             editorDivs.forEach(function (e) {
-
-                BalloonEditor.create(e,
-                    {
-                        simpleUpload: {
-                            // The URL that the images are uploaded to.
-                            uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
-                            // Enable the XMLHttpRequest.withCredentials property.
-                            withCredentials: true
-                        }
-                    }).catch(error => { console.error(error); });
+                InlineEditor
+                    .create(e,
+                        {
+                            simpleUpload: {
+                                // The URL that the images are uploaded to.
+                                uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
+                                // Enable the XMLHttpRequest.withCredentials property.
+                                withCredentials: true
+                            }
+                        }).catch(error => { console.error(error); });
             });
         }
     </script>
