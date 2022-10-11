@@ -10,9 +10,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -123,7 +126,7 @@ namespace Cosmos.Cms.Controllers
 
             try
             {
-                foreach(var item in model.Items)
+                foreach (var item in model.Items)
                 {
                     string dest;
 
@@ -264,7 +267,14 @@ namespace Cosmos.Cms.Controllers
                 return Json(ReturnSimpleErrorMessage("The image upload failed because the image was too big (max 5MB)."));
             }
 
-            string fullPath = UrlEncode($"/pub/articles/{Id}/" + file.FileName);
+            var directory = $"/pub/articles/{Id}/";
+            var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+            var extension = Path.GetExtension(file.FileName);
+            var blobEndPoint = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/');
+
+            string relativePath = UrlEncode(directory + file.FileName);
+
+            var json = new StringBuilder();
 
             try
             {
@@ -273,26 +283,136 @@ namespace Cosmos.Cms.Controllers
                     ChunkIndex = 0,
                     ContentType = file.ContentType,
                     FileName = file.FileName,
-                    RelativePath = fullPath,
+                    RelativePath = relativePath,
                     TotalChunks = 1,
                     TotalFileSize = file.Length,
                     UploadUid = Guid.NewGuid().ToString()
                 };
 
-
                 using var memoryStream = new MemoryStream();
                 await file.CopyToAsync(memoryStream);
 
                 _storageContext.AppendBlob(memoryStream, metaData);
+
+                if (extension == ".gif" || extension == ".jpg" || extension == ".png" || extension == ".webp")
+                {
+
+                    json.Append("{\"urls\": {");
+
+                    json.Append($"\"default\": \"{blobEndPoint + "/" + UrlEncode(relativePath)}\",");
+
+                    // Build responsive images
+                    
+                    using var image0 = Image.Load(file.OpenReadStream(), out var format);
+
+                    // Step down
+                    var rec = GetRectangle(image0, (decimal)0.90);
+                    var image1 = image0.Clone(i => i.Crop(rec));
+                    var fname1 = fileName + "-" + image1.Width + extension;
+                    var meta1 = await SaveImage(image1, directory, fname1, extension, file.ContentType);
+                    json.Append($"\"{image1.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta1.RelativePath) }\",");
+
+                    // Step down
+                    var image2 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.80)));
+                    var fname2 = fileName + "-" + image2.Width + extension;
+                    var meta2 = await SaveImage(image2, directory, fname2, extension, file.ContentType);
+                    json.Append($"\"{image2.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta2.RelativePath)}\",");
+
+                    // Step down
+                    var image3 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.70)));
+                    var fname3 = fileName + "-" + image3.Width + extension;
+                    var meta3 = await SaveImage(image3, directory, fname3, extension, file.ContentType);
+                    json.Append($"\"{image3.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta3.RelativePath)}\",");
+
+                    // Step down
+                    var image4 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.60)));
+                    var fname4 = fileName + "-" + image4.Width + extension;
+                    var meta4 = await SaveImage(image4, directory, fname4, extension, file.ContentType);
+                    json.Append($"\"{image4.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta4.RelativePath)}\",");
+
+                    // Step down
+                    var image5 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.50)));
+                    var fname5 = fileName + "-" + image5.Width + extension;
+                    var meta5 = await SaveImage(image5, directory, fname5, extension, file.ContentType);
+                    json.Append($"\"{image5.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta5.RelativePath)}\"");
+
+                    json.Append("} }");
+
+                }
+                else
+                {
+                    json.Append("{\"url\": \"" + blobEndPoint + "/" + relativePath + "\"}");
+                }
+
             }
             catch (Exception e)
             {
                 return Json(ReturnSimpleErrorMessage(e.Message));
             }
 
-            var imageUrl = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/') + "/" + fullPath;
+            var jsonString = json.ToString();
 
-            return Json(JsonConvert.DeserializeObject<dynamic>("{\"url\": \"" + imageUrl + "\"}"));
+            return Json(JsonConvert.DeserializeObject<dynamic>(jsonString));
+        }
+
+        private async Task<FileUploadMetaData> SaveImage(Image image, string directory, string fileName, string extension, string contentType)
+        {
+            // jpeg, png, gif, bmp, webp and tiff
+
+            using var img = new MemoryStream();
+
+            switch (extension)
+            {
+                case ".jpeg":
+                    await image.SaveAsJpegAsync(img);
+                    break;
+                case ".png":
+                    await image.SaveAsPngAsync(img);
+                    break;
+                case ".gif":
+                    await image.SaveAsGifAsync(img);
+                    break;
+                case ".bmp":
+                    await image.SaveAsBmpAsync(img);
+                    break;
+                case ".webp":
+                    await image.SaveAsWebpAsync(img);
+                    break;
+                case ".tiff":
+                    await image.SaveAsTiffAsync(img);
+                    break;
+            }
+
+
+            var metadata = new FileUploadMetaData()
+            {
+                ChunkIndex = 0,
+                ContentType = contentType,
+                FileName = fileName,
+                RelativePath = UrlEncode(directory + fileName),
+                TotalChunks = 1,
+                TotalFileSize = img.Length,
+                UploadUid = Guid.NewGuid().ToString()
+            };
+
+            _storageContext.AppendBlob(img, metadata);
+
+            return metadata;
+
+        }
+
+
+
+        private Rectangle GetRectangle(Image image, decimal percent)
+        {
+            // First step down
+            var x = (int)Math.Round(image.Width * percent);
+            var y = (int)Math.Round(image.Height * percent);
+
+            var xdif = (int)Math.Round((image.Width - x) / (decimal)2);
+            var ydif = (int)Math.Round((image.Height - y) / (decimal)2);
+
+            return new Rectangle(xdif, ydif, x, y);
         }
 
         private dynamic ReturnSimpleErrorMessage(string message)
@@ -654,15 +774,15 @@ namespace Cosmos.Cms.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewFolder(NewFolderViewModel model)
         {
-            var fullPath = string.Join('/', ParsePath(model.ParentFolder, model.FolderName));
-            fullPath = UrlEncode(fullPath.ToLower());
+            var relativePath = string.Join('/', ParsePath(model.ParentFolder, model.FolderName));
+            relativePath = UrlEncode(relativePath.ToLower());
 
             // Check for duplicate entries
             var existingEntries = await _storageContext.GetFolderContents(model.ParentFolder);
 
             if (existingEntries.Any(f => f.Name.Equals(model.FolderName)) == false)
             {
-                var fileManagerEntry = _storageContext.CreateFolder(fullPath);
+                var fileManagerEntry = _storageContext.CreateFolder(relativePath);
             }
 
             return RedirectToAction("Index", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
@@ -726,10 +846,10 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            var fullPath = string.Join('/', ParsePath(entry.Path, entry.Name));
-            fullPath = UrlEncode(fullPath);
+            var relativePath = string.Join('/', ParsePath(entry.Path, entry.Name));
+            relativePath = UrlEncode(relativePath);
 
-            var fileManagerEntry = _storageContext.CreateFolder(fullPath);
+            var fileManagerEntry = _storageContext.CreateFolder(relativePath);
 
             return Json(fileManagerEntry);
         }
@@ -741,7 +861,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
         {
-            foreach(var item in model.Paths)
+            foreach (var item in model.Paths)
             {
                 if (item.EndsWith('/'))
                 {
@@ -752,7 +872,7 @@ namespace Cosmos.Cms.Controllers
                     _storageContext.DeleteFile(item);
                 }
             }
-                       
+
             return Ok();
         }
 
@@ -1011,13 +1131,13 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Converts the full path from a blob, to a relative one useful for the file manager.
         /// </summary>
-        /// <param name="fullPath"></param>
+        /// <param name="relativePath"></param>
         /// <returns></returns>
-        //public string GetRelativePath(params string[] fullPath)
+        //public string GetRelativePath(params string[] relativePath)
         //{
         //    var rootPath = "";
 
-        //    var absolutePath = string.Join('/', ParsePath(fullPath));
+        //    var absolutePath = string.Join('/', ParsePath(relativePath));
 
         //    if (absolutePath.ToLower().StartsWith(rootPath.ToLower()))
         //    {
@@ -1220,7 +1340,7 @@ namespace Cosmos.Cms.Controllers
 
             var uploadPath = model.Path.TrimEnd(metaData.FileName.ToArray()).TrimEnd('/');
 
-            var result = (JsonResult) await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
+            var result = (JsonResult)await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
 
             var resultMode = (FileUploadResult)result.Value;
 

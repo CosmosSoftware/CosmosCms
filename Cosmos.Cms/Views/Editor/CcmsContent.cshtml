@@ -34,7 +34,7 @@
 
         // Create editors
         var editors = [];
-        var editorsIndex = [];
+        var editorIds = [];
         var unmoutCkBox;
 
         document.addEventListener("DOMContentLoaded", function (event) {
@@ -46,16 +46,24 @@
             var editorDivs = document.querySelectorAll('[data-ccms-ceid]');
 
             editorDivs.forEach(function (e) {
+
+                var id = e.getAttribute("data-ccms-ceid");
+
+                editorIds.push(id);
+
                 InlineEditor
                     .create(e,
                         {
+                            updateSourceElementOnDestroy: true,
                             simpleUpload: {
                                 // The URL that the images are uploaded to.
                                 uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
                                 // Enable the XMLHttpRequest.withCredentials property.
                                 withCredentials: true
                             }
-                        }).catch(error => { console.error(error); });
+                        })
+                    .then(editor => editors.push(editor))
+                    .catch(error => { console.error(error); });
             });
         }
     </script>
