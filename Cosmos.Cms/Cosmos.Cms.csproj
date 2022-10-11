@@ -53,8 +53,6 @@
 	  </None>
 	  <None Include="Views\Shared\MvcGrid\_Grid.cshtml" />
 	  <None Include="Views\Shared\MvcGrid\_Pager.cshtml" />
-	  <None Include="wwwroot\lib\ckeditor\build\ckeditor.js" />
-	  <None Include="wwwroot\lib\ckeditor\build\ckeditor.js.map" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\af.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\ar.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\ast.js" />

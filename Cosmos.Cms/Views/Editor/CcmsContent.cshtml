@@ -7,6 +7,9 @@
 <html lang="@Model.LanguageCode">
 <head>
     <title>@Model.Title</title>
+    <!--
+        CK Editor styles
+    -->
     @Html.Raw(Model.Layout.Head)
     @*
     Page specific header
@@ -17,7 +20,6 @@
     *@
     @Html.Raw(JavaScriptSnippet.FullScript)
     @*<script src="https://cdn.ckeditor.com/ckeditor5/35.2.0/inline/ckeditor.js"></script>*@
-    <script src="/lib/ckeditor/build/ckeditor.js"></script>
 </head>
 <body>
     @Html.Raw(Model.Layout.HtmlHeader)
@@ -30,6 +32,7 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
+    <script src="/lib/ckeditor/build/ckeditor.js"></script>
     <script>
 
         // Create editors
@@ -51,17 +54,16 @@
 
                 editorIds.push(id);
 
-                InlineEditor
-                    .create(e,
-                        {
-                            updateSourceElementOnDestroy: true,
-                            simpleUpload: {
-                                // The URL that the images are uploaded to.
-                                uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
-                                // Enable the XMLHttpRequest.withCredentials property.
-                                withCredentials: true
-                            }
-                        })
+                InlineEditor.create(e,
+                    {
+                        updateSourceElementOnDestroy: true,
+                        simpleUpload: {
+                            // The URL that the images are uploaded to.
+                            uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
+                            // Enable the XMLHttpRequest.withCredentials property.
+                            withCredentials: true
+                        }
+                    })
                     .then(editor => editors.push(editor))
                     .catch(error => { console.error(error); });
             });

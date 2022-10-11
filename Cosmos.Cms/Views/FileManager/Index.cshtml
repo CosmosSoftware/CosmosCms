@@ -1,4 +1,7 @@
-﻿@using NonFactors.Mvc.Grid
+﻿@using Cosmos.Cms.Common.Services.Configurations
+@using Microsoft.Extensions.Options
+@using NonFactors.Mvc.Grid
+@inject IOptions<CosmosConfig> options
 @model IQueryable<Cosmos.BlobService.FileManagerEntry>
 @{
 
@@ -30,7 +33,6 @@
 }
 <link href="~/lib/filepond/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
-<script src="~/js/clipboard.min.js"></script>
 <div class="@containerCss">
     <div class="row">
         <div class="col">
@@ -112,6 +114,7 @@
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
                     col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => r.IsDirectory == false ? $"<button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl}{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>" : "").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
@@ -186,7 +189,32 @@
     </div>
 </div>
 
+<!-- Flexbox container for aligning the toasts -->
+<div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center" style="min-height: 200px;position:absolute;top:0px;right:200px;">
+    <!-- Then put toasts within -->
+    <div id="copied-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-body">
+            Copied URL.
+        </div>
+    </div>
+</div>
+
+<script src="~/js/clipboard.min.js"></script>
+
 <script>
+
+    var btns = document.querySelectorAll(".ccms-clip-board");
+    var clipboard = new ClipboardJS(btns);
+
+    clipboard.on('success', function (e) {
+        $('#copied-toast').toast('show');
+    });
+
+    clipboard.on('error', function (e) {
+        console.info('Action:', e.action);
+        console.info('Text:', e.text);
+        console.info('Trigger:', e.trigger);
+    });
 
     // Set mode
     const directoryOnly = "@directoryOnly" === "True";

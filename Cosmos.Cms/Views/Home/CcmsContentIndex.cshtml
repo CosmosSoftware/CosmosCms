@@ -7,7 +7,6 @@
 <html lang="@Model.LanguageCode">
 <head>
     <title>@Model.Title</title>
-
     @Html.Raw(Model.Layout.Head)
     @*
     Page specific header
@@ -21,7 +20,7 @@
 <body>
     @Html.Raw(Model.Layout.HtmlHeader)
     <div ccms-content-id="@Model.Id">
-    @Html.Raw(Model.Content)
+        @Html.Raw(Model.Content)
     </div>
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @*

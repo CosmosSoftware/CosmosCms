@@ -72,7 +72,13 @@
                     $("#frmSave").submit();
                     break;
                 case "Files":
-                    fileMgrPopup = window.open('@Url.Action("Popup", "FileManager")', '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
+                    var id = $("#ArticleNumber").val();
+                    var url = "@Url.Action("Index", "FileManager")";
+                    if (typeof(id) !== "undefined" && id !== null & id !== "") {
+                        url += "?target=pub/articles/" + id;
+                    } 
+
+                    fileMgrPopup = window.open(url, '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
                     break;
                 default:
                     // Executes functions specific to this editor
