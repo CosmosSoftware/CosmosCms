@@ -1,5 +1,4 @@
-﻿@using Kendo.Mvc.UI
-@model CreatePageViewModel
+﻿@model CreatePageViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -15,10 +14,7 @@
 
                 <div class="form-group">
                     <label asp-for="Title" class="control-label"></label>
-                    @(Html.Kendo()
-                    .TextBoxFor(m => m.Title)
-                    .Placeholder("Enter a unique title here").HtmlAttributes(new {style = "width:100%"})
-                    )
+                    <input class="form-control" asp-for="Title" />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
@@ -27,13 +23,8 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="TemplateId" class="control-label"></label>
-                    @(Html.Kendo()
-                    .DropDownListFor(m => m.TemplateId)
-                    .OptionLabel("Select a template (optional)...")
-                    .DataTextField("Text")
-                    .DataValueField("Value").HtmlAttributes(new {style = "width:100%"})
-                    .Events(e => e.Change("onChangeTemplate"))
-                    .BindTo(Model.Templates)
+                    @(
+                        Html.DropDownListFor(m => m.TemplateId, Model.Templates, "Select a template (optional)...", new { style = "width:100%" })
                     )
                     <span asp-validation-for="TemplateId" class="text-danger"></span>
 
@@ -58,22 +49,26 @@
 <script>
     "use strict";
 
-    function onChangeTemplate() {
-        var iframe = $("#ifPreview");
-         $( "#divNotes" ).html( "" );
-        if (iframe.length) {
-            var templateId = $("#TemplateId").val();
-            if (typeof(templateId) !== "undefined" && templateId !== null && templateId !== "") {
-                getTemplateInfo(templateId);
-                $("#previewBtn").show();
-                var url = "@Url.Action("Preview", "Templates")/" + templateId;
-                iframe.attr('src', url);
-            } else {
-                $("#previewBtn").hide();
-                iframe.attr('src', '');
+    $(document).ready(function () {
+
+        $("#TemplateId").change(function () {
+            var iframe = $("#ifPreview");
+            $("#divNotes").html("");
+            if (iframe.length) {
+                var templateId = $("#TemplateId").val();
+                if (typeof (templateId) !== "undefined" && templateId !== null && templateId !== "") {
+                    getTemplateInfo(templateId);
+                    $("#previewBtn").show();
+                    var url = "@Url.Action("Preview", "Templates")/" + templateId;
+                    iframe.attr('src', url);
+                } else {
+                    $("#previewBtn").hide();
+                    iframe.attr('src', '');
+                }
             }
-        }
-    }
+        });
+
+    });
 
     function getTemplateInfo(templateId) {
         $.get( "@Url.Action("GetTemplateInfo")/" + templateId, function( data ) {

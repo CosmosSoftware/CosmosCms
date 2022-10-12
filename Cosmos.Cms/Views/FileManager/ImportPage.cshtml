@@ -1,5 +1,4 @@
-﻿@using Kendo.Mvc.UI
-@addTagHelper *, Kendo.Mvc
+﻿@addTagHelper *, Kendo.Mvc
 @{
     Layout = "_LayoutNoToolbar";
     var articleId = (int)ViewData["ArticleId"];
@@ -25,7 +24,7 @@
     </div>
     <div class="row">
         <div class="col-12">
-            @(Html.Kendo().Upload()
+            @*@(Html.Kendo().Upload()
             .Name("files")
             .Async(a => a
             .Save("ImportPage", "FileManager", new { Id = articleId })
@@ -37,7 +36,7 @@
             e.Success("onUploadSuccess")
             .Error("onError")
             )
-            )
+            )*@
         </div>
     </div>
 </div>

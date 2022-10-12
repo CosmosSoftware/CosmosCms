@@ -7,8 +7,6 @@ using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
 using HtmlAgilityPack;
-using Kendo.Mvc.Extensions;
-using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -476,18 +474,7 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [Authorize(Roles = "Administrators, Editors")]
-        public IActionResult Logs()
-        {
-            return View();
-        }
-
-        /// <summary>
-        /// Read logs
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<IActionResult> Read_Logs([DataSourceRequest] DataSourceRequest request)
+        public async Task<IActionResult> Logs()
         {
             var data = await _dbContext.ArticleLogs
                 .OrderByDescending(o => o.DateTimeStamp)
@@ -499,17 +486,44 @@ namespace Cosmos.Cms.Controllers
                     s.IdentityUserId
                 }).ToListAsync();
 
-            var result = await data.Select(s => new ArticleLogJsonModel
+            var model = data.Select(s => new ArticleLogJsonModel
             {
                 Id = s.Id,
                 ActivityNotes = s.ActivityNotes,
                 DateTimeStamp = s.DateTimeStamp.ToUniversalTime(),
                 IdentityUserId = s.IdentityUserId
-            }).ToDataSourceResultAsync(request);
-            return Json(result);
+            }).AsQueryable();
+
+            return View(model);
         }
 
+        ///// <summary>
+        ///// Read logs
+        ///// </summary>
+        ///// <param name="request"></param>
+        ///// <returns></returns>
+        //[Authorize(Roles = "Administrators, Editors")]
+        //public async Task<IActionResult> Read_Logs([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var data = await _dbContext.ArticleLogs
+        //        .OrderByDescending(o => o.DateTimeStamp)
+        //        .Select(s => new
+        //        {
+        //            s.Id,
+        //            s.ActivityNotes,
+        //            s.DateTimeStamp,
+        //            s.IdentityUserId
+        //        }).ToListAsync();
 
+        //    var result = await data.Select(s => new ArticleLogJsonModel
+        //    {
+        //        Id = s.Id,
+        //        ActivityNotes = s.ActivityNotes,
+        //        DateTimeStamp = s.DateTimeStamp.ToUniversalTime(),
+        //        IdentityUserId = s.IdentityUserId
+        //    }).ToDataSourceResultAsync(request);
+        //    return Json(result);
+        //}
 
         #region SAVING CONTENT METHODS
 
@@ -1021,30 +1035,30 @@ namespace Cosmos.Cms.Controllers
         /// <remarks>
         ///     Note: This method cannot retrieve articles that are in the trash.
         /// </remarks>
-        public async Task<IActionResult> Read_Articles([DataSourceRequest] DataSourceRequest request)
-        {
-            var defaultSort = request.Sorts?.Any() == false && request.Filters?.Any() == false;
+        //public async Task<IActionResult> Read_Articles([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var defaultSort = request.Sorts?.Any() == false && request.Filters?.Any() == false;
 
-            var model = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
-            {
-                ArticleNumber = s.ArticleNumber,
-                Title = s.Title,
-                IsDefault = s.UrlPath == "root",
-                LastPublished = s.Published,
-                UrlPath = s.UrlPath,
-                Status = s.Status,
-                Updated = s.Updated
-            });
+        //    var model = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
+        //    {
+        //        ArticleNumber = s.ArticleNumber,
+        //        Title = s.Title,
+        //        IsDefault = s.UrlPath == "root",
+        //        LastPublished = s.Published,
+        //        UrlPath = s.UrlPath,
+        //        Status = s.Status,
+        //        Updated = s.Updated
+        //    });
 
-            if (defaultSort)
-            {
-                model = model.OrderBy(o => o.Title);
-            }
+        //    if (defaultSort)
+        //    {
+        //        model = model.OrderBy(o => o.Title);
+        //    }
 
-            var data = await model.ToDataSourceResultAsync(request);
+        //    var data = await model.ToDataSourceResultAsync(request);
 
-            return Json(data);
-        }
+        //    return Json(data);
+        //}
 
         /// <summary>
         /// Gets a list of articles (pages) on this website.
@@ -1088,11 +1102,11 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Get_TrashedArticles([DataSourceRequest] DataSourceRequest request)
-        {
-            var list = await _articleLogic.GetArticleTrashList();
-            return Json(await list.ToDataSourceResultAsync(request));
-        }
+        //public async Task<IActionResult> Get_TrashedArticles([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var list = await _articleLogic.GetArticleTrashList();
+        //    return Json(await list.ToDataSourceResultAsync(request));
+        //}
 
         /// <summary>
         ///     Get all the versions of an article by article number.
@@ -1100,75 +1114,75 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Get_Versions([DataSourceRequest] DataSourceRequest request, int id)
-        {
-            var data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
-                .Where(a => a.ArticleNumber == id).Select(s => new
-                {
-                    s.Id,
-                    s.Published,
-                    s.Title,
-                    s.Updated,
-                    s.VersionNumber,
-                    s.Expires,
-                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
-                }).ToListAsync();
+        //public async Task<IActionResult> Get_Versions([DataSourceRequest] DataSourceRequest request, int id)
+        //{
+        //    var data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+        //        .Where(a => a.ArticleNumber == id).Select(s => new
+        //        {
+        //            s.Id,
+        //            s.Published,
+        //            s.Title,
+        //            s.Updated,
+        //            s.VersionNumber,
+        //            s.Expires,
+        //            UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+        //        }).ToListAsync();
 
-            //
-            // Testing has detected a rare occurance of a duplicate version number.
-            // Compensating for this error, is to first detect duplicate numbers,
-            // and if one is detected, recorder the version numbers.
-            //
-            var check = (from a in data
-                         group a by a.VersionNumber
-                into g
-                         select new
-                         {
-                             Version = g.Key,
-                             Count = g.Count()
-                         }).ToList();
+        //    //
+        //    // Testing has detected a rare occurance of a duplicate version number.
+        //    // Compensating for this error, is to first detect duplicate numbers,
+        //    // and if one is detected, recorder the version numbers.
+        //    //
+        //    var check = (from a in data
+        //                 group a by a.VersionNumber
+        //        into g
+        //                 select new
+        //                 {
+        //                     Version = g.Key,
+        //                     Count = g.Count()
+        //                 }).ToList();
 
-            if (check.Any(c => c.Count > 1))
-            {
-                //
-                // Duplicate versions detected. Fix now.
-                //
-                var ids = data.Select(s => s.Id).ToArray();
-                var entities = await _dbContext.Articles.Where(a => ids.Contains(a.Id)).OrderBy(o => o.Id)
-                    .ToListAsync();
-                // Reorder version numbers.
-                for (var i = 0; i < entities.Count; i++) entities[i].VersionNumber = i + 1;
-                await _dbContext.SaveChangesAsync();
-                //
-                // Reload the version list.
-                //
-                data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
-                    .Where(a => a.ArticleNumber == id).Select(s => new
-                    {
-                        s.Id,
-                        s.Published,
-                        s.Title,
-                        s.Updated,
-                        s.VersionNumber,
-                        s.Expires,
-                        UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
-                    }).ToListAsync();
-            }
+        //    if (check.Any(c => c.Count > 1))
+        //    {
+        //        //
+        //        // Duplicate versions detected. Fix now.
+        //        //
+        //        var ids = data.Select(s => s.Id).ToArray();
+        //        var entities = await _dbContext.Articles.Where(a => ids.Contains(a.Id)).OrderBy(o => o.Id)
+        //            .ToListAsync();
+        //        // Reorder version numbers.
+        //        for (var i = 0; i < entities.Count; i++) entities[i].VersionNumber = i + 1;
+        //        await _dbContext.SaveChangesAsync();
+        //        //
+        //        // Reload the version list.
+        //        //
+        //        data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+        //            .Where(a => a.ArticleNumber == id).Select(s => new
+        //            {
+        //                s.Id,
+        //                s.Published,
+        //                s.Title,
+        //                s.Updated,
+        //                s.VersionNumber,
+        //                s.Expires,
+        //                UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+        //            }).ToListAsync();
+        //    }
 
-            var model = data.Select(x =>
-                new ArticleVersionInfo
-                {
-                    Id = x.Id,
-                    VersionNumber = x.VersionNumber,
-                    Title = x.Title,
-                    Updated = x.Updated.ToUniversalTime(),
-                    Published = x.Published?.ToUniversalTime(),
-                    Expires = x.Expires?.ToUniversalTime(),
-                    UsesHtmlEditor = x.UsesHtmlEditor
-                });
+        //    var model = data.Select(x =>
+        //        new ArticleVersionInfo
+        //        {
+        //            Id = x.Id,
+        //            VersionNumber = x.VersionNumber,
+        //            Title = x.Title,
+        //            Updated = x.Updated.ToUniversalTime(),
+        //            Published = x.Published?.ToUniversalTime(),
+        //            Expires = x.Expires?.ToUniversalTime(),
+        //            UsesHtmlEditor = x.UsesHtmlEditor
+        //        });
 
-            return Json(await model.ToDataSourceResultAsync(request));
-        }
+        //    return Json(await model.ToDataSourceResultAsync(request));
+        //}
 
         /// <summary>
         ///     Gets a role list, and allows for filtering
@@ -1245,34 +1259,34 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="redirects"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<ActionResult> Create_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
-        {
-            if (redirects.Any())
-            {
-                foreach (var redirect in redirects)
-                {
-                    // Add redirect here
-                    _dbContext.Articles.Add(new Article
-                    {
-                        ArticleNumber = 0,
-                        StatusCode = (int)StatusCodeEnum.Redirect,
-                        UrlPath = redirect.FromUrl, // Old URL
-                        VersionNumber = 0,
-                        Published = DateTime.Now.ToUniversalTime().AddDays(-1), // Make sure this sticks!
-                        Title = "Redirect",
-                        Content = redirect.ToUrl, // New URL
-                        Updated = DateTime.Now.ToUniversalTime(),
-                        HeaderJavaScript = null,
-                        FooterJavaScript = null
-                    });
-                }
-                await _dbContext.SaveChangesAsync();
-            }
+        //[HttpPost]
+        //[Authorize(Roles = "Administrators, Editors")]
+        //public async Task<ActionResult> Create_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
+        //{
+        //    if (redirects.Any())
+        //    {
+        //        foreach (var redirect in redirects)
+        //        {
+        //            // Add redirect here
+        //            _dbContext.Articles.Add(new Article
+        //            {
+        //                ArticleNumber = 0,
+        //                StatusCode = (int)StatusCodeEnum.Redirect,
+        //                UrlPath = redirect.FromUrl, // Old URL
+        //                VersionNumber = 0,
+        //                Published = DateTime.Now.ToUniversalTime().AddDays(-1), // Make sure this sticks!
+        //                Title = "Redirect",
+        //                Content = redirect.ToUrl, // New URL
+        //                Updated = DateTime.Now.ToUniversalTime(),
+        //                HeaderJavaScript = null,
+        //                FooterJavaScript = null
+        //            });
+        //        }
+        //        await _dbContext.SaveChangesAsync();
+        //    }
 
-            return Json(redirects.ToDataSourceResult(request, ModelState));
-        }
+        //    return Json(redirects.ToDataSourceResult(request, ModelState));
+        //}
 
         /// <summary>
         /// Removes given redirects
@@ -1280,31 +1294,31 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="redirects"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<ActionResult> Delete_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
-        {
-            if (redirects.Any())
-            {
-                var ids = redirects.Select(s => s.Id).ToArray();
-                _dbContext.Articles.RemoveRange(await _dbContext.Articles.Where(w => ids.Contains(w.Id)).ToListAsync());
-                await _dbContext.SaveChangesAsync();
-            }
+        //[HttpPost]
+        //[Authorize(Roles = "Administrators, Editors")]
+        //public async Task<ActionResult> Delete_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
+        //{
+        //    if (redirects.Any())
+        //    {
+        //        var ids = redirects.Select(s => s.Id).ToArray();
+        //        _dbContext.Articles.RemoveRange(await _dbContext.Articles.Where(w => ids.Contains(w.Id)).ToListAsync());
+        //        await _dbContext.SaveChangesAsync();
+        //    }
 
-            return Json(redirects.ToDataSourceResult(request, ModelState));
-        }
+        //    return Json(redirects.ToDataSourceResult(request, ModelState));
+        //}
 
         /// <summary>
         /// Gets a list of redirects
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<IActionResult> Read_Redirects([DataSourceRequest] DataSourceRequest request)
-        {
-            var list = await _articleLogic.GetArticleRedirects();
-            return Json(await list.ToDataSourceResultAsync(request));
-        }
+        //[Authorize(Roles = "Administrators, Editors")]
+        //public async Task<IActionResult> Read_Redirects([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var list = await _articleLogic.GetArticleRedirects();
+        //    return Json(await list.ToDataSourceResultAsync(request));
+        //}
 
         /// <summary>
         /// Removes given redirects
@@ -1312,26 +1326,26 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="redirects"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Authorize(Roles = "Administrators, Editors")]
-        public async Task<ActionResult> Update_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
-        {
-            if (redirects.Any())
-            {
-                foreach (var redirect in redirects)
-                {
-                    var article = await _dbContext.Articles.FindAsync(redirect.Id);
-                    if (article != null)
-                    {
-                        article.UrlPath = redirect.FromUrl;
-                        article.Content = redirect.ToUrl;
-                    }
-                }
-                await _dbContext.SaveChangesAsync();
-            }
+        //[HttpPost]
+        //[Authorize(Roles = "Administrators, Editors")]
+        //public async Task<ActionResult> Update_Redirects([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<RedirectItemViewModel> redirects)
+        //{
+        //    if (redirects.Any())
+        //    {
+        //        foreach (var redirect in redirects)
+        //        {
+        //            var article = await _dbContext.Articles.FindAsync(redirect.Id);
+        //            if (article != null)
+        //            {
+        //                article.UrlPath = redirect.FromUrl;
+        //                article.Content = redirect.ToUrl;
+        //            }
+        //        }
+        //        await _dbContext.SaveChangesAsync();
+        //    }
 
-            return Json(redirects.ToDataSourceResult(request, ModelState));
-        }
+        //    return Json(redirects.ToDataSourceResult(request, ModelState));
+        //}
 
 
         #endregion

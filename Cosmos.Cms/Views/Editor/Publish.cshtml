@@ -1,5 +1,4 @@
-﻿@using Kendo.Mvc.UI
-@model ArticleViewModel
+﻿@model ArticleViewModel
 
 @{
     ViewData["Title"] = "Publish Website";
@@ -39,7 +38,7 @@
                                     Updaing the &quot;last changed&quot; date and time of when each web page is the primary way caching mechanisms know that a page is updated.
                                 </div>
                                 <div id="spinner1" style="display: none">
-                                    @(Html.Kendo().Loader().Name("loader-time").Size(LoaderSize.Medium).ThemeColor(LoaderThemeColor.Primary).Type(LoaderType.InfiniteSpinner).Messages(m => m.Loading("Running...")))
+                                    
                                 </div>
                             </div>
                         </div>
@@ -52,7 +51,7 @@
                                     C/CMS can integrate with Content Delivery Networks (CDN) to speed up delivery of web content to users.
                                 </div>
                                 <div id="spinner3" style="display: none">
-                                    @(Html.Kendo().Loader().Name("loader-cdn").Size(LoaderSize.Medium).ThemeColor(LoaderThemeColor.Primary).Type(LoaderType.InfiniteSpinner).Messages(m => m.Loading("Running...")))
+                                   Working...
                                 </div>
                             </div>
                         </div>

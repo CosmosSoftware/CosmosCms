@@ -1,16 +1,11 @@
-﻿using Cosmos.BlobService.Config;
-using Cosmos.Cms.Common.Data;
-using Cosmos.Cms.Common.Data.Logic;
+﻿using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
 using Jering.Javascript.NodeJS;
-using Kendo.Mvc.Extensions;
-using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -381,38 +376,27 @@ namespace Cosmos.Cms.Controllers
         #region GRID DATA
 
         /// <summary>
-        /// Reads the script catalog
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Read_Scripts([DataSourceRequest] DataSourceRequest request)
-        {
-            var data = await _dbContext.ScriptCatalog.ToDataSourceResultAsync(request);
-            return Json(data);
-        }
-
-        /// <summary>
         /// Sends an article (or page) to trash bin.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> Trash_Script([DataSourceRequest] DataSourceRequest request,
-            ScriptCatalogEntry model)
-        {
-            _dbContext.Entry(model).State = EntityState.Deleted;
-            var doomed = await _dbContext.NodeScripts
-                .Where(w => w.EndPoint == model.EndPoint).ToListAsync();
-            foreach (var d in doomed)
-            {
-                d.StatusCode = (int)StatusCodeEnum.Deleted;
-            }
+        //[HttpPost]
+        //public async Task<IActionResult> Trash_Script([DataSourceRequest] DataSourceRequest request,
+        //    ScriptCatalogEntry model)
+        //{
+        //    _dbContext.Entry(model).State = EntityState.Deleted;
+        //    var doomed = await _dbContext.NodeScripts
+        //        .Where(w => w.EndPoint == model.EndPoint).ToListAsync();
+        //    foreach (var d in doomed)
+        //    {
+        //        d.StatusCode = (int)StatusCodeEnum.Deleted;
+        //    }
 
-            await _dbContext.SaveChangesAsync();
+        //    await _dbContext.SaveChangesAsync();
 
-            return Json(await new[] { model }.ToDataSourceResultAsync(request, ModelState));
-        }
+        //    return Json(await new[] { model }.ToDataSourceResultAsync(request, ModelState));
+        //}
 
         /// <summary>
         /// Get all the versions of a script
@@ -420,23 +404,23 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Read_Versions([DataSourceRequest] DataSourceRequest request, string Id)
-        {
-            var data = await _dbContext.NodeScripts
-                .WithPartitionKey(Id)
-                .OrderByDescending(o => o.Version)
-                .Select(s => new NodeScriptItemViewModel
-                {
-                    Id = s.Id,
-                    Published = s.Published,
-                    EndPoint = s.EndPoint,
-                    Updated = s.Updated,
-                    Version = s.Version,
-                    Expires = s.Expires
-                }).ToDataSourceResultAsync(request);
+        //public async Task<IActionResult> Read_Versions([DataSourceRequest] DataSourceRequest request, string Id)
+        //{
+        //    var data = await _dbContext.NodeScripts
+        //        .WithPartitionKey(Id)
+        //        .OrderByDescending(o => o.Version)
+        //        .Select(s => new NodeScriptItemViewModel
+        //        {
+        //            Id = s.Id,
+        //            Published = s.Published,
+        //            EndPoint = s.EndPoint,
+        //            Updated = s.Updated,
+        //            Version = s.Version,
+        //            Expires = s.Expires
+        //        }).ToDataSourceResultAsync(request);
 
-            return Json(data);
-        }
+        //    return Json(data);
+        //}
 
         #endregion
     }

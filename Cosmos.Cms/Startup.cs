@@ -13,12 +13,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Threading.Tasks;
@@ -150,12 +148,6 @@ namespace Cosmos.Cms
             services.AddRazorPages();
 
             // End before identity
-
-            // Add Kendo services (required for Editor)
-            services.AddKendo();
-
-            // Need to add this for Telerik
-            // https://docs.telerik.com/aspnet-core/getting-started/prerequisites/environment-support#json-serialization
             services.AddMvc()
                 .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ContractResolver =

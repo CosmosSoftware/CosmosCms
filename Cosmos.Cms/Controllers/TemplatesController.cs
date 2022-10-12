@@ -4,8 +4,6 @@ using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
-using Kendo.Mvc.Extensions;
-using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -190,58 +188,58 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="templates"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> Templates_Create([DataSourceRequest] DataSourceRequest request,
-            [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
-        {
-            var results = new List<Template>();
+        //[HttpPost]
+        //public async Task<IActionResult> Templates_Create([DataSourceRequest] DataSourceRequest request,
+        //    [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
+        //{
+        //    var results = new List<Template>();
 
-            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.IsDefault);
+        //    var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.IsDefault);
 
-            if (templates != null && ModelState.IsValid)
-                foreach (var template in templates)
-                {
-                    var entity = new Template
-                    {
-                        Content = "",
-                        Description = template.Description,
-                        Title = template.Title,
-                        LayoutId = layout.Id,
-                        CommunityLayoutId = layout.CommunityLayoutId
-                    };
-                    _dbContext.Templates.Add(entity);
-                    await _dbContext.SaveChangesAsync();
-                    results.Add(entity);
-                }
+        //    if (templates != null && ModelState.IsValid)
+        //        foreach (var template in templates)
+        //        {
+        //            var entity = new Template
+        //            {
+        //                Content = "",
+        //                Description = template.Description,
+        //                Title = template.Title,
+        //                LayoutId = layout.Id,
+        //                CommunityLayoutId = layout.CommunityLayoutId
+        //            };
+        //            _dbContext.Templates.Add(entity);
+        //            await _dbContext.SaveChangesAsync();
+        //            results.Add(entity);
+        //        }
 
-            return Json(await results.Select(s => new TemplateIndexViewModel
-            {
-                Description = s.Description,
-                Id = s.Id,
-                Title = s.Title
-            }).ToDataSourceResultAsync(request, ModelState));
-        }
+        //    return Json(await results.Select(s => new TemplateIndexViewModel
+        //    {
+        //        Description = s.Description,
+        //        Id = s.Id,
+        //        Title = s.Title
+        //    }).ToDataSourceResultAsync(request, ModelState));
+        //}
 
         /// <summary>
         ///     Reads the list of templates
         /// </summary>
         /// <param name="request">Data source request</param>
         /// <returns>JsonResult</returns>
-        public async Task<IActionResult> Templates_Read([DataSourceRequest] DataSourceRequest request)
-        {
-            var defautLayout = await _articleLogic.GetDefaultLayout();
+        //public async Task<IActionResult> Templates_Read([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var defautLayout = await _articleLogic.GetDefaultLayout();
             
-            var model = await _dbContext.Templates.OrderBy(t => t.Title)
-                .Where(l => l.LayoutId == null ||  l.LayoutId == defautLayout.Id)
-                .Select(s => new TemplateIndexViewModel
-                {
-                    Id = s.Id,
-                    LayoutName = defautLayout.LayoutName,
-                    Description = s.Description,
-                    Title = s.Title
-                }).ToListAsync();
-            return Json(await model.ToDataSourceResultAsync(request));
-        }
+        //    var model = await _dbContext.Templates.OrderBy(t => t.Title)
+        //        .Where(l => l.LayoutId == null ||  l.LayoutId == defautLayout.Id)
+        //        .Select(s => new TemplateIndexViewModel
+        //        {
+        //            Id = s.Id,
+        //            LayoutName = defautLayout.LayoutName,
+        //            Description = s.Description,
+        //            Title = s.Title
+        //        }).ToListAsync();
+        //    return Json(await model.ToDataSourceResultAsync(request));
+        //}
 
         /// <summary>
         /// Update template information
@@ -249,24 +247,24 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="templates"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> Templates_Update([DataSourceRequest] DataSourceRequest request,
-            [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
-        {
-            if (templates != null && ModelState.IsValid)
-            {
-                foreach (var template in templates)
-                {
-                    var entity = await _dbContext.Templates.FindAsync(template.Id);
-                    entity.Description = template.Description;
-                    entity.Title = template.Title;
-                }
+        //[HttpPost]
+        //public async Task<IActionResult> Templates_Update([DataSourceRequest] DataSourceRequest request,
+        //    [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
+        //{
+        //    if (templates != null && ModelState.IsValid)
+        //    {
+        //        foreach (var template in templates)
+        //        {
+        //            var entity = await _dbContext.Templates.FindAsync(template.Id);
+        //            entity.Description = template.Description;
+        //            entity.Title = template.Title;
+        //        }
 
-                await _dbContext.SaveChangesAsync();
-            }
+        //        await _dbContext.SaveChangesAsync();
+        //    }
 
-            return Json(await templates.ToDataSourceResultAsync(request, ModelState));
-        }
+        //    return Json(await templates.ToDataSourceResultAsync(request, ModelState));
+        //}
 
         /// <summary>
         /// Delete templates
@@ -274,44 +272,44 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="templates"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> Templates_Destroy([DataSourceRequest] DataSourceRequest request,
-            [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
-        {
-            if (templates.Any())
-            {
-                foreach (var template in templates)
-                {
-                    var entity = await _dbContext.Templates.FindAsync(template.Id);
-                    _dbContext.Templates.Remove(entity);
-                }
+        //[HttpPost]
+        //public async Task<IActionResult> Templates_Destroy([DataSourceRequest] DataSourceRequest request,
+        //    [Bind(Prefix = "models")] IEnumerable<TemplateIndexViewModel> templates)
+        //{
+        //    if (templates.Any())
+        //    {
+        //        foreach (var template in templates)
+        //        {
+        //            var entity = await _dbContext.Templates.FindAsync(template.Id);
+        //            _dbContext.Templates.Remove(entity);
+        //        }
 
-                await _dbContext.SaveChangesAsync();
-            }
+        //        await _dbContext.SaveChangesAsync();
+        //    }
 
-            return Json(await templates.ToDataSourceResultAsync(request, ModelState));
-        }
+        //    return Json(await templates.ToDataSourceResultAsync(request, ModelState));
+        //}
 
         /// <summary>
         /// Real a list of templates
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost]
-        public IActionResult Layouts_Read([DataSourceRequest] DataSourceRequest request)
-        {
-            var layoutUtils = new LayoutUtilities();
-            var model = layoutUtils.CommunityCatalog.LayoutCatalog.Select(s => new LayoutCatalogViewModel()
-            {
-                Id = s.Id,
-                Description = s.Description,
-                License = s.License,
-                Name = s.Name
-            }
-            ).ToList();
+        //[HttpPost]
+        //public IActionResult Layouts_Read([DataSourceRequest] DataSourceRequest request)
+        //{
+        //    var layoutUtils = new LayoutUtilities();
+        //    var model = layoutUtils.CommunityCatalog.LayoutCatalog.Select(s => new LayoutCatalogViewModel()
+        //    {
+        //        Id = s.Id,
+        //        Description = s.Description,
+        //        License = s.License,
+        //        Name = s.Name
+        //    }
+        //    ).ToList();
 
-            return Json(model.ToDataSourceResult(request));
-        }
+        //    return Json(model.ToDataSourceResult(request));
+        //}
 
         /// <summary>
         /// Gets the page templates for a given layout.
@@ -319,14 +317,14 @@ namespace Cosmos.Cms.Controllers
         /// <param name="request"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> LayoutPages_Read([DataSourceRequest] DataSourceRequest request, string id)
-        {
-            var layoutUtils = new LayoutUtilities();
+        //[HttpPost]
+        //public async Task<IActionResult> LayoutPages_Read([DataSourceRequest] DataSourceRequest request, string id)
+        //{
+        //    var layoutUtils = new LayoutUtilities();
 
-            var model = await layoutUtils.GetPageTemplates(id);
+        //    var model = await layoutUtils.GetPageTemplates(id);
 
-            return Json(model.ToDataSourceResult(request));
-        }
+        //    return Json(model.ToDataSourceResult(request));
+        //}
     }
 }

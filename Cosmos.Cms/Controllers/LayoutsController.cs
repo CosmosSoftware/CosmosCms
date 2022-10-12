@@ -7,8 +7,6 @@ using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
 using HtmlAgilityPack;
-using Kendo.Mvc.Extensions;
-using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

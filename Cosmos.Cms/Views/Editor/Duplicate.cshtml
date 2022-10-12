@@ -25,34 +25,20 @@
                 @Html.HiddenFor(m => m.Id)
                 @Html.HiddenFor(m => m.ArticleId)
                 @Html.HiddenFor(m => m.ArticleVersion)
+                @Html.HiddenFor(m => m.ParentPageTitle)
                 <div class="mb-3">
                     <div asp-validation-summary=All class="text-danger"></div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Parent page:</label>
-                    @(Html.Kendo().DropDownListFor(m => m.ParentPageTitle).OptionLabel("Parent page (optional)").HtmlAttributes(new { style = "width: 100%;"}).DataTextField("Title")
-                    .DataValueField("Title")
-                    .DataSource(source => {
-                    source.Read(read =>
-                    {
-                    read.Action("GetArticleList", "Editor");
-                    })
-                    .ServerFiltering(false);
-                    })
-                    )
-                    <p class="form-text">Selecting a parent page will make the new page a sub-page. </p>
-                    <p class="form-text">For example: "Blog" might be the parent page and this 
-                        page might be "Tips". The URL for this page will be: "/Blog/Tips".</p>
-                </div>
+                
                 <div class="mb-3">
                     <label asp-for="Title" class="form-label"></label><span asp-validation-for="Title" class="text-danger"></span>
-                    @(Html.Kendo().TextBoxFor(m => m.Title).HtmlAttributes(new { style = "width: 100%;", @class = "form-control" }))
+                    <input asp-for="Title" class="form-control" />
                     <p class="form-text">Note: Web page titles must be unique.</p>
                     
                 </div>
                 <div class="mb-3">
                     <label asp-for="Published" class="form-label"></label><span asp-validation-for="Published" class="text-danger"></span>
-                    @(Html.Kendo().DateTimePickerFor(m => m.Published.Value.UtcDateTime).HtmlAttributes(new { @class = "form-control" }))
+                    <input asp-for="Published.Value.UtcDateTime" class="form-control" type="datetime-local" />
                     <p class="form-text">This is the date/time when this page is published.  Clear this to make this page not visible to the public.</p>
                     
                 </div>

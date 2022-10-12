@@ -14,17 +14,12 @@
 
                 <div class="form-group">
                     <label asp-for="EndPoint" class="control-label"></label> (optional)
-                    @(Html.Kendo()
-                        .TextBoxFor(m => m.EndPoint)
-                        .Placeholder("Enter a unique end point here").HtmlAttributes(new { style = "width:100%" })
-                        )
+                    <input asp-for="EndPoint" class="form-control" />
                     <span asp-validation-for="EndPoint" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="InputVars" class="control-label"></label>
-                    @(Html.Kendo().TextBoxFor(m => m.InputVars)
-                        .Placeholder("Comma delimited list ...")
-                        )
+                    <input asp-for="InputVars" class="form-control" />
                     <span asp-validation-for="InputVars" class="text-danger"></span>
                 </div>
 

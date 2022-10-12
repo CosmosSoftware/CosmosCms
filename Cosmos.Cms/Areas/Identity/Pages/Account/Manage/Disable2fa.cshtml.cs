@@ -7,11 +7,19 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Disables two factor authentication
+    /// </summary>
     public class Disable2faModel : PageModel
     {
         private readonly ILogger<Disable2faModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="logger"></param>
         public Disable2faModel(
             UserManager<IdentityUser> userManager,
             ILogger<Disable2faModel> logger)
@@ -20,8 +28,16 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _logger = logger;
         }
 
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
 
+        /// <summary>
+        /// Handles get method
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);

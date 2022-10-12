@@ -17,7 +17,7 @@
         <button id="btn-close-chat" type="button" class="btn-close" aria-label="Close"></button>
     </div>
     <div class="toast-body">
-        @(Html.Kendo().Chat()
+       @* @(Html.Kendo().Chat()
         .Name("ccmsChatWidget")
         .User(user => user
         // Each instance of the app will generate a unique username.
@@ -30,7 +30,7 @@
         .TypingStart("onCcmsTypingStart").TypingEnd("onCcmsTypingEnd")
         .Post("onCcmsChatPost")
         ).HtmlAttributes(new { style = "width:280px;height:460px;"})
-        )
+        )*@
     </div>
 </div>
 

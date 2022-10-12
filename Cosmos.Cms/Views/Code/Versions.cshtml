@@ -1,5 +1,6 @@
-﻿@using Kendo.Mvc.UI
-@using Cosmos.Cms.Services
+﻿@using Cosmos.Cms.Services
+@using NonFactors.Mvc.Grid
+@model IQueryable<NodeScriptItemViewModel>
 @{
     // /Views/Code/Versions
     ViewData["Title"] = @ViewData["ArticleTitle"] + " Versions";
@@ -28,132 +29,25 @@
                     Create new version from latest version
                 </a>
             }
-            @(Html.Kendo().Grid<NodeScriptItemViewModel>().Name("grid")
-                .Columns(c =>
+            @(Html.Grid(Model)
+                .Build(c =>
                 {
-                    c.Bound(b => b.Id).Hidden(true);
-                    c.Template("v.#: Version #").Title("");
-                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Code")}/#: Id #\" title=\"Edit code using Monaco code editor.\"><i class='fa-solid fa-code'></i></a>").Title("Edit Tool");
-                    c.Template($"<a class=\"btn btn-sm btn-secondary\" href=\"{ Url.Action("Duplicate", "Code") }/#: Id #\" title=\"Create a new web page based on this version.\"><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Code")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Title("New Page/Download");
-                    c.Template("#= formatPublishedDate(Published) #").Title("Published");
-                    c.Template("#= kendo.toString(Updated, 'G') #").Title("Last Edited");
-                    c.Template("#= formatExpiredDate(Expires) #").Title("Expires");
-                    c.Template($"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={Model}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Title("Promote").Width(50);
+                    c.Add(b => b.Version).RenderedAs(r => $"v.{r.Version}").Titled("");
+                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Code")}/{r.Id}\" title=\"Edit code using Monaco code editor.\"><i class='fa-solid fa-code'></i></a>").Titled("Edit Tool").Encoded(false).Sortable(false).Filterable(false);
+                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Duplicate", "Code")}/#: Id #\" title=\"Create a new web page based on this version.\"><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Code")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Titled("New Page/Download").Encoded(false).Sortable(false).Filterable(false);
+                    
+                    c.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double);
+                    c.Add(b => b.Published).Titled("Published").Filterable(GridFilterType.Double);
+
+                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={Model}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Titled("Promote").Width(50).Encoded(false).Sortable(false).Filterable(false);
                 })
                 .Sortable()
                 .Filterable()
                 .Pageable()
-                .DataSource(dataSource => { dataSource.Ajax().Read(read => read.Action("Read_Versions", "Code", new { Id = ViewData["EndPoint"] })); })
                 )
         </div>
     </div>
 </div>
-
-<kendo-dialog name="editPublishedPageDialog" title="Editing Published Page" modal="true" visible="false" width="450">
-    <content>
-        <h4>Editing Published Page</h4>
-        <p><span class="badge badge-warning">Warning:</span> You are about to edit a page that already has been published.</p>
-        <hr class="text-light" />
-        <h4>Tip <span class="fa fa-lightbulb-o"></span></h4>
-        <p>
-            Rather than editing a <em>published</em> page, create a new version and
-            edit that. Then publish it when ready
-        </p>
-        <p>That way you can make changes and not affect what people see now.</p>
-        <p>It also lets you control when new content goes live.</p>
-    </content>
-    <popup-animation>
-        <open duration="500" effects="fade:in" />
-        <close duration="500" effects="fade:out" />
-    </popup-animation>
-    <actions>
-        <action text="Cancel">
-        </action>
-        <action action="editNewVersion" text="New Version" title="Edit new version of page">
-        </action>
-        <action action="editPublishedVersion" text="Edit Published" title="Edit already published version of page">
-        </action>
-    </actions>
-</kendo-dialog>
-<kendo-dialog name="duplicateVersionDialog" title="Duplicate" modal="true" visible="false" width="550">
-    <content>
-        <h4>Duplicate Page</h4>
-        <p>Use this dialo to make a duplication of this web page.</p>
-        <form id="dupForm" class="row g-3 needs-validation" novalidate>
-            <div class="col-md-4">
-                <label for="ParentPageUrl" class="form-label">Parent page (optional)</label>
-                @(Html.Kendo().AutoComplete()
-                    .Name("ParentPageUrl")
-                    .Filter("startswith")
-                    .Placeholder("Select country...")
-                    .BindTo(new string[] {
-                "Albania",
-                "Andorra",
-                "Armenia",
-                "Austria",
-                "Azerbaijan",
-                "Belarus",
-                "Belgium",
-                "Bosnia & Herzegovina",
-                "Bulgaria",
-                "Croatia",
-                "Cyprus",
-                "Czech Republic",
-                "Denmark",
-                "Estonia",
-                "Finland",
-                "France",
-                "Georgia",
-                "Germany",
-                "Greece",
-                "Hungary",
-                "Iceland",
-                "Ireland",
-                "Italy",
-                "Kosovo",
-                "Latvia",
-                "Liechtenstein",
-                "Lithuania",
-                "Luxembourg",
-                "Macedonia",
-                "Malta",
-                "Moldova",
-                "Monaco",
-                "Montenegro",
-                "Netherlands",
-                "Norway",
-                "Poland",
-                "Portugal",
-                "Romania",
-                "Russia",
-                "San Marino",
-                "Serbia",
-                "Slovakia",
-                "Slovenia",
-                "Spain",
-                "Sweden",
-                "Switzerland",
-                "Turkey",
-                "Ukraine",
-                "United Kingdom",
-                "Vatican City"
-                    })
-                    .Separator(", ")
-                    )
-                <div class="valid-feedback">
-                    OK
-                </div>
-            </div>
-            <div class="col-md-4">
-                <label for="Title" class="form-label">New title</label>
-                <input type="text" class="form-control" id="Title" value="Mark" required>
-                <div class="valid-feedback">
-                    OK
-                </div>
-            </div>
-        </form>
-    </content>
-</kendo-dialog>
 
 <script>
     function visibleStyle(isReviewer, isAuthor, isPublished, usesEditor) {
