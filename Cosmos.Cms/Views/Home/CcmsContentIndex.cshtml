@@ -1,60 +1,19 @@
-﻿@model Cosmos.Cms.Common.Models.ArticleViewModel
+﻿@model ArticleViewModel
 @{
     Layout = null;
-    ViewData["Title"] = Model.Title;
 }
 <!DOCTYPE HTML>
-<html lang="@Model.LanguageCode">
+<html>
 <head>
-    <title>@Model.Title</title>
-    @Html.Raw(Model.Layout.Head)
-    @*
-    Page specific header
-    *@
-    @Html.Raw(Model.HeadJavaScript)
-    @*
-    Application Insights Scripts
-    *@
-    @Html.Raw(JavaScriptSnippet.FullScript)
+    <meta name="viewport" content="width=device-width;" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+
 </head>
-<body>
-    @Html.Raw(Model.Layout.HtmlHeader)
-    <div ccms-content-id="@Model.Id">
-        @Html.Raw(Model.Content)
-    </div>
-    @Html.Raw(Model.Layout.FooterHtmlContent)
-    @*
-    Page specific
-    *@
-    @Html.Raw(Model.FooterJavaScript)
-
-    <form id="frmEdit" asp-action="Edit" method="post" kendo-validator="true">
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="ArticleNumber" />
-        <input type="hidden" asp-for="UrlPath" />
-        <input type="hidden" asp-for="VersionNumber" />
-        <input type="hidden" asp-for="Content" />
-        <input type="hidden" asp-for="HeadJavaScript" />
-        <input type="hidden" asp-for="FooterJavaScript" />
-        <input type="hidden" asp-for="Published" />
-        <input type="hidden" asp-for="RoleList" />
-        <input type="hidden" asp-for="Title" />
-        <input type="hidden" id="userName" value="@User.Identity?.Name" />
-    </form>
-
-    <script>
-
-        var editors;
-
-        document.addEventListener("DOMContentLoaded", function (event) {
-            // Create editors
-            editors = document.querySelectorAll('[contenteditable]');
-
-            editors.forEach(function (e) {
-                BalloonEditor.create(e).catch(error => { console.error(error); });
-            });
-        });
-
-    </script>
+<body style="margin:0px;padding:0px;background-color:#4d4d4d;">
+    <partial name="_CosmosMainMenuPartial" model="Model" />
 </body>
 </html>
