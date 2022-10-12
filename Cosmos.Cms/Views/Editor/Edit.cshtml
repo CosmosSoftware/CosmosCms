@@ -40,6 +40,14 @@
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
                 saveFirstModal.show();
                 break;
+            case "Code":
+                next = function () {
+                    window.location.href = "@Url.Action("EditCode", "Editor")/@Model.Id";
+                }
+                $("#divSaveFirstDialog").html("Save before opening code editor?");
+                saveFirstModal.show();
+                break;
+                break;
             case "Preview":
                 next = function () {
                     window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
@@ -101,6 +109,8 @@
                 format: 'MM/DD/YYYY hh:mm A'
             }
         });
+
+        $("#btnCcmsCodeEditor").show();
 
     });
 
