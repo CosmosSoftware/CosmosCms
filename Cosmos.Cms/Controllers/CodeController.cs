@@ -139,7 +139,7 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult Debug()
+        public IActionResult Debug(Guid Id)
         {
             return View();
         }
@@ -150,7 +150,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Debug(Guid Id)
+        public async Task<IActionResult> Run(Guid Id)
         {
 
             var debugResult = new DebugViewModel()
@@ -289,37 +289,6 @@ namespace Cosmos.Cms.Controllers
 
                     await _dbContext.SaveChangesAsync();
 
-                    if (model.EndPoint != entity.EndPoint)
-                    {
-                        var vers = await _dbContext.NodeScripts
-                            .WithPartitionKey(model.EndPoint)
-                            .ToListAsync();
-
-
-                        var entry = await _dbContext.ScriptCatalog
-                            .FindAsync(entity.EndPoint);
-
-                        entry.EndPoint = model.EndPoint;
-
-                        foreach (var v in vers)
-                        {
-                            _dbContext.Entry(v).State = EntityState.Detached;
-                            v.Id = Guid.NewGuid();
-                            v.EndPoint = model.EndPoint;
-                            _dbContext.NodeScripts.Add(v);
-                        }
-
-                        await _dbContext.SaveChangesAsync();
-
-                        var doomed = await _dbContext.NodeScripts
-                            .WithPartitionKey(model.EndPoint)
-                            .ToListAsync();
-
-                        _dbContext.NodeScripts.RemoveRange(doomed);
-
-                        await _dbContext.SaveChangesAsync();
-
-                    }
                 }
                 catch (Exception e)
                 {

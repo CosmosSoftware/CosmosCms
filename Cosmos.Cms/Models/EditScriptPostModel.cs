@@ -19,14 +19,19 @@ namespace Cosmos.Cms.Models
         /// <summary>
         /// Endpoint Name
         /// </summary>
+        [Required]
+        [MaxLength(60)]
+        [MinLength(1)]
+        [RegularExpression("^[\\w-_.]*$", ErrorMessage = "Letters and numbers only.")]
         public string EndPoint { get; set; }
 
         /// <summary>
         /// Roles that can execute this script (if applicable)
         /// </summary>
         public string RoleList { get; set; }
+
         /// <summary>
-        /// 
+        /// Title of endpoint
         /// </summary>
         public string Title { get; set; }
 
@@ -38,6 +43,7 @@ namespace Cosmos.Cms.Models
         /// <summary>
         /// Input variables
         /// </summary>
+        [RegularExpression("^[a-zA-Z0-9,.-]*$", ErrorMessage = "Letters and numbers only.")]
         public string InputVars { get; set; }
 
         /// <summary>

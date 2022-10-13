@@ -26,7 +26,7 @@
             @(Html.Grid(Model)
                .Build(col => {
                     col.Add(model => Html.ActionLink("", "Versions", "Code", new { Id = model.EndPoint }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
-                    col.Add(b => b.EndPoint).Titled("End Point");
+                    col.Add(b => b.EndPoint).Titled("Endpoint").RenderedAs(b => $"<a href='/Code/Versions/{b.EndPoint}'>{b.EndPoint}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
                     col.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone").Titled("Updated");
                     col.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT").Titled("Published");
                 })

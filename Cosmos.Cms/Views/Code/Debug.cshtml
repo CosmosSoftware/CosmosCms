@@ -3,10 +3,6 @@
     // /Views/Code/Edit
     Layout = null;
     ViewData["Title"] = "Debugger";
-    var assem = Assembly.GetExecutingAssembly();
-    var assemblies = assem.GetReferencedAssemblies();
-    var kendo = assemblies.FirstOrDefault(a => a.Name.Contains("kendo", StringComparison.CurrentCultureIgnoreCase));
-    var kendoVersion = $"{kendo.Version.Major}.{kendo.Version.Minor}.{kendo.Version.Build}";
 }
 <!DOCTYPE HTML>
 <html>
@@ -17,21 +13,12 @@
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://kendo.cdn.telerik.com/@kendoVersion/js/jquery.min.js"></script>
     <!--
     Code highlighting
     https://highlightjs.org/
     -->
     <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-
-    <!--
-       Code highlighting
-       https://highlightjs.org/
-       -->
-    <link rel="stylesheet" href="https://highlightjs.org/static/demo/styles/base16/atelier-dune.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
 
 </head>
 <body class="bg-dark">
@@ -43,7 +30,7 @@
                         Input
                     </div>
                     <div class="card-body" style="overflow-y: auto;">
-<pre><code id="runInput" class="language-json hljs"></code></pre>
+                        <pre><code id="runInput" class="language-json hljs"></code></pre>
                     </div>
                 </div>
             </div>
@@ -63,6 +50,8 @@
     </div>
     
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    <script>hljs.highlightAll();</script>
 
 </body>
 </html>
