@@ -139,9 +139,10 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult Debug(Guid Id)
+        public async Task<IActionResult> Debug(Guid Id)
         {
-            return View();
+            var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id);
+            return View(script);
         }
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace Cosmos.Cms.Controllers
 
             try
             {
-                var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id); ;
+                var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id);
 
                 var values = GetArgs(script);
 

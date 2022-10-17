@@ -1,5 +1,6 @@
 ﻿using AspNetCore.Identity.Services.SendGrid;
 using Cosmos.BlobService.Config;
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Identity;
@@ -25,22 +26,27 @@ namespace Cosmos.Cms.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SendGridEmailSender _emailSender;
+        private readonly ApplicationDbContext _dbContext;
 
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="logger"></param>
+        /// <param name="dbContext"></param>
         /// <param name="options"></param>
         /// <param name="roleManager"></param>
         /// <param name="userManager"></param>
         /// <param name="emailSender"></param>
         public SetupController(ILogger<SetupController> logger,
+            ApplicationDbContext dbContext,
             IOptions<CosmosConfig> options,
             RoleManager<IdentityRole> roleManager,
             UserManager<IdentityUser> userManager,
             IEmailSender emailSender
         )
         {
+            _dbContext = dbContext;
+
             if (options.Value.SiteSettings.AllowSetup ?? false)
             {
                 _logger = logger;
@@ -55,77 +61,13 @@ namespace Cosmos.Cms.Controllers
             }
         }
 
-        //private bool CanUseConfigWizard()
-        //{
-        //    if (User.Identity.IsAuthenticated)
-        //    {
-        //        var connection = _options.Value.SqlConnectionStrings.FirstOrDefault(f => f.IsPrimary);
-        //        using var dbContext = GetDbContext(connection.ToString());
-        //        using var userManager = GetUserManager(dbContext);
-        //        using var roleManager = GetRoleManager(dbContext);
-        //        var user = userManager.GetUserAsync(User).Result;
-        //        var authorized = userManager.IsInRoleAsync(user, "Administrators").Result;
-        //        return authorized;
-        //    }
-
-        //    return _options.Value.SiteSettings.AllowSetup ?? false && _options.Value.SiteSettings.AllowConfigEdit;
-        //}
-
         /// <summary>
-        ///     Loads JSON strings into configuration model
+        /// Settings index page
         /// </summary>
-        /// <param name="model"></param>
-        //private void LoadJson(ConfigureIndexViewModel model)
-        //{
-        //    #region LOAD BLOB CONNECTIONS
-
-        //    model.StorageConfig = new StorageConfig();
-
-        //    if (!string.IsNullOrEmpty(model.AwsS3ConnectionsJson))
-        //    {
-        //        var data = JsonConvert.DeserializeObject<AmazonStorageConfig[]>(model.AwsS3ConnectionsJson);
-        //        if (data != null && data.Length > 0) model.StorageConfig.AmazonConfigs.AddRange(data);
-        //    }
-
-        //    if (!string.IsNullOrEmpty(model.AzureBlobConnectionsJson))
-        //    {
-        //        var data = JsonConvert.DeserializeObject<AzureStorageConfig[]>(model.AzureBlobConnectionsJson);
-        //        if (data != null && data.Length > 0) model.StorageConfig.AzureConfigs.AddRange(data);
-        //    }
-
-        //    if (!string.IsNullOrEmpty(model.GoogleBlobConnectionsJson))
-        //    {
-        //        var data = JsonConvert.DeserializeObject<GoogleStorageConfig[]>(model.GoogleBlobConnectionsJson);
-        //        if (data != null && data.Length > 0) model.StorageConfig.GoogleConfigs.AddRange(data);
-        //    }
-
-        //    #endregion
-
-        //    #region LOAD EDITOR URLS
-
-        //    if (!string.IsNullOrEmpty(model.EditorUrlsJson))
-        //    {
-        //        var data = JsonConvert.DeserializeObject<EditorUrl[]>(model.EditorUrlsJson);
-        //        model.EditorUrls.AddRange(data);
-        //    }
-
-        //    #endregion
-
-        //    #region LOAD SQL Connection Strings
-
-        //    if (!string.IsNullOrEmpty(model.SqlConnectionsJson))
-        //    {
-        //        var data = JsonConvert.DeserializeObject<SqlConnectionString[]>(model.SqlConnectionsJson);
-        //        model.SqlConnectionStrings.AddRange(data);
-        //    }
-
-        //    #endregion
-
-        //}
-
-        public IActionResult Index()
+        /// <returns></returns>
+        public async Task<IActionResult> Index()
         {
-            return View();
+            return View(settings);
         }
 
         /// <summary>

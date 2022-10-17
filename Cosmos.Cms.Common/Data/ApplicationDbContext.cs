@@ -50,7 +50,6 @@ namespace Cosmos.Cms.Common.Data
                 .HasPartitionKey(article => article.UrlPath)
                 .HasKey(article => article.Id);
 
-
             modelBuilder.Entity<ArticleLog>()
                 .ToContainer(nameof(ArticleLog))
                 .HasPartitionKey(log => log.ArticleId)
@@ -104,6 +103,11 @@ namespace Cosmos.Cms.Common.Data
         public DbSet<Template> Templates { get; set; }
 
         public DbSet<ScriptCatalogEntry> ScriptCatalog { get; set; }
+
+        /// <summary>
+        /// Site settings.
+        /// </summary>
+        public DbSet<Setting> Settings { get; set; }
 
         #endregion
     }
