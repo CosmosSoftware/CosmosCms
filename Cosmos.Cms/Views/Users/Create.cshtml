@@ -1,0 +1,59 @@
+﻿@model UserCreateViewModel
+@{
+    ViewData["Title"] = "New Account Registration";
+}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>@ViewData["Title"]</h1>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form id="registerForm" method="post">
+            <h2>User Information</h2>
+            <a asp-action="Index">Back to list <i class="fas fa-angle-double-right"></i></a>
+            <hr />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="EmailAddress"></label>
+                <input class="form-control" asp-for="EmailAddress" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="EmailConfirmed" type="checkbox" class="form-check-input" aria-required="true" />
+                <label asp-for="EmailConfirmed" class="form-check-label"></label> (No confirmation email will be sent if checked.)
+                <span asp-validation-for="EmailConfirmed" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber"></label>
+                <input class="form-control" asp-for="PhoneNumber" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="mb-3 form-check">
+                <input asp-for="PhoneNumberConfirmed" type="checkbox" class="form-check-input" aria-required="true" />
+                <label asp-for="PhoneNumberConfirmed" class="form-check-label"></label>
+                <span asp-validation-for="PhoneNumberConfirmed" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="GenerateRandomPassword" type="checkbox" class="form-check-input" aria-required="true" />
+                <label asp-for="GenerateRandomPassword" class="form-check-label"></label>
+                <span asp-validation-for="GenerateRandomPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3" id="pwdField" style="display:none;">
+                <label asp-for="Password"></label>
+                <input class="form-control" asp-for="Password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register User</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

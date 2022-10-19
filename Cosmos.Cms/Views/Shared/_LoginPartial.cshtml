@@ -2,36 +2,22 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-</button>
-<div class="collapse navbar-collapse">
-    @if (SignInManager.IsSignedIn(User))
-    {
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    User Account
-                </a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity.Name</a>
-                    </li>
-                    <li>
-                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
-                            <button type="submit" class="dropdown-item">Logout</button>
-                        </form>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    }
-    else
-    {
-        <div>
-            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a> |
-            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
-        </div>
-    }
-</div>
+@if (SignInManager.IsSignedIn(User))
+{
+    <a class="nav-link text-light text-muted me-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity.Name</a>
+    <button id="btnNavLogoutButton" type="button" onclick="navLogout()" class="btn btn-sm bg-dark text-light" style="margin-top:-2px;">Logout</button>
+    <form name="frmNavLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
+    </form>
+    <script>
+        function navLogout() {
+            document.frmNavLogout.submit();
+        }
+    </script>
+}
+else
+{
+    <div>
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a> |
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+    </div>
+}

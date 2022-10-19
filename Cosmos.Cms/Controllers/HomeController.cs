@@ -24,6 +24,7 @@ namespace Cosmos.Cms.Controllers
     /// <summary>
     /// Home page controller
     /// </summary>
+    [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
     public class HomeController : Controller
     {
         private readonly ArticleEditLogic _articleLogic;
@@ -94,10 +95,16 @@ namespace Cosmos.Cms.Controllers
         /// Editor home index method
         /// </summary>
         /// <returns></returns>
-        [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
-        public IActionResult CcmsContentIndex()
+        public async Task<IActionResult> CcmsContentIndex(Guid? Id)
         {
-            return View();
+            if (Id == null)
+            {
+                return View();
+            }
+
+            var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
+
+            return View(article);
         }
 
         /// <summary>
@@ -105,7 +112,6 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
         [ResponseCache(NoStore = true)]
         public async Task<IActionResult> Index()
         {
@@ -191,7 +197,6 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
         [ResponseCache(NoStore = true)]
         public async Task<IActionResult> Preview(string id)
         {

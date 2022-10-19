@@ -1,0 +1,77 @@
+﻿@using NonFactors.Mvc.Grid
+@model IQueryable<IdentityRole>
+@using Microsoft.AspNetCore.Identity
+@{
+    var userIds = (string[])ViewData["UserIds"];
+
+    ViewData["Title"] = "Role Management";
+}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-8">
+            <h3>@ViewData["Title"]</h3>
+            <hr />
+        </div>
+    </div>
+    @if (Model != null && Model.Any())
+    {
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <p>@Model.Count() users selected.</p>
+                <button type="button" id="btnAddToRoles" class="btn btn-sm btn-primary" style="display:none;color: #e6ccff">Add Selected Users to Roles</button>
+                <button type="button" id="btnRemoveFromRoles" class="btn btn-sm btn-primary" style="display:none">Remove Selected Users from Roles</button>
+            </div>
+        </div>
+    }
+    <div class="row justify-content-center">
+        <div class="col-8">
+            <a class="btn btn-sm btn-primary" asp-action="Index" asp-controller="Home">Home</a>
+            <span id="spanChangeNotice" class="text-muted" style="display:none">Remember to click &quot;Save&quot; or &quot;Cancel&quot; when done.</span>
+            @(Html.Grid(Model)
+                .Build(col =>
+                {
+                    col.Add().RenderedAs(r => $"<input type='checkbox' data-ccms-userid='{r.Id}' class='gridCheckBox' >").Encoded(false).Sortable(false).Filterable(false).Titled("").Width("30px");
+                    col.Add(b => b.Name).Titled("Role Name");
+                    col.Add().RenderedAs(r => $"<button title='Manage membership.' type='button' onclick=\"manageUsers('{r.Id}')\" class='btn btn-sm'><i class='fa fa-user'></i></button>").Encoded(false).Sortable(false).Filterable(false).Titled("");
+                }).Filterable().Sortable().Pageable())
+        </div>
+    </div>
+</div>
+
+<script>
+    var selectedIds;
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors,
+                function (key, value) {
+                    if ('errors' in value) {
+                        $.each(value.errors,
+                            function () {
+                                message += this + "\n";
+                            });
+                    }
+                });
+            alert(message);
+        }
+    }
+
+    function onEdit(e) {
+        $("#spanChangeNotice").show();
+    }
+
+    function onChange(arg) {
+        selectedIds = this.selectedKeyNames(); //.join(", ");
+        if (selectedIds.length > 0) {
+            $("#btnAddToRoles").show();
+            $("#btnRemoveFromRoles").show();
+        } else {
+            $("#btnAddToRoles").hide();
+            $("#btnRemoveFromRoles").hide();
+        }
+    }
+
+    function manageUsers(roleId) {
+        window.location = "@Url.Action("UsersInRole")/" + roleId;
+    }
+</script>

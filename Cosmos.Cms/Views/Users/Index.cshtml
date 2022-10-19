@@ -1,0 +1,199 @@
+﻿@model IQueryable<UserIndexViewModel>
+@using NonFactors.Mvc.Grid
+@{
+    ViewData["Title"] = "User Management";
+}
+<style>
+    .fa-shield {
+        padding-right: 4px;
+    }
+</style>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h3>@ViewData["Title"]</h3>
+            <hr />
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a class="btn btn-sm btn-primary" asp-action="Create" title="Create a user account.">Create</a>
+            <a class="btn btn-sm btn-primary" asp-action="Index" asp-controller="Roles" title="Manage roles created to limit access to specific web pages here.">Roles</a>
+            <button id="btnAddRemoveRoles" type="button" onclick="submitUserIds('roles')" class="btn btn-sm btn-primary" title="Add or remove users from roles." style="display:none">Roles</button>
+            <button id="btnDeleteUsers" type="button" onclick="submitUserIds('delete')" class="btn btn-sm btn-primary" title="Delete users." style="display:none">Delete</button>
+            <button id="btnClearUsers" type="button" onclick="submitUserIds('clear')" class="btn btn-sm btn-primary" title="Clear selected users." style="display:none">Clear</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <!-- Users -->
+            @(
+                Html.Grid(Model)
+                .Build(col =>
+                {
+                    col.Add().RenderedAs(r => $"<input type='checkbox' data-ccms-userid='{r.UserId}' class='gridCheckBox' >").Encoded(false).Sortable(false).Filterable(false).Titled("").Width("30px");
+                    col.Add().RenderedAs(r => $"<button title='Resend verification email.' type='button' onclick=\"resendEmail('{r.UserId}')\" class='btn btn-sm'><i class='fas fa-envelope'></i></button>").Encoded(false).Sortable(false).Filterable(false).Titled("");
+                    col.Add(r => r.EmailAddress).RenderedAs(r => r.EmailAddress + (r.EmailConfirmed ? " (confirmed)" : "")).Titled("Email Address");
+                    col.Add(r => r.PhoneNumber).RenderedAs(r => r.PhoneNumber + (r.PhoneNumberConfirmed ? " (confirmed)" : "")).Titled("Phone Number");
+                    col.Add(r => r.TwoFactorEnabled).RenderedAs(r => (r.TwoFactorEnabled ? " (2FA On)" : "")).Titled("").Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => $"<button title='Role assignments.' type='button' onclick=\"manageRoles('{r.UserId}')\" class='btn btn-sm btn-secondary'>Roles</button>").Encoded(false).Sortable(false).Filterable(false).Titled("");
+                })
+                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+                .Empty("No users found")
+                .Filterable()
+                .Sortable()
+                .Pageable(p => p.ShowPageSizes = true)
+                )
+        </div>
+    </div>
+</div>
+
+<form id="frmUserIds" asp-action="Index" asp-controller="Roles" method="post">
+    @Html.AntiForgeryToken()
+    <input id="userIds" name="userIds" type="hidden" />
+</form>
+
+<script>
+
+    let userIds = [];
+
+    function manageRoles(userId) {
+        window.location = "@Url.Action("UserRoles")/" + userId;
+    }
+
+    function resendEmail(userId) {
+        $.post(
+            "@Url.Action("ResendEmailConfirmation")/" + userId,
+            function (data) {
+                if (data.Success) {
+                    alert("Email confirmation sent.");
+                } else {
+                    alert("Error: " + data.Error);
+                }
+            }
+        );
+    }
+
+    function submitUserIds(action) {
+
+        let data = localStorage.getItem("userIds");
+
+        $("#userIds").val(JSON.parse(data));
+
+        switch (action) {
+            case "delete":
+                $("#frmUserIds").attr("action", "/Users/DeleteUsers");
+                $("#frmUserIds").submit();
+                break;
+            case "clear":
+                clearUserIds();
+                $(".gridCheckBox").each(function (index, element) {
+                    $(element).prop('checked', false);
+                });
+                resetButtons();
+                break;
+        }
+
+    }
+
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors,
+                function (key, value) {
+                    if ('errors' in value) {
+                        $.each(value.errors,
+                            function () {
+                                message += this + "\n";
+                            });
+                    }
+                });
+            alert(message);
+        }
+    }
+
+    function onEdit(e) {
+        $("#spanChangeNotice").show();
+    }
+
+    function saveUserId(userId) {
+        // Avoid duplications
+        if (userIds.indexOf(userId) == -1) {
+            userIds.push(userId);
+        }
+        localStorage.setItem("userIds", JSON.stringify(userIds));
+    }
+
+    function removeUserId(userId) {
+        var tmp = userIds.filter(function (value) {
+            return value !== userId
+        });
+        userIds = tmp;
+        localStorage.setItem("userIds", JSON.stringify(userIds));
+    }
+
+    function reloadUserIds() {
+        let data = localStorage.getItem("userIds");
+        if (typeof (data) === "undefined" || data === null || data === "") {
+            userIds = []
+        } else {
+            userIds = JSON.parse(data);
+        }
+    }
+
+    function clearUserIds() {
+        userIds = [];
+        localStorage.removeItem("userIds");
+    }
+
+    function getUserId(checkbox) {
+        return $(checkbox).attr("data-ccms-userid");
+    }
+
+    $(document).ready(function () {
+
+        reloadUserIds();
+
+        resetButtons();
+
+        $(".gridCheckBox").each(function (index, element) {
+
+            if ((userIds.indexOf(getUserId(element)) > -1)) {
+                $(element).prop('checked', true);
+            }
+
+            $(element).on("change", function () {
+
+                let userId = getUserId(element);
+
+                let isChecked = $(element).prop('checked');
+
+                if (isChecked) {
+                    saveUserId(userId);
+                } else {
+                    removeUserId(userId);
+                }
+
+                resetButtons();
+
+            });
+        });
+
+    });
+
+    function resetButtons() {
+
+        // Get the array length
+        let arrayLength = userIds.length;
+
+        if (arrayLength > 0) {
+            $("#btnClearUsers").show();
+            $("#btnDeleteUsers").show();
+        } else {
+            $("#btnClearUsers").hide();
+            $("#btnDeleteUsers").hide();
+        }
+
+    }
+</script>

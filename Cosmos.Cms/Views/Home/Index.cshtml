@@ -2,6 +2,7 @@
 @{
     Layout = null;
     ViewData["Title"] = Model.Title;
+    var menuUrl = $"/Home/CcmsContentIndex/{Model.Id}";
 }
 <!DOCTYPE HTML>
 <html lang="@Model.LanguageCode">
@@ -18,7 +19,7 @@
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    <iframe id="ccmsIndexMenu" src="/Home/CcmsContentIndex" onload="ccmsSetupIndexMenu()" style="width:100%;height:60px;"></iframe>
+    <iframe id="ccmsIndexMenu" src="@menuUrl" onload="ccmsSetupIndexMenu()" style="height:60px;width:100%;min-width:600px;"></iframe>
     @Html.Raw(Model.Layout.HtmlHeader)
     @Html.Raw(Model.Content)
     @Html.Raw(Model.Layout.FooterHtmlContent)
@@ -26,18 +27,27 @@
     <script>
         // The following is used to wireup the menu links to this page.
         function ccmsSetupIndexMenu() {
-            var iframe = document.getElementById("ccmsIndexMenu");
-            var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+            let iframe = document.getElementById("ccmsIndexMenu");
+            let iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
                 iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
-                var anchors = iframeWin.document.querySelectorAll("a");
+                let anchors = iframeWin.document.querySelectorAll("a");
                 anchors.forEach(function (el) {
                     el.onclick = function () {
                         window.location.href = el.href;
                     };
                 });
+
+                let btn = iframeWin.document.querySelector("#btnNavLogoutButton");
+
+                btn.onclick = function () { 
+                    document.frmIndexLogout.submit();
+                };
             }
         };
+
     </script>
+    <form name="frmIndexLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
+    </form>
 </body>
 </html>
