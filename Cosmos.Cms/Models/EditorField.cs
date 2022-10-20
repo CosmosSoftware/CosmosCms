@@ -45,6 +45,14 @@
         /// <summary>
         /// CSS Mode
         /// </summary>
-        Css = 2
+        Css = 2,
+        /// <summary>
+        /// XML Mode
+        /// </summary>
+        Xml = 3,
+        /// <summary>
+        /// JSON
+        /// </summary>
+        Json = 4
     }
 }

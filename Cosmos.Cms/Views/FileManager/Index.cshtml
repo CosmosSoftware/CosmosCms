@@ -8,6 +8,7 @@
 
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
+    var editorExtensions = new string[] { ".js", ".css", ".html", ".htm", ".json", ".xml" };
 
     if (directoryOnly)
     {
@@ -114,7 +115,11 @@
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
                     col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add().RenderedAs(r => r.IsDirectory == false ? $"<button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl}{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>" : "").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => r.IsDirectory == false ?
+                    $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl}{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
+                     + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
+                     + "</div>"
+                     : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
@@ -135,6 +140,7 @@
     @Html.AntiForgeryToken()
     <input id="frmPathList" name="frmPathList" type="hidden" />
 </form>
+
 
 <!-- Before the end of the body tag -->
 <script src="~/lib/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.min.js"></script>
@@ -460,10 +466,10 @@
 
                 var itemCount = items.length;
 
-                 $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
+                $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
 
-                 next = function () {
-                      $.post('@Url.Action("Move")',   // url
+                next = function () {
+                    $.post('@Url.Action("Move")',   // url
                         {
                             Destination: paths[0],
                             Items: items
@@ -473,7 +479,7 @@
                             resetButtons();
                             window.location.href = '@Url.Action("Index")?target=@pathPrefix';
                         })
-                 }
+                }
                 break;
         }
 

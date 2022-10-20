@@ -25,11 +25,8 @@ namespace Cosmos.IdentityManagement.Website.Controllers
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="logger"></param>
         /// <param name="userManager"></param>
-        /// <param name="signInManager"></param>
         /// <param name="roleManager"></param>
-        /// <param name="emailSender"></param>
         public RolesController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager
