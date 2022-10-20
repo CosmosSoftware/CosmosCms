@@ -37,6 +37,6 @@ jobs:
     - name: Docker push Editor image
       run:  docker push toiyabe/cosmoscmseditor:${TAGNAME}
     - name: Build Publisher Docker image
-      run: docker build . --file /home/runner/work/CosmosCms/CosmosCms/Cosmos.Cms.Website/Dockerfile --tag toiyabe/cosmoscmspublisher:${TAGNAME}
+      run: docker build . --file /home/runner/work/CosmosCms/CosmosCms/Cosmos.Cms.Publisher/Dockerfile --tag toiyabe/cosmoscmspublisher:${TAGNAME}
     - name: Docker push Publisher image
       run:  docker push toiyabe/cosmoscmspublisher:${TAGNAME}
