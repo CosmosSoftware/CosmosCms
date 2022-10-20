@@ -195,33 +195,17 @@ namespace Cosmos.Cms.Common.Data.Logic
             var activeStatusCodes =
                 onlyActive ? new[] { 0, 3 } : new[] { 0, 1, 3 }; // i.e. StatusCode.Active (DEFAULT) and StatusCode.Redirect
 
-            if (_isEditor)
-            {
-                if (publishedOnly)
-                    article = await DbContext.Articles.WithPartitionKey(urlPath)
-                        .Where(a => a.Published <= DateTimeOffset.UtcNow &&
-                                    activeStatusCodes.Contains(a.StatusCode))
-                        .OrderByDescending(o => o.VersionNumber).FirstOrDefaultAsync();
-                else
-                    article = await DbContext.Articles.WithPartitionKey(urlPath)
-                        .Where(a => activeStatusCodes.Contains(a.StatusCode))
-                        .OrderByDescending(o => o.VersionNumber)
-                        .FirstOrDefaultAsync();
-            }
+
+            if (publishedOnly)
+                article = await DbContext.Articles.WithPartitionKey(urlPath)
+                    .Where(a => a.Published <= DateTimeOffset.UtcNow &&
+                                activeStatusCodes.Contains(a.StatusCode))
+                    .OrderByDescending(o => o.VersionNumber).FirstOrDefaultAsync();
             else
-            {
-                //Note: The cache is asynchronous, so we don't have to add await operated here.
-                if (publishedOnly)
-                    article = await DbContext.Articles.WithPartitionKey(urlPath)
-                        .Where(a => a.Published <= DateTime.UtcNow &&
-                                    activeStatusCodes.Contains(a.StatusCode))
-                        .OrderByDescending(o => o.VersionNumber).FirstOrDefaultAsync();
-                else
-                    article = await DbContext.Articles.WithPartitionKey(urlPath)
-                        .Where(a => activeStatusCodes.Contains(a.StatusCode))
-                        .OrderByDescending(o => o.VersionNumber)
-                        .FirstOrDefaultAsync();
-            }
+                article = await DbContext.Articles.WithPartitionKey(urlPath)
+                    .Where(a => activeStatusCodes.Contains(a.StatusCode))
+                    .OrderByDescending(o => o.VersionNumber)
+                    .FirstOrDefaultAsync();
 
 
             if (article == null) return null;
