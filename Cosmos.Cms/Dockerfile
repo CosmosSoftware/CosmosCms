@@ -13,7 +13,6 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
 COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
-COPY ["Cosmos.Cms.Common/Cosmos.Cms.Common.csproj", "Cosmos.Cms.Common/"]
 COPY . .
 
 WORKDIR "/src/Cosmos.Cms"
