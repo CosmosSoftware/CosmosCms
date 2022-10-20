@@ -125,10 +125,10 @@
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.18" />
 		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
-		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.105" />
+		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.109" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
 		<PackageReference Include="CDT.Akamai.Cdn" Version="6.0.0.4" />
-		<PackageReference Include="Cosmos.BlobService" Version="6.3.15" />
+		<PackageReference Include="Cosmos.BlobService" Version="7.0.1" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="IntelliTect.AspNetCore.SignalR.SqlServer" Version="1.0.1" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
