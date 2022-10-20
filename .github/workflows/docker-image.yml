@@ -38,7 +38,7 @@ jobs:
               password: ${{ secrets.DOCKERPASSWORD }}
       
     - name: Build Editor Docker image
-      run: docker build . --file /home/runner/work/Cosmos.Cms/Cosmos.Cms/CDT.Cosmos.Cms/Dockerfile --tag toiyabe/cosmoseditor:${TAGNAME}
+      run: docker build . --file /home/runner/work/CosmosCms/CosmosCms/Cosmos.Cms/Dockerfile --tag toiyabe/cosmoseditor:${TAGNAME}
     
     - name: Docker push Editor image
       run:  docker push toiyabe/cosmoseditor:${TAGNAME}
