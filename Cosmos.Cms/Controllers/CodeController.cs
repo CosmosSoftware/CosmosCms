@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Data;
+﻿
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
@@ -37,7 +38,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         public CodeController(INodeJSService nodeJSService, IOptions<CosmosConfig> cosmosConfig,
-            ApplicationDbContext dbContext, ILogger<CodeController> logger)
+            Cosmos.Cms.Common.Data.ApplicationDbContext dbContext, ILogger<CodeController> logger)
         {
             _nodeJSService = nodeJSService;
             _cosmosConfig = cosmosConfig;
