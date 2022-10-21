@@ -15,11 +15,11 @@
 </head>
 <body style="margin:0px;padding:0px;background-color:#4d4d4d;">
     <partial name="_CosmosMainMenuPartial" model="Model" />
-    <iframe id="ccmsIndexMenu" src="/Home/Index" onload="setupIframe()" style="width:100%;"></iframe>
+    <iframe id="iFrameWebPage" src="/@Model.UrlPath" onload="setupIframe()" style="width:100%;"></iframe>
     <script>
         // The following is used to wireup the menu links to this page.
         function setupIframe() {
-            var iframe = document.getElementById("ccmsIndexMenu");
+            var iframe = document.getElementById("iFrameWebPage");
             var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
                 iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
