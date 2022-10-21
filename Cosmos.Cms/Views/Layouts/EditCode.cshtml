@@ -1,10 +1,66 @@
-﻿@model LayoutCodeViewModel
+﻿@using Newtonsoft.Json
+@model LayoutCodeViewModel
 @{
-    Layout = "_LayoutCodeEditor";
+    Layout = "_LayoutEditor";
     ViewData["Title"] = Model.EditorTitle;
+    var fields = Model.EditorFields.ToArray();
+    var aclass = "active";
 }
 
-<form id="codeForm" asp-action="EditCode">
+<style>
+    .m-editor-container {
+        position: absolute;
+        top: 87px;
+        bottom: 1px;
+        left: 1px;
+        right: 1px;
+    }
+
+    .code-tabs.navbar {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding-top: 2px;
+        height: 3px;
+    }
+
+    .code-tabs.nav-link {
+        height: 26px;
+        font-size: 0.8em;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 2px;
+    }
+
+    .code-tabs.nav-link {
+        background-color: var(--bs-gray-600);
+        color: white;
+        border-color: transparent;
+    }
+
+        .code-tabs.nav-link.active {
+            background-color: var(--bs-gray-900);
+            color: white;
+            border-color: black;
+        }
+</style>
+
+<nav class="code-tabs navbar">
+    <ul class="nav nav-tabs " id="nav-tab">
+        @{
+            foreach (var field in fields)
+            {
+                <li class="nav-item">
+                    <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                </li>
+                aclass = "";
+            }
+        }
+    </ul>
+</nav>
+
+<div id="editspace" class="m-editor-container"></div>
+
+<form id="frmSave" asp-action="EditCode">
     <input type="hidden" asp-for="Id"/>
     <input type="hidden" asp-for="EditingField"/>
     <input type="hidden" asp-for="Head"/>
@@ -12,9 +68,28 @@
     <input type="hidden" asp-for="FooterHtmlContent" />
     <input type="hidden" asp-for="EditorType" />
 </form>
+
 <script>
-    var editorSaveSignal = "LayoutSaved";
-    var editorType = "LayoutEditor";
+    var next;
+
+    var editor;
+    var fieldId;
+    var ccmsEditorIsLocked = false;
+
+    $("#frmSave").submit(function (e) {
+        e.preventDefault();
+        saveChanges(null, null);
+    });
+
+    // Example: var editFields = '[{"FieldId":"HeaderJavaScript","FieldName":"Header JavaScript","EditorMode":0},{"FieldId":"Content","FieldName":"Html Content","EditorMode":1},{"FieldId":"FooterJavaScript","FieldName":"Footer JavaScript","EditorMode":0}]';
+    var editFields = @(Html.Raw(JsonConvert.SerializeObject(Model.EditorFields)));
+
+    function saveExistingLoadNewEditor(id) {
+        if (editor !== null && typeof editor !== "undefined") {
+            $("#" + fieldId).val(editor.getValue());
+        }
+        createAndLoadEditor(id);
+    }
 
     function btnCustomClick(e) {
         switch (e.target.text()) {
@@ -31,31 +106,190 @@
         window.location.href = "@Url.Action("Index", "Layouts")";
     }
 
-    // Used by signalR to re-load an article
-    function ccmsLoadModel(model) {
+    //
+    // Creates and loads a Monaco Editor.
+    //
+    function createAndLoadEditor(id) {
+        if (editor !== null && typeof editor !== "undefined") {
+            if (editor.getModel()) {
+                editor.getModel().dispose();
+            }
+            $("#msgBox").html("Loading...");
+            editor.dispose();
+            editor = null;
+        }
 
-        // get all the inputs into an array.
-        var inputs = [@(Html.Raw(string.Join(",", Model.EditorFields.Select(s => "\"" + s.FieldId + "\"").ToArray()))) ];
+        fieldId = null;
 
-        // not sure if you wanted this, but I thought I'd add it.
-        // get an associative array of just the values.
-        inputs.forEach(function (item) {
-            var c = model[item];
-            $("#" + item).val(c);
+        $("#EditingField").val(null);
+
+        // Monaco AMD Editor  - https://microsoft.github.io/monaco-editor/
+        require.config({ paths: { 'vs': '/lib/monaco-editor/min/vs' } });
+
+        //require.config({ paths: { vs: '/lib/node_modules/monaco-editor/dist' } }); // Emmet Abbr.
+        require(['vs/editor/editor.main'],
+            function () {
+                fieldId = id;
+                var fieldInfo = editFields.find(o => o.FieldName === id);
+                fieldId = fieldInfo.FieldId;
+
+                var mode = null;
+
+                switch (fieldInfo.EditorMode) {
+                    case 0:
+                        mode = "javascript"
+                        break;
+                    case 1:
+                        mode = "html"
+                        break;
+                    case 2:
+                        mode = "css";
+                        break;
+                    default:
+                        mode = "html"
+                        break;
+                }
+
+                $("#EditingField").val(fieldId);
+                var hiddenInput = $("#" + fieldId);
+                var code = hiddenInput.val();
+                emmetMonaco.emmetHTML(monaco);
+                editor = monaco.editor.create(document.getElementById('editspace'),
+                    {
+                        language: mode,
+                        theme: "vs-dark",
+                        value: code
+                    });
+
+                $("#msgBox").html("");
+            });
+    }
+
+    // Save the changes for this editor
+    function saveChanges(myModal, next) {
+
+        saving();
+
+        if (typeof (myModel) !== "undefined" && myModel !== null) {
+            myModal.hide();
+        }
+        // Saving publish date with time zone information
+        savePublishDateTime();
+
+        // Save title
+        $("#Title").val($("#tbTitle").val());
+
+        var form = $('#frmSave');
+
+        if (editor) {
+            $("#" + fieldId).val(editor.getValue());
+        }
+
+        $.post("@Url.Action("EditCode")",
+            form.serialize(),
+            function (response) {
+
+                doneSaving();
+
+                if (response.IsValid) {
+                    if (typeof (next) !== "undefined" && next !== null) {
+                        next();
+                    }
+                    toastMsg("Successfully saved.");
+                } else {
+                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
+
+                    // Invalid response.
+                    $.each(response.Errors,
+                        function (index, error) {
+                            errorMsg = "<p>" + error.Key + "</p><ul>";
+                            $.each(error.Errors,
+                                function (index, innerError) {
+                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
+                                });
+                            errorMsg = errorMsg + "</ul>";
+                        });
+                    $("#divErrorLog").html(errorMsg);
+                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
+                    errorModal.show();
+                }
+            }
+        );
+    }
+
+    function btnSelectField(e) {
+        fieldName = e.target.text();
+        saveExistingLoadNewEditor(e.id);
+    }
+
+    function bgEditClickCustom(command) {
+        switch (command) {
+            case "Close":
+                next = function () {
+                    window.location.href = "/Layouts/Index";
+                }
+                $("#divSaveFirstDialog").html("Save page before closing editor?");
+                saveFirstModal.show();
+                break;
+        }
+    }
+
+    function saveFirst() {
+        saveChanges(saveFirstModal, next);
+    }
+
+    function doNotSave() {
+        saveFirstModal.hide();
+        next();
+    }
+
+    function getLocalTimeZone() {
+        var datetime = new Date();
+        var dateTimeString = datetime.toString();
+        var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
+        return timezone;
+    }
+
+    $(document).ready(function () {
+        var fieldId = "@Model.EditingField";
+        if (fieldId !== "") {
+            var fieldInfo = editFields.find(o => o.FieldId === fieldId);
+            createAndLoadEditor(fieldInfo.FieldName);
+            // Refresh locks for everyone including self.
+            setTimeout(function () {
+                //ccmsSendSignal("NotifyRoomOfLock");
+            }, 2000);
+        }
+
+        $('#tbPublished').daterangepicker({
+            timePicker: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            locale: {
+                format: 'MM/DD/YYYY hh:mm A'
+            }
         });
 
-        //$("#Id").val(model.Id);
-        //var id = $("#Id");
-        //var content = $("#Content");
-        //var hjs = $("#HeaderJavaScript");
-        //var fjs = $("#FooterJavaScript");
+        $("[data-ccms-fieldname]").click(function (event) {
+            var name = $(event.target).attr("data-ccms-fieldname");
+            $("[data-ccms-fieldname]").removeClass("active");
+            saveExistingLoadNewEditor(name);
+            $(event.target).addClass("active");
+        });
 
-        //content.val(model.Content);
-        //hjs.val(model.HeaderJavaScript);
-        //fjs.val(model.FooterJavaScript);
+    });
 
-        var activeTab = $(".tabitem.nav-link.active");
-        var name = $(activeTab).attr("data-ccms-fieldname");
-        createAndLoadEditor(name);// tabOnSelect on _LayoutCodeEditor
-    }
+    $(window).bind('keydown', function (event) {
+        if (event.ctrlKey || event.metaKey) {
+            switch (String.fromCharCode(event.which).toLowerCase()) {
+                case 's':
+                    event.preventDefault();
+                    $("#frmSave").submit();
+                    break;
+            }
+        }
+    });
 </script>
+
+<script src="/lib/monaco-editor/min/vs/loader.js"></script>
+<script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
