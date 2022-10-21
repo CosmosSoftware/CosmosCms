@@ -83,7 +83,7 @@
         <div class="row justify-content-center">
             <div class="col-4-md">
                 <h3>Endpoint Settings</h3>
-                <form id="frmSave" asp-action="EditCode">
+                <form id="frmSave" action="/Code/EditCode" method="post">
                     <div class="mb-3">
                          <label for="InputVars" class="form-label">Input variables:</label>
                         <input asp-for="InputVars" type="text" class="form-control" aria-describedby="Title">
@@ -91,7 +91,7 @@
                         <span asp-validation-for="InputVars" class="alert-warning"></span>
                     </div>
                     <div class="mb-3">
-                        <button class="btn btn-secondary" onclick="bgEditClick('Save')" type="button">Save</button>
+                        <button class="btn btn-secondary" type="button">Save</button>
                     </div>
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="EndPoint" />
@@ -216,42 +216,12 @@
         // Save title
         $("#Title").val($("#tbTitle").val());
 
-        var form = $('#frmSave');
-
         if (editor) {
             $("#" + fieldId).val(editor.getValue());
         }
 
-        $.post("@Url.Action("EditCode")",
-            form.serialize(),
-            function (response) {
+        $('#frmSave').submit();
 
-                doneSaving();
-
-                if (response.IsValid) {
-                    if (typeof (next) !== "undefined" && next !== null) {
-                        next();
-                    }
-                    toastMsg("Successfully saved.");
-                } else {
-                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
-
-                    // Invalid response.
-                    $.each(response.Errors,
-                        function (index, error) {
-                            errorMsg = "<p>" + error.Key + "</p><ul>";
-                            $.each(error.Errors,
-                                function (index, innerError) {
-                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
-                                });
-                            errorMsg = errorMsg + "</ul>";
-                        });
-                    $("#divErrorLog").html(errorMsg);
-                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
-                    errorModal.show();
-                }
-            }
-        );
     }
 
     function btnSelectField(e) {
@@ -341,6 +311,3 @@
 <script src="/lib/monaco-editor/min/vs/loader.js"></script>
 <script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

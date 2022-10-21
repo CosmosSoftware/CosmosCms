@@ -65,9 +65,9 @@ namespace Cosmos.Cms.Controllers
         /// Settings index page
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(settings);
+            return View();
         }
 
         /// <summary>

@@ -2,20 +2,15 @@
 @using System.Reflection
 @{
     var assemblyName = Assembly.GetExecutingAssembly().GetName();
-
-    var isAuthor = false;
     var isEditor = false;
     var isAdministrator = false;
 
-    if (User != null && User.IsInRole("Authors"))
-    {
-        isAuthor = true;
-    }
-    else if (User != null && User.IsInRole("Editors"))
+    if (User != null && User.IsInRole("Editors"))
     {
         isEditor = true;
     }
-    else if (User != null && User.IsInRole("Administrators"))
+    
+    if (User != null && User.IsInRole("Administrators"))
     {
         isAdministrator = true;
     }
@@ -30,9 +25,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="/">Home</a>
-                </li>
                 @if (Model != null)
                 {
                     <li class="nav-item">
@@ -44,9 +36,6 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/FileManager/Index">Files</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/Code/Index">Scripts</a>
                 </li>
                 @if (isAdministrator || isEditor)
                 {
@@ -60,12 +49,12 @@
                         <a class="nav-link" href="/Index/Publish">Publish</a>
                     </li>*@
                 }
-                <li class="nav-item">
-                    <span class="nav-link">@assemblyName.Version</span>
-                </li>
-                <li class="nav-item">
-                    <span id="timeZone" class="nav-link"></span>
-                </li>
+                @if (isAdministrator)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Users/Index">Users</a>
+                    </li>
+                }
             </ul>
             
             <div class="d-flex">
@@ -74,18 +63,3 @@
         </div>
     </div>
 </nav>
-<script>
-
-    function getLocalTimeZone() {
-        var datetime = new Date();
-        var dateTimeString = datetime.toString();
-        var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
-        return timezone;
-    }
-
-    $(document).ready(function () {
-        var timeZoneElement = $("#timeZone");
-        timeZoneElement.html(getLocalTimeZone());
-    });
-
-</script>

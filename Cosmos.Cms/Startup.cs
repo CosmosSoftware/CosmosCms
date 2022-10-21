@@ -121,10 +121,12 @@ namespace Cosmos.Cms
             // You will need an IEmailProvider. Below uses a SendGrid EmailProvider. You can use another.
             // Below users NuGet package: AspNetCore.Identity.Services.SendGrid
             var sendGridApiKey = Configuration.GetValue<string>("CosmosSendGridApiKey");
-            var sendGridOptions = new SendGridEmailProviderOptions(sendGridApiKey, "eric@moonrise.net");
+            var adminEmail = Configuration.GetValue<string>("CosmosAdminEmail");
+            var sendGridOptions = new SendGridEmailProviderOptions(sendGridApiKey, adminEmail);
             services.AddSendGridEmailProvider(sendGridOptions);
 
             // End add SendGrid
+
             services.AddCosmosStorageContext(Configuration);
 
             services.AddTransient<TranslationServices>();

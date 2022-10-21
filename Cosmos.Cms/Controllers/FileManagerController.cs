@@ -1014,9 +1014,21 @@ namespace Cosmos.Cms.Controllers
                         editorField.EditorMode = EditorMode.JavaScript;
                         editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
                         break;
+                    case ".html":
+                        editorField.EditorMode = EditorMode.Html;
+                        editorField.IconUrl = "/images/seti-ui/icons/html.svg";
+                        break;
                     case ".css":
                         editorField.EditorMode = EditorMode.Css;
                         editorField.IconUrl = "/images/seti-ui/icons/css.svg";
+                        break;
+                    case ".xml":
+                        editorField.EditorMode = EditorMode.Xml;
+                        editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                        break;
+                    case ".json":
+                        editorField.EditorMode = EditorMode.Json;
+                        editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
                         break;
                     default:
                         editorField.EditorMode = EditorMode.Html;
@@ -1037,6 +1049,12 @@ namespace Cosmos.Cms.Controllers
                     // Load into memory and release the blob stream right away
                     await stream.CopyToAsync(memoryStream);
                 }
+
+                var metaData = await _storageContext.GetFileAsync(path);
+                
+
+                ViewData["PageTitle"] = metaData.Name;
+                ViewData[" Published"] = DateTimeOffset.FromFileTime(metaData.ModifiedUtc.Ticks);
 
                 return View(new FileManagerEditCodeViewModel
                 {
@@ -1087,23 +1105,26 @@ namespace Cosmos.Cms.Controllers
                 case ".js":
                     editorField.EditorMode = EditorMode.JavaScript;
                     editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
-                    contentType = "application/javascript";
+                    break;
+                case ".html":
+                    editorField.EditorMode = EditorMode.Html;
+                    editorField.IconUrl = "/images/seti-ui/icons/html.svg";
                     break;
                 case ".css":
                     editorField.EditorMode = EditorMode.Css;
                     editorField.IconUrl = "/images/seti-ui/icons/css.svg";
-                    contentType = "text/css";
                     break;
-                case ".htm":
-                case ".html":
-                    editorField.EditorMode = EditorMode.Html;
-                    editorField.IconUrl = "/images/seti-ui/icons/html.svg";
-                    contentType = "text/html";
+                case ".xml":
+                    editorField.EditorMode = EditorMode.Xml;
+                    editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                    break;
+                case ".json":
+                    editorField.EditorMode = EditorMode.Json;
+                    editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
                     break;
                 default:
                     editorField.EditorMode = EditorMode.Html;
                     editorField.IconUrl = "/images/seti-ui/icons/html.svg";
-                    contentType = "text/plain";
                     break;
             }
 

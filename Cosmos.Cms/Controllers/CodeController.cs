@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Data;
+﻿
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
@@ -37,7 +38,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         public CodeController(INodeJSService nodeJSService, IOptions<CosmosConfig> cosmosConfig,
-            ApplicationDbContext dbContext, ILogger<CodeController> logger)
+            Cosmos.Cms.Common.Data.ApplicationDbContext dbContext, ILogger<CodeController> logger)
         {
             _nodeJSService = nodeJSService;
             _cosmosConfig = cosmosConfig;
@@ -277,7 +278,7 @@ namespace Cosmos.Cms.Controllers
                 {
                     if (string.IsNullOrEmpty(model.InputVars))
                     {
-                        entity.InputVars = new string [] {};
+                        entity.InputVars = new string[] { };
                     }
                     else
                     {
@@ -298,26 +299,8 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            // ReSharper disable once PossibleNullReferenceException
-            ViewData["Version"] = entity.Version;
 
-            var jsonModel = new SaveCodeResultJsonModel
-            {
-                ErrorCount = ModelState.ErrorCount,
-                IsValid = ModelState.IsValid
-            };
-            jsonModel.Errors.AddRange(ModelState.Values
-                .Where(w => w.ValidationState == ModelValidationState.Invalid)
-                .ToList());
-            jsonModel.ValidationState = ModelState.ValidationState;
-
-            DateTimeOffset? publishedDateTime = null;
-            if (entity.Published.HasValue)
-            {
-                publishedDateTime = entity.Published.Value.ToUniversalTime();
-            }
-
-            return Json(jsonModel);
+            return View(model);
         }
 
         /// <summary>

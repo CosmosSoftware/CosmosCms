@@ -1,9 +1,0 @@
-﻿@model Cosmos.Cms.Common.Models.ArticleViewModel
-@*
-This is a basic layout for a C/CMS page.    
-*@
-@{
-    Layout = "_CosmosLayout";
-    ViewData["Title"] = Model.Title;
-}
-@Html.Raw(Model.Content)
