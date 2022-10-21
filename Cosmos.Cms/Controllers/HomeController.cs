@@ -95,9 +95,9 @@ namespace Cosmos.Cms.Controllers
         /// Editor home index method
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> CcmsContentIndex(string path)
+        public async Task<IActionResult> CcmsContentIndex(string target)
         {
-            var article = await _articleLogic.GetByUrl(path);
+            var article = await _articleLogic.GetByUrl(target);
 
             return View(article);
         }

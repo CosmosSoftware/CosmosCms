@@ -26,7 +26,11 @@
     <script>
         window.addEventListener("load", () => {
             if (window.location === window.parent.location) {
-                window.localtion.href = "/CcmsContentIndex?target=Model.UrlPath";
+                location.href = "/Home/CcmsContentIndex?target=@Model.UrlPath";
+            } else {
+                // Update editor link url
+                var el = window.parent.document.getElementById("linkOpenVersions");
+                el.setAttribute("href", "/Editor/Versions/@Model.ArticleNumber");
             }
         });
     </script>
