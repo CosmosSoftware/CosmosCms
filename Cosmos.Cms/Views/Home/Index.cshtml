@@ -18,26 +18,17 @@
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
-    <iframe id="ccmsIndexMenu" src="/Home/CcmsContentIndex" onload="ccmsSetupIndexMenu()" style="width:100%;height:60px;"></iframe>
     @Html.Raw(Model.Layout.HtmlHeader)
     @Html.Raw(Model.Content)
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @Html.Raw(Model.FooterJavaScript)
+
     <script>
-        // The following is used to wireup the menu links to this page.
-        function ccmsSetupIndexMenu() {
-            var iframe = document.getElementById("ccmsIndexMenu");
-            var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
-            if (iframeWin.document.body) {
-                iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
-                var anchors = iframeWin.document.querySelectorAll("a");
-                anchors.forEach(function (el) {
-                    el.onclick = function () {
-                        window.location.href = el.href;
-                    };
-                });
+        window.addEventListener("load", () => {
+            if (window.location === window.parent.location) {
+                window.localtion.href = "/CcmsContentIndex?target=Model.UrlPath";
             }
-        };
+        });
     </script>
 </body>
 </html>
