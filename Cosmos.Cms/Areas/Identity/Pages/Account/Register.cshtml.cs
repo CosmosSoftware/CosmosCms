@@ -1,4 +1,5 @@
 ﻿using Cosmos.Cms.Common.Services.Configurations;
+using Cosmos.Cms.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,15 +27,18 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         private readonly IOptions<SiteSettings> _options;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             IOptions<SiteSettings> options)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
@@ -96,6 +101,24 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        private async Task Ensure_Admin_Exists(IdentityUser user)
+        {
+            foreach(var role in RequiredIdentityRoles.Roles)
+            {
+                if (!await _roleManager.RoleExistsAsync(role))
+                {
+                    var identityRole = new IdentityRole(role);
+                    var result = await _roleManager.CreateAsync(identityRole);
+                    if (!result.Succeeded)
+                    {
+                        var error = result.Errors.FirstOrDefault();
+                        throw new Exception($"Code: {error.Code} - {error.Description}");
+                    }
+                }
+            }
+            
         }
 
         public class InputModel
