@@ -1,5 +1,5 @@
 ﻿@using Newtonsoft.Json
-@model LayoutCodeViewModel
+@model TemplateCodeEditorViewModel
 @{
     Layout = "_LayoutEditor";
     ViewData["Title"] = Model.EditorTitle;
@@ -60,13 +60,10 @@
 
 <div id="editspace" class="m-editor-container"></div>
 
-<form id="frmSave" asp-action="EditCode">
-    <input type="hidden" asp-for="Id"/>
-    <input type="hidden" asp-for="EditingField"/>
-    <input type="hidden" asp-for="Head"/>
-    <input type="hidden" asp-for="HtmlHeader"/>
-    <input type="hidden" asp-for="FooterHtmlContent" />
-    <input type="hidden" asp-for="EditorType" />
+<form id="frmSave" asp-action="EditCode" asp-controller="Templates">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="EditorTitle" />
+    <input type="hidden" asp-for="Content" />
 </form>
 
 <script>
@@ -94,16 +91,10 @@
     function btnCustomClick(e) {
         switch (e.target.text()) {
         case "Preview":
-            window.open("@Url.Action("Preview", "Layouts", new {Model.Id})");
-            break;
-        case "Layouts":
-            window.location.href = "@Url.Action("Index", "Layouts", new {Model.Id})";
+            // Open in new window.
+            window.open("@Url.Action("Preview", "Templates", new {Model.Id})");
             break;
         }
-    }
-
-    function closeEditor() {
-        window.location.href = "@Url.Action("Index", "Layouts")";
     }
 
     //
@@ -226,9 +217,16 @@
         switch (command) {
             case "Close":
                 next = function () {
-                    window.location.href = "/Layouts/Index";
+                    window.location.href = "@Url.Action("Index", "Templates")";
                 }
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
+                saveFirstModal.show();
+                break;
+            case "Preview":
+                next = function () {
+                    window.open("@Url.Action("Preview", "Templates", new {Model?.Id})");
+                }
+                $("#divSaveFirstDialog").html("Save page before opening preview?");
                 saveFirstModal.show();
                 break;
         }
@@ -261,8 +259,6 @@
             }, 2000);
         }
 
-        $("tblTitle").val("@Model.EditorTitle");
-
         $('#tbPublished').daterangepicker({
             timePicker: true,
             singleDatePicker: true,
@@ -271,6 +267,11 @@
                 format: 'MM/DD/YYYY hh:mm A'
             }
         });
+
+        $('#tbPublished').prop("disabled", "true");
+
+        $("#lblTitle").hide();
+        $("#tbTitle").val("@Model.EditorTitle");
 
         $("[data-ccms-fieldname]").click(function (event) {
             var name = $(event.target).attr("data-ccms-fieldname");
@@ -291,6 +292,11 @@
             }
         }
     });
+
+    function closeEditor() {
+        window.location.href = "@Url.Action("Index", "Templates", new {Model.Id})";
+    }
+
 </script>
 
 <script src="/lib/monaco-editor/min/vs/loader.js"></script>

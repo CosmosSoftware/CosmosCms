@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Services.Configurations;
+﻿using Cosmos.Cms.Common.Data;
+using Cosmos.Cms.Common.Services.Configurations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         private readonly IOptions<SiteSettings> _options;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ApplicationDbContext _dbContext;
 
         /// <summary>
         /// Constructor
@@ -33,12 +35,13 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         /// <param name="options"></param>
         public LoginModel(SignInManager<IdentityUser> signInManager,
             ILogger<LoginModel> logger,
-            UserManager<IdentityUser> userManager, IOptions<SiteSettings> options)
+            UserManager<IdentityUser> userManager, IOptions<SiteSettings> options, ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _options = options;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -83,7 +86,18 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
 
             ReturnUrl = returnUrl.Replace("http:", "https:");
 
-            return Page();
+            // If there are no users yet, go strait to the register page.
+            await _dbContext.Database.EnsureCreatedAsync();
+
+            if (_userManager.Users.Count() == 0)
+            {
+                return RedirectToPage("Register");
+            }
+            else
+            {
+                return Page();
+            }
+
         }
 
         /// <summary>
@@ -132,7 +146,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
             /// Email address
             /// </summary>
             [Required]
-            [EmailAddress] 
+            [EmailAddress]
             public string Email { get; set; }
 
             /// <summary>

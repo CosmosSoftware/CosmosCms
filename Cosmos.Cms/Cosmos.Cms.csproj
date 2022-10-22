@@ -57,6 +57,9 @@
 	  </None>
 	  <None Include="Views\Shared\MvcGrid\_Grid.cshtml" />
 	  <None Include="Views\Shared\MvcGrid\_Pager.cshtml" />
+	  <None Include="Views\Templates\EditCode.cshtml" />
+	  <None Include="Views\Templates\Index.cshtml" />
+	  <None Include="Views\Templates\Preview.cshtml" />
 	  <None Include="wwwroot\lib\ckeditor\build\ckeditor.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\ckeditor.js.map" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\af.js" />

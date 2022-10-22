@@ -7,6 +7,7 @@ namespace Cosmos.Cms.Data
     /// </summary>
     public static class RequiredIdentityRoles
     {
+
         /// <summary>
         /// List of roles required for Cosmos to work
         /// </summary>
@@ -16,10 +17,10 @@ namespace Cosmos.Cms.Data
             get
             {
                 var roles = new List<string>();
-                roles.Add("Administrators");
-                roles.Add("Authors");
-                roles.Add("Editors");
-                roles.Add("Reviewers");
+                roles.Add(Administrators);
+                roles.Add(Authors);
+                roles.Add(Editors);
+                roles.Add(Reviewers);
 
                 return roles;
             }
