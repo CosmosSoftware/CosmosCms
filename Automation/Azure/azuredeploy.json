@@ -5,17 +5,36 @@
         "description": "Installs the Cosmos CMS in Microsoft Azure."
     },
     "parameters": {
+        "adminEmail": {
+            "type": "string",
+            "metadata": {
+                "description": "Administrator's Email address."
+            }
+        },
         "sendGridApiKey": {
             "type": "string",
             "metadata": {
                 "description": "SendGrid account API Key for this application."
             }
         },
-        "newGuid": {
+        "accountName": {
             "type": "string",
-            "defaultValue": "[newGuid()]",
+            "defaultValue": "[format('cosmos-{0}', uniqueString(resourceGroup().id))]",
             "metadata": {
-                "description": "This random value is used to create a unique SQL password. You can change this to something else."
+                "description": "Cosmos DB account name"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for the Cosmos DB account."
+            }
+        },
+        "databaseName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name for the Cosmos DB database"
             }
         }
     },
@@ -23,15 +42,45 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "storageAccountName": "[concat('files', uniquestring(resourceGroup().id))]",
-        "sqlDatabaseName": "cosmosdb",
-        "sqlServerAdminName": "[concat('cosadmin', uniquestring(resourceGroup().id))]",
-        "sqlServerName": "[concat('sqlserver', uniquestring(resourceGroup().id))]",
-        "sqlServerPassword": "[concat('P', uniqueString(resourceGroup().id, deployment().name, parameters('newGuid')), 'x', '!')]",
         "appServicePlanName": "[concat('appplan', uniquestring(resourceGroup().id))]",
         "editorName": "[concat('editor-', uniquestring(resourceGroup().id))]",
         "publisherName": "[concat('publisher-', uniquestring(resourceGroup().id))]"
     },
     "resources": [
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "apiVersion": "2022-05-15",
+            "name": "[toLower(parameters('accountName'))]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "enableFreeTier": true,
+                "databaseAccountOfferType": "Standard",
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "Session"
+                },
+                "locations": [
+                    {
+                        "locationName": "[parameters('location')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+            "apiVersion": "2022-05-15",
+            "name": "[format('{0}/{1}', toLower(parameters('accountName')), parameters('databaseName'))]",
+            "properties": {
+                "resource": {
+                    "id": "[parameters('databaseName')]"
+                },
+                "options": {
+                    "throughput": 1000
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(parameters('accountName')))]"
+            ]
+        },
         {
             "name": "[variables('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
@@ -52,56 +101,6 @@
             "name": "[format('{0}/default/{1}', variables('storageAccountName'), '$web')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Sql/servers",
-            "apiVersion": "2021-02-01-preview",
-            "name": "[variables('sqlServerName')]",
-            "location": "[variables('location')]",
-            "kind": "v12.0",
-            "properties": {
-                "administratorLogin": "[variables('sqlServerAdminName')]",
-                "version": "12.0",
-                "minimalTlsVersion": "1.2",
-                "publicNetworkAccess": "Enabled",
-                "restrictOutboundNetworkAccess": "Disabled",
-                "administratorLoginPassword": "[variables('sqlServerPassword')]"
-            }
-        },
-        {
-            "type": "Microsoft.Sql/servers/databases",
-            "apiVersion": "2021-02-01-preview",
-            "name": "[concat(variables('sqlServerName'), '/', variables('sqlDatabaseName'))]",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', variables('sqlServerName'))]"
-            ],
-            "sku": {
-                "name": "Basic",
-                "tier": "Basic",
-                "capacity": 5
-            },
-            "kind": "v12.0,user",
-            "properties": {
-                "collation": "SQL_Latin1_General_CP1_CI_AS",
-                "maxSizeBytes": 2147483648,
-                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
-                "zoneRedundant": false,
-                "readScale": "Disabled",
-                "isLedgerOn": false
-            }
-        },
-        {
-            "type": "Microsoft.Sql/servers/firewallRules",
-            "apiVersion": "2021-02-01-preview",
-            "name": "[format('{0}/{1}', variables('sqlserverName'), 'AllowAllWindowsAzureIps')]",
-            "properties": {
-                "endIpAddress": "0.0.0.0",
-                "startIpAddress": "0.0.0.0"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', variables('sqlserverName'))]"
             ]
         },
         {
@@ -190,14 +189,19 @@
                         "displayName": "appsettings"
                     },
                     "properties": {
+                        "AzureBlobStorageEndPoint":"[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-07-01').primaryEndpoints.web]",
+                        "AzureBlobStorageContainerName": "$web",
+                        "AzureBlobStorageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName')),'2015-05-01-preview').key1))]",
+                        "CosmosAdminEmail": "[variables('storageAccountName')]",
                         "CosmosAllowSetup": "true",
+                        "CosmosIdentityDbName": "[parameters('databaseName')]",
                         "CosmosPrimaryCloud": "azure",
                         "CosmosSendGridApiKey": "[parameters('sendGridApiKey')]",
                         "CosmosPublisherUrl": "[concat('https://', variables('publisherName'), '.azurewebsites.net')]",
                         "CosmosEditorUrl": "[concat('https://', variables('editorName'), '.azurewebsites.net')]",
                         "CosmosStorageUrl": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-07-01').primaryEndpoints.web]",
                         "CosmosBlobContainer": "$web",
-                        "CosmosSecretKey": "[concat('CSK-', uniqueString(resourceGroup().id), uniqueString(variables('sqlServerPassword')))]",
+                        "CosmosSecretKey": "[concat('CSK-', uniqueString(resourceGroup().id))]",
                         "DOCKER_REGISTRY_SERVER_PASSWORD": "",
                         "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
                         "DOCKER_REGISTRY_SERVER_USERNAME": "",
@@ -212,13 +216,9 @@
                         "[resourceId('Microsoft.Web/sites', variables('editorName'))]"
                     ],
                     "properties": {
-                        "BlobConnection": {
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName')),'2015-05-01-preview').key1))]",
+                        "ApplicationDbContextConnection": {
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
                             "type": "Custom"
-                        },
-                        "DefaultConnection": {
-                            "value": "[format('Data Source=tcp:{0},1433;Initial Catalog={1};User Id={2};Password={3};', reference(resourceId('Microsoft.Sql/servers', variables('sqlserverName'))).fullyQualifiedDomainName, variables('sqlDatabaseName'), variables('sqlServerAdminName'), variables('sqlServerPassword'))]",
-                            "type": "SQLAzure"
                         }
                     }
                 }
@@ -382,9 +382,9 @@
                         "[resourceId('Microsoft.Web/sites', variables('publisherName'))]"
                     ],
                     "properties": {
-                        "DefaultConnection": {
-                            "value": "[format('Data Source=tcp:{0},1433;Initial Catalog={1};User Id={2};Password={3};', reference(resourceId('Microsoft.Sql/servers', variables('sqlserverName'))).fullyQualifiedDomainName, variables('sqlDatabaseName'), variables('sqlServerAdminName'), variables('sqlServerPassword'))]",
-                            "type": "SQLAzure"
+                         "ApplicationDbContextConnection": {
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
+                            "type": "Custom"
                         }
                     }
                 }
@@ -395,10 +395,6 @@
         "ipAddressForSendGrid": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Web/sites', variables('editorName')), '2018-02-01').possibleOutboundIpAddresses]"
-        },
-        "sqlServerPassword": {
-            "type": "string",
-            "value": "[variables('sqlServerPassword')]"
         },
         "editorUrl": {
             "type": "string",
