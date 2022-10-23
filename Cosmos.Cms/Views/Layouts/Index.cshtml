@@ -25,7 +25,7 @@
                     col.Add().RenderedAs(m =>
                     m.IsDefault ?
                     "<div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
-                    $"<a href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><span class='fa fa-check-circle-o'></span></a>").Encoded(false).Titled("");
+                    $"<a href=\"{Url.Action("SetAsDefault", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>").Encoded(false).Titled("");
 
                     col.Add().RenderedAs(m =>
                     "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +

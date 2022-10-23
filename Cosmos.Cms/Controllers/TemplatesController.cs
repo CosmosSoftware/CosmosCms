@@ -40,10 +40,6 @@ namespace CDT.Cosmos.Cms.Controllers
             ArticleEditLogic articleLogic) :
             base(dbContext, userManager, articleLogic, options)
         {
-            if (options.Value.SiteSettings.AllowSetup ?? true)
-            {
-                throw new Exception("Permission denied. Website in setup mode.");
-            }
             _dbContext = dbContext;
             _articleLogic = articleLogic;
         }

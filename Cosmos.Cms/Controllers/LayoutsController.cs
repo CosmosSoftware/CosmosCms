@@ -119,11 +119,11 @@ namespace Cosmos.Cms.Controllers
         /// After a layout change, refresh everything!
         /// </summary>
         /// <returns></returns>
-        private async Task MakeGlobalChange()
-        {
-            //_ = await base.UpdateTimeStamps();
-            _ = await FlushCdn(_logger, new[] { "/*" });
-        }
+        //private async Task MakeGlobalChange()
+        //{
+        //    //_ = await base.UpdateTimeStamps();
+        //    _ = await FlushCdn(_logger, new[] { "/*" });
+        //}
 
         /// <summary>
         /// Gets a list of layouts
@@ -531,40 +531,25 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Sets a layout as the default layout
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="Id">Layout ID</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> SetLayoutAsDefault([Bind(include: "Id,IsDefault,LayoutName,Notes")] LayoutIndexViewModel model)
+        public async Task<IActionResult> SetAsDefault(Guid Id)
         {
-            if (!ModelState.IsValid)
-                return View(model);
 
-            if (model == null) return RedirectToAction("Index");
+            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.Id == Id);
 
-            var layout = await _dbContext.Layouts.FindAsync(model.Id);
-            layout.IsDefault = model.IsDefault;
-            if (model.IsDefault)
+            if (layout == null)
+                return RedirectToAction("Index", "Layouts");
+
+            await _dbContext.SaveChangesAsync();
+            var items = await _dbContext.Layouts.Where(w => w.Id != Id).ToListAsync();
+            foreach (var item in items)
             {
-                await _dbContext.SaveChangesAsync();
-                var items = await _dbContext.Layouts.Where(w => w.Id != model.Id).ToListAsync();
-                foreach(var item in items)
-                {
-                    item.IsDefault = false;
-                }
-
-                await _dbContext.SaveChangesAsync();
-
-                int[] validCodes =
-                {
-                    (int) StatusCodeEnum.Active,
-                    (int) StatusCodeEnum.Inactive
-                };
-
-                // Make sure everything is refreshed.
-                await MakeGlobalChange();
-
-                return RedirectToAction("Publish", "Editor");
+                item.IsDefault = false;
             }
+
+            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction("Index", "Layouts");
         }
