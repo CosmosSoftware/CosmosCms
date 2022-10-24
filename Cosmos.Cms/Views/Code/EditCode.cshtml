@@ -76,6 +76,7 @@
                aria-current="page">Configuration</a>
         </li>
     </ul>
+    <a class="btn btn-sm btn-secondary me-3" target="_blank" asp-action="Debug" asp-route-id="@Model.Id">Debug</a>
 </nav>
 
 <div id="editspace" class="m-editor-container"></div>
@@ -94,12 +95,9 @@
                     </div>
                     <div class="mb-3">
                         <label for="Description" class="form-label">Description:</label>
-                        <textaread asp-for="Description" type="text" class="form-control" aria-describedby="Title">
-                        <div id="descriptionHelp" class="form-text">Describe what this does.</div>
+                        <textarea asp-for="Description" type="text" class="form-control" aria-describedby="Title"></textarea>
+                        <div id="descriptionHelp" class="form-text">Describe what this script does.</div>
                         <span asp-validation-for="Description" class="alert-warning"></span>
-                    </div>
-                    <div class="mb-3">
-                        <button class="btn btn-secondary" type="button">Save</button>
                     </div>
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="EndPoint" />
@@ -228,8 +226,39 @@
         if (editor) {
             $("#" + fieldId).val(editor.getValue());
         }
+        
+        var form = $('#frmSave');
 
-        $('#frmSave').submit();
+        $.post("@Url.Action("EditCode")",
+            form.serialize(),
+            function (response) {
+
+                //doneSaving();
+
+                if (response.IsValid) {
+                    if (typeof (next) !== "undefined" && next !== null) {
+                        next();
+                    }
+                    toastMsg("Successfully saved.");
+                } else {
+                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
+
+                    // Invalid response.
+                    $.each(response.Errors,
+                        function (index, error) {
+                            errorMsg = "<p>" + error.Key + "</p><ul>";
+                            $.each(error.Errors,
+                                function (index, innerError) {
+                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
+                                });
+                            errorMsg = errorMsg + "</ul>";
+                        });
+                    $("#divErrorLog").html(errorMsg);
+                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
+                    errorModal.show();
+                }
+            }
+        );
 
     }
 
@@ -242,7 +271,7 @@
         switch (command) {
             case "Close":
                 next = function () {
-                    window.location.href = "@Url.Action("Versions", "Code")/@Model.EndPoint";
+                    window.location.href = "@Url.Action("Index", "Code")";
                 }
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
                 saveFirstModal.show();

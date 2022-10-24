@@ -5,9 +5,9 @@ namespace Cosmos.Cms.Models
 {
     public class ApiResult
     {
-        public ApiResult(string jsonData)
+        public ApiResult(string returnData)
         {
-            JsonData = jsonData;
+            ReturnData = returnData;
         }
         /// <summary>
         /// Date/Time Stamp
@@ -15,9 +15,9 @@ namespace Cosmos.Cms.Models
         public DateTimeOffset DateTimeStamp { get; } = DateTimeOffset.UtcNow;
 
         /// <summary>
-        /// JSON Return data
+        /// Return data
         /// </summary>
-        public string JsonData { get; set; }
+        public string ReturnData { get; set; }
 
         /// <summary>
         /// Indicates success

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -194,6 +195,18 @@ namespace Cosmos.Cms.Controllers
         {
             if (Request.Method == "POST")
             {
+                if (Request.Form == null)
+                {
+                    var values = new List<ApiArgument>();
+
+                    foreach (var item in script.InputVars)
+                    {
+                        values.Add(new ApiArgument() { Key = item, Value = Request.Headers[item] });
+                    }
+
+                    return values.ToArray();
+                }
+
                 return Request.Form.Where(a => script.InputVars.Contains(a.Key))
                     .Select(s => new ApiArgument()
                     {
@@ -295,6 +308,7 @@ namespace Cosmos.Cms.Controllers
                     entity.Roles = string.IsNullOrEmpty(model.RoleList) ? null : model.RoleList.Split(',');
 
                     await _dbContext.SaveChangesAsync();
+                    model.IsValid = true;
 
                 }
                 catch (Exception e)
@@ -305,7 +319,7 @@ namespace Cosmos.Cms.Controllers
             }
 
 
-            return View(model);
+            return Json(model);
         }
 
         /// <summary>

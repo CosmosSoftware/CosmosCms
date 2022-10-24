@@ -14,7 +14,7 @@ namespace Cosmos.Cms.Models
         /// Article ID
         /// </summary>
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Endpoint Name
@@ -94,6 +94,8 @@ namespace Cosmos.Cms.Models
         /// <summary>
         /// Description of what this script does.
         /// </summary>
+        [Required]
+        [MinLength(2)]
         public string Description { get; set; }
     }
 }

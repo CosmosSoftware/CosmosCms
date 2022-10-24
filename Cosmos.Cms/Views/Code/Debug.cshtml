@@ -25,14 +25,20 @@
 
 </head>
 <body>
-    <div class="container-fluid">
+    <div class="container mt-4">
         <div class="row">
-            <div class="col">
+            <div class="col-8">
+                <h3>Script Debugger</h3>
+                <p>Enter values into the input fields (if present) and click &quote;Run&quot; to debug.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
                 <div class="card-head">
-                    Input
+                    Input Fields
                 </div>
                 <div class="card-body" style="overflow-y: auto;">
-                    <form id="fromRun">
+                    <form id="frmRun">
                         @if (Model.InputVars != null && Model.InputVars.Length > 0)
                         {
                             foreach (var item in Model.InputVars)
@@ -41,11 +47,11 @@
                                     <label for="@item">@item</label>
                                     <input name="@item" id="@item" class="form-control" />
                                 </div>
-                                <div class="mb-3">
-                                    <button id="btnForm" class="btn btn-primary" type="button">Run</button>
-                                </div>
                             }
                         }
+                        <div class="mb-3">
+                            <button id="btnForm" class="btn btn-primary" type="submit">Run</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -54,9 +60,9 @@
             <div class="col">
                 <div class="card bg-dark text-light">
                     <div class="card-head">
-                        Output
+                        Output Terminal
                     </div>
-                    <div class="card-body" style="overflow-y: auto;">
+                    <div class="card-body" style="overflow-y: auto; ">
 <pre><code id="runOutput" class="language-json hljs"></code></pre>
                     </div>
                 </div>
@@ -71,15 +77,16 @@
         hljs.highlightAll();
         
         $(document).ready(function () {
-            $("#fromRun").submit(function (e) {
+            $("#frmRun").submit(function (e) {
                 e.preventDefault();
 
-                var data = $("#fromRun").serialize();
+                var data = $("#frmRun").serialize();
 
                 $.post("@Url.Action("Run", "Code", new { Id = Model.Id })",
                     data,
                     function (response) {
-                        $("#runOutput").html(response);
+                        $("#runOutput").html(JSON.stringify(response, undefined, 4));
+                        hljs.highlightAll();
                     });
             });
         });
