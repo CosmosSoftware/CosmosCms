@@ -136,11 +136,11 @@
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.18" />
 		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.6" />
-		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.2.110" />
+		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.100" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
 		<PackageReference Include="CDT.Akamai.Cdn" Version="6.0.0.4" />
 		<PackageReference Include="Cosmos.BlobService" Version="7.0.1" />
-		<PackageReference Include="Cosmos.Cms.Common" Version="7.0.2" />
+		<PackageReference Include="Cosmos.Cms.Common" Version="7.0.3" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="IntelliTect.AspNetCore.SignalR.SqlServer" Version="1.0.1" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
@@ -160,6 +160,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.OpenApi" Version="1.4.3" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
 		<PackageReference Include="NonFactors.Grid.Core.Mvc6" Version="7.0.2" />

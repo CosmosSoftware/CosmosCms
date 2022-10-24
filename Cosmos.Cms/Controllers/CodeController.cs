@@ -111,6 +111,7 @@ namespace Cosmos.Cms.Controllers
                 var script = new NodeScript()
                 {
                     Code = "module.exports = async (arg1) => { return \"Hello World\"; }",
+                    Description = "Add your description here.",
                     EndPoint = model.EndPoint,
                     Updated = DateTimeOffset.UtcNow,
                     Id = model.Id,
@@ -234,6 +235,8 @@ namespace Cosmos.Cms.Controllers
                 Version = data.Version,
                 Code = data.Code,
                 Config = data.Config,
+                Description = data.Description,
+                RoleList = data.Roles == null ? "" : string.Join(',', data.Roles),
                 EditingField = "Code",
                 EditorTitle = data.EndPoint,
                 EndPoint = data.EndPoint,
@@ -288,6 +291,8 @@ namespace Cosmos.Cms.Controllers
                     entity.Updated = DateTimeOffset.UtcNow;
                     entity.Code = model.Code;
                     entity.Published = model.Published;
+                    entity.Description = model.Description;
+                    entity.Roles = string.IsNullOrEmpty(model.RoleList) ? null : model.RoleList.Split(',');
 
                     await _dbContext.SaveChangesAsync();
 

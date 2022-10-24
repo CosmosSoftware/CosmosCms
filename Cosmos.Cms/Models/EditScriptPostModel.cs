@@ -90,5 +90,10 @@ namespace Cosmos.Cms.Models
         /// Editor type
         /// </summary>
         public string EditorType { get; set; } = nameof(EditScriptPostModel);
+
+        /// <summary>
+        /// Description of what this script does.
+        /// </summary>
+        public string Description { get; set; }
     }
 }

@@ -53,5 +53,13 @@ namespace Cosmos.Cms.Models
         [Display(Name = "Input Variables")]
         public string InputVars { get; set; }
 
+        /// <summary>
+        /// Description of what this script does.
+        /// </summary>
+        [Required]
+        [MinLength(2)]
+        [Display(Name = "Description")]
+        public string Description { get; set; }
+
     }
 }
