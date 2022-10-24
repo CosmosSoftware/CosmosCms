@@ -95,7 +95,6 @@
 	  <None Include="wwwroot\lib\ckeditor\build\translations\it.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\ja.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\jv.js" />
-	  <None Include="wwwroot\lib\ckeditor\build\translations\kk.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\km.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\kn.js" />
 	  <None Include="wwwroot\lib\ckeditor\build\translations\ko.js" />
