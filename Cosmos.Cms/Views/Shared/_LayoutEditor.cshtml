@@ -19,6 +19,7 @@
     <script src="/ccms/js/TimeUtils.js"></script>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <!-- http://www.daterangepicker.com/ -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 </head>
@@ -52,8 +53,17 @@
                 <div id="lblTitle" class="navbar-text">Title:</div>
                 <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
                 <div class="navbar-text">Published:</div>
-                <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" value="@((DateTimeOffset?)ViewData[" Published"])" />
-                <button class="btn btn-primary" title="Save changes" onclick="bgEditClick('Save')" type="button">Save</button>
+                <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData[" Published"])" />
+
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Save
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
+                        <li><a class="dropdown-item" onclick="bgEditClick('Save')" href="#">Update</a></li>
+                        <li><a class="dropdown-item" onclick="bgEditClick('Draft')" href="#">Save as Draft</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -71,15 +81,23 @@
             }
 
             switch (command) {
+                case "Draft": 
+                    var published = $("#tbPublished").val();
+                    if (published !== "") {
+                        $("#tbPublished").val("");
+                        $("#Published").val("");
+                    }
+                    $("#frmSave").submit();
+                    break;
                 case "Save":
                     $("#frmSave").submit();
                     break;
                 case "Files":
                     var id = $("#ArticleNumber").val();
                     var url = "@Url.Action("Index", "FileManager")";
-                    if (typeof(id) !== "undefined" && id !== null & id !== "") {
+                    if (typeof (id) !== "undefined" && id !== null & id !== "") {
                         url += "?target=pub/articles/" + id;
-                    } 
+                    }
 
                     fileMgrPopup = window.open(url, '_blank', 'height=510,width=1200,menubar=no,location=no,status=no,titlebar=no,toolbar=no');
                     break;
@@ -132,6 +150,7 @@
             timeZoneElement.html(getLocalTimeZone());
 
             $('#tbPublished').daterangepicker({
+                autoUpdateInput: false,
                 timePicker: true,
                 singleDatePicker: true,
                 showDropdowns: true,

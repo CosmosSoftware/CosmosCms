@@ -29,8 +29,11 @@
                 location.href = "/Home/CcmsContentIndex?target=@Model.UrlPath";
             } else {
                 // Update editor link url
-                var el = window.parent.document.getElementById("linkOpenVersions");
-                el.setAttribute("href", "/Editor/Versions/@Model.ArticleNumber");
+                var el = window.parent.document.getElementById("navbarEditDropdown");
+
+                if (typeof (el) !== "undefined" && el !== null) {
+                    el.setAttribute("data-ccms-urlpath", "@Model.UrlPath");
+                }
             }
         });
     </script>

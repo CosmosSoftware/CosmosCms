@@ -12,7 +12,7 @@
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
 }
 
-<h1>Index</h1>
+<h1>Script Inventory</h1>
 
 <div class="container mt-5 pt-2">
     <div class="row">
@@ -23,6 +23,7 @@
             {
                 <a class="btn btn-sm btn-primary" asp-action="Create">New Script</a>
             }
+            <a class="btn btn-sm btn-secondary" href="/Api">Swagger Catalog</a>
             @(Html.Grid(Model)
                .Build(col => {
                     col.Add(model => Html.ActionLink("", "Versions", "Code", new { Id = model.EndPoint }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");

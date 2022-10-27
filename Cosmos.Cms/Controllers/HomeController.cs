@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -100,6 +101,28 @@ namespace Cosmos.Cms.Controllers
             var article = await _articleLogic.GetByUrl(target);
 
             return View(article);
+        }
+
+        /// <summary>
+        /// Get edit list
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> EditList(string target)
+        {
+            var article = await _articleLogic.GetByUrl(target);
+
+            var data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+                .Where(a => a.ArticleNumber == article.ArticleNumber).Select(s => new ArticleEditMenuItem
+                {
+                    Id = s.Id,
+                    ArticleNumber = s.ArticleNumber,
+                    Published = s.Published,
+                    VersionNumber = s.VersionNumber,
+                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+                }).OrderByDescending(o => o.VersionNumber).ToListAsync();
+
+            return Json(data);
         }
 
         /// <summary>

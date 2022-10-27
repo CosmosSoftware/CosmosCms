@@ -1,0 +1,66 @@
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    background-color: rgb(33, 32, 32);
+    color: rgb(218, 216, 216);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+main {
+    flex-grow: 1;
+}
+
+.btn-primary {
+    border-color: #1a003b;
+    background-color: #450281;
+}
+
+.btn-primary:hover {
+    border-color: #1a003b;
+    background-color: #450281;
+    color: #f3f7cb;
+}
+
+a {
+    color: #f2ead2;
+}
+
+a:hover {
+    color: #d2d3f2;
+}
+
+input {
+    background-color: rgb(255, 255, 255) !important;
+    background-image: none !important;
+    color: rgb(0, 0, 0) !important;
+}
+
+input:-internal-autofill-selected {
+    background-color: rgb(210, 230, 243) !important;
+    background-image: none !important;
+    color: black !important;
+}
+
+.form-control.valid {
+    background-color: rgb(199, 219, 233) !important;
+    border-color: rgb(119, 187, 236) !important;
+    background-image: none !important;
+    color: black !important;
+}
+
+.wrapper {
+    flex: 1;
+}

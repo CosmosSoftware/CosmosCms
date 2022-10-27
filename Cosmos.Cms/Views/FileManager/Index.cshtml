@@ -110,13 +110,22 @@
     </div>
     <div class="row">
         <div class="col-md-12">
+            <!-- Flexbox container for aligning the toasts -->
+            <div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center" style="position:relative;">
+                <!-- Then put toasts within -->
+                <div id="copied-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 0; left: 0;z-index:50000;">
+                    <div class="toast-body">
+                        Copied URL.
+                    </div>
+                </div>
+            </div>
             @(Html.Grid(Model)
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
                     col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add().RenderedAs(r => r.IsDirectory == false ?
-                    $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl}{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
+                    $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
                      + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
                      + "</div>"
                      : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
@@ -195,16 +204,6 @@
     </div>
 </div>
 
-<!-- Flexbox container for aligning the toasts -->
-<div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center" style="min-height: 200px;position:absolute;top:0px;right:200px;">
-    <!-- Then put toasts within -->
-    <div id="copied-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-body">
-            Copied URL.
-        </div>
-    </div>
-</div>
-
 <script src="~/js/clipboard.min.js"></script>
 
 <script>
@@ -213,7 +212,7 @@
     var clipboard = new ClipboardJS(btns);
 
     clipboard.on('success', function (e) {
-        $('#copied-toast').toast('show');
+        $("#copied-toast").toast("show");
     });
 
     clipboard.on('error', function (e) {

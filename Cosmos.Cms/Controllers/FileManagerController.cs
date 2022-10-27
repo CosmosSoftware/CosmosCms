@@ -255,7 +255,6 @@ namespace Cosmos.Cms.Controllers
         /// Simple file upload
         /// </summary>
         /// <param name="Id">Article Number</param>
-        /// <param name="file">Form file</param>
         /// <returns></returns>
         public async Task<IActionResult> SimpleUpload(string Id)
         {
@@ -268,13 +267,13 @@ namespace Cosmos.Cms.Controllers
             }
 
             var directory = $"/pub/articles/{Id}/";
-            var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-            var extension = Path.GetExtension(file.FileName);
+            //var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+            //var extension = Path.GetExtension(file.FileName);
             var blobEndPoint = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/');
 
             string relativePath = UrlEncode(directory + file.FileName);
 
-            var json = new StringBuilder();
+            //string jsonData = "";
 
             try
             {
@@ -294,65 +293,16 @@ namespace Cosmos.Cms.Controllers
 
                 _storageContext.AppendBlob(memoryStream, metaData);
 
-                if (extension == ".gif" || extension == ".jpg" || extension == ".png" || extension == ".webp")
-                {
-
-                    json.Append("{\"urls\": {");
-
-                    json.Append($"\"default\": \"{blobEndPoint + "/" + UrlEncode(relativePath)}\",");
-
-                    // Build responsive images
-                    
-                    using var image0 = Image.Load(file.OpenReadStream(), out var format);
-
-                    // Step down
-                    var rec = GetRectangle(image0, (decimal)0.90);
-                    var image1 = image0.Clone(i => i.Crop(rec));
-                    var fname1 = fileName + "-" + image1.Width + extension;
-                    var meta1 = await SaveImage(image1, directory, fname1, extension, file.ContentType);
-                    json.Append($"\"{image1.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta1.RelativePath) }\",");
-
-                    // Step down
-                    var image2 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.80)));
-                    var fname2 = fileName + "-" + image2.Width + extension;
-                    var meta2 = await SaveImage(image2, directory, fname2, extension, file.ContentType);
-                    json.Append($"\"{image2.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta2.RelativePath)}\",");
-
-                    // Step down
-                    var image3 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.70)));
-                    var fname3 = fileName + "-" + image3.Width + extension;
-                    var meta3 = await SaveImage(image3, directory, fname3, extension, file.ContentType);
-                    json.Append($"\"{image3.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta3.RelativePath)}\",");
-
-                    // Step down
-                    var image4 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.60)));
-                    var fname4 = fileName + "-" + image4.Width + extension;
-                    var meta4 = await SaveImage(image4, directory, fname4, extension, file.ContentType);
-                    json.Append($"\"{image4.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta4.RelativePath)}\",");
-
-                    // Step down
-                    var image5 = image0.Clone(i => i.Crop(GetRectangle(image0, (decimal)0.50)));
-                    var fname5 = fileName + "-" + image5.Width + extension;
-                    var meta5 = await SaveImage(image5, directory, fname5, extension, file.ContentType);
-                    json.Append($"\"{image5.Width}\": \"{blobEndPoint + "/" + UrlEncode(meta5.RelativePath)}\"");
-
-                    json.Append("} }");
-
-                }
-                else
-                {
-                    json.Append("{\"url\": \"" + blobEndPoint + "/" + relativePath + "\"}");
-                }
-
+                return Json(JsonConvert.DeserializeObject<dynamic>("{\"url\": \"" + blobEndPoint + "/" + relativePath + "\"}"));
             }
             catch (Exception e)
             {
                 return Json(ReturnSimpleErrorMessage(e.Message));
             }
 
-            var jsonString = json.ToString();
+            
 
-            return Json(JsonConvert.DeserializeObject<dynamic>(jsonString));
+            
         }
 
         private async Task<FileUploadMetaData> SaveImage(Image image, string directory, string fileName, string extension, string contentType)

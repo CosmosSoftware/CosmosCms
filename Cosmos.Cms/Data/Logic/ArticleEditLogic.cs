@@ -474,6 +474,7 @@ namespace Cosmos.Cms.Data.Logic
                 entity.Published = model.Published;
                 entity.Title = model.Title;
                 entity.RoleList = model.RoleList;
+                entity.VersionNumber = model.VersionNumber;
             }
 
             return await UpdateOrInsert(entity, userId);
@@ -771,7 +772,26 @@ namespace Cosmos.Cms.Data.Logic
 
 
             if (model.Published.HasValue)
+            {
                 await HandleLogEntry(article, model.Published.HasValue ? "Publish" : "Un-publish", userId);
+
+                try
+                {
+                    var others = await DbContext.Articles.Where(w => w.ArticleNumber == model.ArticleNumber && w.Id != model.Id).ToListAsync();
+
+                    foreach (var item in others)
+                    {
+                        if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime)
+                        {
+                            item.Published = null;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    var t = e;
+                }
+            }
 
 
             // If was NOT published before, but now is; or

@@ -84,7 +84,7 @@ namespace Cosmos.Cms.Controllers
                     script = await _dbContext.NodeScripts.WithPartitionKey(Id).Where(f => f.Published != null && f.Published <= DateTimeOffset.UtcNow).OrderByDescending(o => o.Version).FirstOrDefaultAsync();
                 }
 
-                var values = GetArgs(script);
+                var values = CodeController.GetArgs(Request, script);
 
                 ApiResult apiResult;
 
@@ -136,7 +136,7 @@ namespace Cosmos.Cms.Controllers
             foreach (var script in scripts)
             {
                 var parameters = new List<OpenApiParameter>();
-
+                
                 foreach (var p in script.InputVars)
                 {
                     parameters.Add(new OpenApiParameter()
@@ -196,42 +196,5 @@ namespace Cosmos.Cms.Controllers
             return Json(model);
         }
 
-        private ApiArgument[] GetArgs(NodeScript script)
-        {
-            if (Request.Method == "POST")
-            {                
-                try
-                {
-                    return Request.Form.Where(a => script.InputVars.Contains(a.Key))
-                    .Select(s => new ApiArgument()
-                    {
-                        Key = s.Key,
-                        Value = s.Value
-                    }).ToArray();
-                }
-                catch
-                {
-                    var values = new List<ApiArgument>();
-
-                    foreach (var item in script.InputVars)
-                    {
-                        values.Add(new ApiArgument() { Key = item, Value = Request.Headers[item] });
-                    }
-
-                    return values.ToArray();
-                }
-                
-            }
-            else if (Request.Method == "GET")
-            {
-                return Request.Query.Where(a => script.InputVars.Contains(a.Key))
-                    .Select(s => new ApiArgument()
-                    {
-                        Key = s.Key,
-                        Value = s.Value
-                    }).ToArray();
-            }
-            return null;
-        }
     }
 }

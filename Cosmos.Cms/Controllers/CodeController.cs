@@ -166,7 +166,7 @@ namespace Cosmos.Cms.Controllers
             {
                 var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id);
 
-                var values = GetArgs(script);
+                var values = GetArgs(Request, script);
 
                 // Send the module string to NodeJS where it's compiled, invoked and cached.
                 var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: values);
@@ -191,32 +191,38 @@ namespace Cosmos.Cms.Controllers
             return Json(debugResult);
         }
 
-        private ApiArgument[] GetArgs(NodeScript script)
+        /// <summary>
+        /// Gets arguments from a request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="script"></param>
+        /// <returns></returns>
+        public static ApiArgument[] GetArgs(Microsoft.AspNetCore.Http.HttpRequest request, NodeScript script)
         {
-            if (Request.Method == "POST")
+            if (request.Method == "POST")
             {
-                if (Request.Form == null)
+                if (request.ContentType == null)
                 {
                     var values = new List<ApiArgument>();
 
                     foreach (var item in script.InputVars)
                     {
-                        values.Add(new ApiArgument() { Key = item, Value = Request.Headers[item] });
+                        values.Add(new ApiArgument() { Key = item, Value = request.Headers[item] });
                     }
 
                     return values.ToArray();
                 }
 
-                return Request.Form.Where(a => script.InputVars.Contains(a.Key))
+                return request.Form.Where(a => script.InputVars.Contains(a.Key))
                     .Select(s => new ApiArgument()
                     {
                         Key = s.Key,
                         Value = s.Value
                     }).ToArray();
             }
-            else if (Request.Method == "GET")
+            else if (request.Method == "GET")
             {
-                return Request.Query.Where(a => script.InputVars.Contains(a.Key))
+                return request.Query.Where(a => script.InputVars.Contains(a.Key))
                     .Select(s => new ApiArgument()
                     {
                         Key = s.Key,
