@@ -53,15 +53,15 @@
                 <div id="lblTitle" class="navbar-text">Title:</div>
                 <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
                 <div class="navbar-text">Published:</div>
-                <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData[" Published"])" />
+                <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData["Published"])" />
 
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="btnSave" data-bs-toggle="dropdown" aria-expanded="false">
                         Save
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
                         <li><a class="dropdown-item" onclick="bgEditClick('Save')" href="#">Update</a></li>
-                        <li><a class="dropdown-item" onclick="bgEditClick('Draft')" href="#">Save as Draft</a></li>
+                        <li><a class="dropdown-item" onclick="bgEditClick('Draft')" id="btnSaveAsDraft" href="#">Save as Draft</a></li>
                     </ul>
                 </div>
             </div>
@@ -149,6 +149,7 @@
             var timeZoneElement = $("#timeZone");
             timeZoneElement.html(getLocalTimeZone());
 
+
             $('#tbPublished').daterangepicker({
                 autoUpdateInput: false,
                 timePicker: true,
@@ -156,6 +157,18 @@
                 showDropdowns: true,
                 locale: {
                     format: 'MM/DD/YYYY hh:mm A'
+                }
+            });
+
+            $('#tbPublished').on('apply.daterangepicker', function (ev, picker) {
+                $('#tbPublished').val(picker.startDate.format('MM/DD/YYYY hh:mm A'));
+            });
+
+            $("#btnSave").click(function () {
+                if ($('#tbPublished').val() === "") {
+                    $("#btnSaveAsDraft").hide();
+                } else {
+                    $("#btnSaveAsDraft").show();
                 }
             });
         });

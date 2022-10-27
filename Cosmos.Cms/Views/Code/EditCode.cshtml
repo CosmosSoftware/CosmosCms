@@ -312,15 +312,6 @@
             }, 2000);
         }
 
-        $('#tbPublished').daterangepicker({
-            timePicker: true,
-            singleDatePicker: true,
-            showDropdowns: true,
-            locale: {
-                format: 'MM/DD/YYYY hh:mm A'
-            }
-        });
-
         $("[data-ccms-fieldname]").click(function (event) {
             var name = $(event.target).attr("data-ccms-fieldname");
             $("[data-ccms-fieldname]").removeClass("active");

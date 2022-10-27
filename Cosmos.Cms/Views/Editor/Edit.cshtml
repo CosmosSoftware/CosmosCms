@@ -98,18 +98,6 @@
 
     $(document).ready(function (e) {
 
-        var timeZoneElement = $("#timeZone");
-        timeZoneElement.html(getLocalTimeZone());
-
-        $('#tbPublished').daterangepicker({
-            timePicker: true,
-            singleDatePicker: true,
-            showDropdowns: true,
-            locale: {
-                format: 'MM/DD/YYYY hh:mm A'
-            }
-        });
-
         $("#btnCcmsCodeEditor").show();
 
     });
@@ -195,6 +183,17 @@
 
     }
 
+
+    $(window).bind('keydown', function (event) {
+        if (event.ctrlKey || event.metaKey) {
+            switch (String.fromCharCode(event.which).toLowerCase()) {
+                case 's':
+                    event.preventDefault();
+                    $("#frmSave").submit();
+                    break;
+            }
+        }
+    });
 </script>
 
 <iframe id="ccmsContFrame" src="/Editor/CcmsContent/@Model.Id" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;" onload="setupFrame()" frameBorder="0" scrolling="no"></iframe>

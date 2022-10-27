@@ -779,11 +779,29 @@ namespace Cosmos.Cms.Data.Logic
                 {
                     var others = await DbContext.Articles.Where(w => w.ArticleNumber == model.ArticleNumber && w.Id != model.Id).ToListAsync();
 
-                    foreach (var item in others)
+                    // This is published in the future. This means we need
+                    // to keep the last published version, and the future version(s)
+                    if (model.Published.Value > DateTimeOffset.Now)
                     {
-                        if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime)
+                        var lastPublished = others.OrderByDescending(o => o.Published).FirstOrDefault();
+
+                        foreach (var item in others)
                         {
-                            item.Published = null;
+                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime && item.Id != lastPublished.Id)
+                            {
+                                item.Published = null;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // This article is the last published, make sure all others are not published.
+                        foreach (var item in others)
+                        {
+                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime)
+                            {
+                                item.Published = null;
+                            }
                         }
                     }
                 }
