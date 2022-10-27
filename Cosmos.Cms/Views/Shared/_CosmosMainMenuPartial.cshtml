@@ -75,54 +75,58 @@
 
         var urlPath = $("#navbarEditDropdown").attr("data-ccms-urlpath");
 
-        $.get("/Home/EditList?target=" + urlPath, function (data) {
-            $.each(data, function (index, element) {
-                var div = "<li>";
-                div += "<div class='dropdown-item'>";
+        var loadList = @((Model != null).ToString().ToLower());
 
-                div += "<div class='btn-group btn-group-sm' role='group'>";
+        if (loadList) {
+            $.get("/Home/EditList?target=" + urlPath, function (data) {
+                $.each(data, function (index, element) {
+                    var div = "<li>";
+                    div += "<div class='dropdown-item'>";
 
-                if (element.UsesHtmlEditor === true) {
-                    div += "<a class='btn btn-sm btn-secondary' title='Use HTML (WSYWIG) editor' href='/Editor/Edit/" + element.Id + "' style='width:90px;'>";
-                } else {
-                    div += "<a class='btn btn-sm btn-secondary' title='Edit using VS Code' href='/Editor/EditCode/" + element.Id + "' style='width:90px;'>";
-                }
+                    div += "<div class='btn-group btn-group-sm' role='group'>";
 
-                if (element.Published === null && element.Published !== "") {
-                    div += "<span class='badge text-bg-secondary'>v." + element.VersionNumber + " DRAFT</span>";
-                } else {
-
-                    var pDate = new Date(element.Published);
-                    var today = new Date();
-
-                    if (pDate > today) {
-                        div += "<span class='badge text-bg-primary'>v." + element.VersionNumber + " Future</span>";
+                    if (element.UsesHtmlEditor === true) {
+                        div += "<a class='btn btn-sm btn-secondary' title='Use HTML (WSYWIG) editor' href='/Editor/Edit/" + element.Id + "' style='width:90px;'>";
                     } else {
-                        div += "<span class='badge text-bg-success'>v." + element.VersionNumber + " Published</span>";
+                        div += "<a class='btn btn-sm btn-secondary' title='Edit using VS Code' href='/Editor/EditCode/" + element.Id + "' style='width:90px;'>";
                     }
 
-                }
+                    if (element.Published === null && element.Published !== "") {
+                        div += "<span class='badge text-bg-secondary'>v." + element.VersionNumber + " DRAFT</span>";
+                    } else {
 
-                div += "</a>";
+                        var pDate = new Date(element.Published);
+                        var today = new Date();
 
-                div += "<a class='btn btn-sm btn-secondary' title='Edit using VS Code' href='/Editor/EditCode/" + element.Id + "'><i class='fa-solid fa-code'></i>  Code Editor</a>";
+                        if (pDate > today) {
+                            div += "<span class='badge text-bg-primary'>v." + element.VersionNumber + " Future</span>";
+                        } else {
+                            div += "<span class='badge text-bg-success'>v." + element.VersionNumber + " Published</span>";
+                        }
 
-                if (element.UsesHtmlEditor === true) {
-                    div += "<a class='btn btn-sm btn-secondary' title='Use HTML (WSYWIG) editor' href='/Editor/Edit/" + element.Id + "'><i class='fa-brands fa-html5'></i> HTML Editor</a>";
-                } else {
-                    div += "<a class='btn btn-sm btn-secondary' href='#' style='width:109px;'></a>";
-                }
-                div += "</div>";
-                div += "</div>";
-                div += "</li>";
-                ddMenu.append(div);
+                    }
+
+                    div += "</a>";
+
+                    div += "<a class='btn btn-sm btn-secondary' title='Edit using VS Code' href='/Editor/EditCode/" + element.Id + "'><i class='fa-solid fa-code'></i>  Code Editor</a>";
+
+                    if (element.UsesHtmlEditor === true) {
+                        div += "<a class='btn btn-sm btn-secondary' title='Use HTML (WSYWIG) editor' href='/Editor/Edit/" + element.Id + "'><i class='fa-brands fa-html5'></i> HTML Editor</a>";
+                    } else {
+                        div += "<a class='btn btn-sm btn-secondary' href='#' style='width:109px;'></a>";
+                    }
+                    div += "</div>";
+                    div += "</div>";
+                    div += "</li>";
+                    ddMenu.append(div);
+                });
+
+
+                var endDiv = "<li><hr class='dropdown-divider'></li>";
+                endDiv += "<a href='/Editor/Versions/" + data[0].ArticleNumber + "' class='dropdown-item'>Version list <i class='fa-solid fa-right-long'></i></a>";
+                ddMenu.append(endDiv);
             });
-
-
-            var endDiv = "<li><hr class='dropdown-divider'></li>";
-            endDiv += "<a href='/Editor/Versions/" + data[0].ArticleNumber + "' class='dropdown-item'>Version list <i class='fa-solid fa-right-long'></i></a>";
-            ddMenu.append(endDiv);
-        });
+        }
     }
 
     $(document).ready(function () { loadDdEditMenu(); });

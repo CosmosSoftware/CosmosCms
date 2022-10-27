@@ -145,6 +145,20 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
+        /// Compare two versions.
+        /// </summary>
+        /// <param name="leftId"></param>
+        /// <param name="rightId"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> Compare(Guid leftId, Guid rightId)
+        {
+            var left = await _articleLogic.Get(leftId, EnumControllerName.Edit);
+            var right = await _articleLogic.Get(rightId, EnumControllerName.Edit);
+
+            return View(new ArticleViewModel[] { left, right });
+        }
+
+        /// <summary>
         /// Gets template page information.
         /// </summary>
         /// <param name="Id"></param>

@@ -1,0 +1,102 @@
+﻿@model ArticleViewModel[]
+@{
+    Layout = "_LayoutEditor";
+    ViewData["Title"] = $"Comparing version {Model[0].VersionNumber} with version {Model[1].VersionNumber}";
+}
+
+
+<style>
+    .m-editor-container {
+        position: absolute;
+        top: 87px;
+        bottom: 1px;
+        left: 1px;
+        right: 1px;
+    }
+
+    .code-tabs.navbar {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding-top: 2px;
+        height: 3px;
+    }
+
+    .code-tabs.nav-link {
+        height: 26px;
+        font-size: 0.8em;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 2px;
+    }
+
+    .code-tabs.nav-link {
+        background-color: var(--bs-gray-600);
+        color: white;
+        border-color: transparent;
+    }
+
+        .code-tabs.nav-link.active {
+            background-color: var(--bs-gray-900);
+            color: white;
+            border-color: black;
+        }
+</style>
+
+<h1>@ViewData["Title"]</h1>
+
+<div id="compareSpace" class="m-editor-container"></div>
+
+<script src="/lib/monaco-editor/min/vs/loader.js"></script>
+
+<form>
+    <input id="leftContent" name="leftContent" type="hidden" value="@Model[0].Content" />
+    <input id="rightContent" name="rightContent" type="hidden" value="@Model[1].Content" />
+</form>
+
+<script>
+
+    $(document).ready(function () {
+        require.config({ paths: { vs: '../lib/monaco-editor/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            var diffEditor = monaco.editor.createDiffEditor(document.getElementById('compareSpace'));
+
+            diffEditor.setModel({
+                original: monaco.editor.createModel($("#leftContent").val(), 'html'),
+                modified: monaco.editor.createModel($("#rightContent").val(), 'html')
+            });
+        });
+    });
+
+    function xhr(url) {
+        var req = null;
+        return new Promise(
+            function (c, e) {
+                req = new XMLHttpRequest();
+                req.onreadystatechange = function () {
+                    if (req._canceled) {
+                        return;
+                    }
+
+                    if (req.readyState === 4) {
+                        if ((req.status >= 200 && req.status < 300) || req.status === 1223) {
+                            c(req);
+                        } else {
+                            e(req);
+                        }
+                        req.onreadystatechange = function () { };
+                    }
+                };
+
+                req.open('GET', url, true);
+                req.responseType = '';
+
+                req.send(null);
+            },
+            function () {
+                req._canceled = true;
+                req.abort();
+            }
+        );
+    }
+</script>

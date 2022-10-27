@@ -27,7 +27,8 @@
             }
         </div>
         <div class="col-md-6 d-flex justify-content-end">
-          
+            <button id="btnCompare" class="btn btn-sm btn-secondary" title="Compare two versions." type="button" disabled>Compare</button>
+            <button id="btnClear" class="btn btn-sm btn-secondary" title="Clear selection." type="button" disabled>Clear</button>
         </div>
     </div>
     <div class="row">
@@ -36,7 +37,7 @@
                 Html.Grid(Model)
                 .Build(c =>
                 {
-                    c.Add(i => i.Id).Hidden();
+                    c.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-id='{r.Id}'>").Encoded(false).Titled("").Width("30px");
                     c.Add(i => i.VersionNumber).RenderedAs(r => "v." + r.VersionNumber).Titled("").Width("30px").Filterable(false);
                     // Preview
                     c.Add(i => i.Id)
@@ -71,7 +72,7 @@
                 )
         </div>
     </div>
-    
+
     <div class="row">
         <div class="col">
             <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
@@ -80,9 +81,108 @@
 </div>
 
 <script>
+
+    let ids = [];
+
+    function getId(checkbox) {
+        return $(checkbox).attr('data-ccms-id');
+    }
+
+    function saveId(id) {
+        // Avoid duplicates
+        if (ids.indexOf(id) == -1) {
+            ids.push(id);
+        }
+        localStorage.setItem("ids", JSON.stringify(ids));
+    }
+
+    function removeId(id) {
+        var tmp = ids.filter(function (value) {
+            return value !== id;
+        });
+        ids = tmp;
+        localStorage.setItem("ids", JSON.stringify(ids));
+    }
+
+    function clearIds() {
+        ids = [];
+        localStorage.removeItem("ids");
+    }
+
+    // Reload selected ids from local storage
+    function reloadIds() {
+        var data = localStorage.getItem("ids");
+
+        if (typeof (data) === "undefined" || data === null || data === "") {
+            ids = [];
+        } else {
+            ids = JSON.parse(data);
+        }
+    }
+
+    function resetButtons() {
+
+        $(".gridCheckBox").each(function (index, element) {
+
+            var id = getId(element);
+
+            if ($(element).is(':checked')) {
+                saveId(id);
+            } else {
+                removeId(id);
+            }
+
+        });
+
+        // Get the array length
+        var arrayLength = ids.length;
+
+        if (arrayLength > 0) {
+            $("#btnClear").prop('disabled', false);
+        } else {
+            $("#btnClear").prop('disabled', true);
+        }
+
+        if (arrayLength === 2) {
+            $("#btnCompare").prop('disabled', false);
+        } else {
+            $("#btnCompare").prop('disabled', true);
+        }
+                
+    }
+
     $(document).ready(function () {
         $(".toLocalTimeZone").each(function (index, element) {
             $(element).html(getLocalTime($(element).html()));
+        });
+
+        $(".gridCheckBox").each(function (index, element) {
+
+            var id = getId(element);
+
+            if ((ids.indexOf(id) > -1)) {
+                $(element).prop('checked', true);
+            }
+
+            $(element).on("change", function () {
+
+                resetButtons();
+            });
+
+        });
+
+        $("#btnClear").click(function () {
+            $(".gridCheckBox").each(function (index, element) {
+                $(element).prop('checked', false);
+            });
+            clearIds();
+            resetButtons();
+        });
+
+
+        $("#btnCompare").click(function () {
+            reloadIds();
+            window.location.href = "/Editor/Compare?leftId=" + ids[0] + "&rightId=" + ids[1];
         });
     });
 </script>
