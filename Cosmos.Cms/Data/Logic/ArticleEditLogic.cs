@@ -631,15 +631,15 @@ namespace Cosmos.Cms.Data.Logic
                     {
                         ArticleNumber = model.ArticleNumber, // This stays the same
                         VersionNumber = versionNumber,
+                        Content = model.Content,
+                        RoleList = model.RoleList,
                         UrlPath = model.UrlPath,
                         HeaderJavaScript = article.HeaderJavaScript,
                         FooterJavaScript = article.FooterJavaScript,
                         Title = article.Title, // Keep this from previous version, will handle title change below.
-                        Updated = DateTime.Now.ToUniversalTime()
+                        Updated = DateTimeOffset.Now.ToUniversalTime(),
+                        Published = model.Published
                     };
-
-                    // Force the model into an unpublished state
-                    model.Published = null;
 
                     UpdateHeadBaseTag(article);
 
@@ -771,23 +771,23 @@ namespace Cosmos.Cms.Data.Logic
             //
 
 
-            if (model.Published.HasValue)
+            if (article.Published.HasValue)
             {
                 await HandleLogEntry(article, model.Published.HasValue ? "Publish" : "Un-publish", userId);
 
                 try
                 {
-                    var others = await DbContext.Articles.Where(w => w.ArticleNumber == model.ArticleNumber && w.Id != model.Id).ToListAsync();
+                    var others = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber && w.Published != null && w.Id != article.Id).ToListAsync();
 
                     // This is published in the future. This means we need
                     // to keep the last published version, and the future version(s)
                     if (model.Published.Value > DateTimeOffset.Now)
                     {
-                        var lastPublished = others.OrderByDescending(o => o.Published).FirstOrDefault();
+                        var lastPublished = others.Where(o => o.Published < article.Published).OrderByDescending(o => o.VersionNumber).FirstOrDefault();
 
                         foreach (var item in others)
                         {
-                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime && item.Id != lastPublished.Id)
+                            if (item.Id != lastPublished.Id)
                             {
                                 item.Published = null;
                             }
@@ -798,7 +798,7 @@ namespace Cosmos.Cms.Data.Logic
                         // This article is the last published, make sure all others are not published.
                         foreach (var item in others)
                         {
-                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= model.Published.Value.UtcDateTime)
+                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= article.Published.Value.UtcDateTime)
                             {
                                 item.Published = null;
                             }
