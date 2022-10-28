@@ -1,9 +1,11 @@
-﻿@model ArticleViewModel[]
+﻿@using Newtonsoft.Json
+@model CompareCodeViewModel
 @{
     Layout = "_LayoutEditor";
-    ViewData["Title"] = $"Comparing version {Model[0].VersionNumber} with version {Model[1].VersionNumber}";
+    ViewData["Title"] = $"Comparing version {Model.Articles[0].VersionNumber} with version {Model.Articles[1].VersionNumber}";
+    var fields = Model.EditorFields.ToArray();
+    var aclass = "active";
 }
-
 
 <style>
     .m-editor-container {
@@ -42,61 +44,117 @@
         }
 </style>
 
-<h1>@ViewData["Title"]</h1>
+<nav class="code-tabs navbar">
+    <ul class="nav nav-tabs " id="nav-tab">
+        @{
+            foreach (var field in fields)
+            {
+                                            <li class="nav-item">
+                                                <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                                            </li>
+                aclass = "";
+            }
+        }
+    </ul>
+</nav>
 
-<div id="compareSpace" class="m-editor-container"></div>
-
-<script src="/lib/monaco-editor/min/vs/loader.js"></script>
+<div id="editorContainer"></div>
 
 <form>
-    <input id="leftContent" name="leftContent" type="hidden" value="@Model[0].Content" />
-    <input id="rightContent" name="rightContent" type="hidden" value="@Model[1].Content" />
+    <input type="hidden" asp-for="EditingField" />
+    <input type="hidden" asp-for="EditorType" />
+    <input type="hidden" asp-for="IsValid" />
+
+    <input id="leftHeadJavaScript" name="leftHeadJavaScript" type="hidden" value="@Model.Articles[0].HeadJavaScript" />
+    <input id="rightHeadJavaScript" name="rightHeadJavaScript" type="hidden" value="@Model.Articles[1].HeadJavaScript" />
+    <input id="leftContent" name="leftContent" type="hidden" value="@Model.Articles[0].Content" />
+    <input id="rightContent" name="rightContent" type="hidden" value="@Model.Articles[1].Content" />
+    <input id="left" name="leftFooterJavaScript" type="hidden" value="@Model.Articles[0].FooterJavaScript" />
+    <input id="right" name="rightFooterJavaScript" type="hidden" value="@Model.Articles[1].FooterJavaScript" />
 </form>
 
 <script>
 
+    var next;
+
+    var editor;
+    var fieldId;
+    var ccmsEditorIsLocked = false;
+
+    // Example: var editFields = '[{"FieldId":"HeaderJavaScript","FieldName":"Header JavaScript","EditorMode":0},{"FieldId":"Content","FieldName":"Html Content","EditorMode":1},{"FieldId":"FooterJavaScript","FieldName":"Footer JavaScript","EditorMode":0}]';
+    var editFields = @(Html.Raw(JsonConvert.SerializeObject(Model.EditorFields)));
+
     $(document).ready(function () {
-        require.config({ paths: { vs: '../lib/monaco-editor/min/vs' } });
+        //var fieldInfo = editFields.find(o => o.FieldName === "Content");
+        createAndLoadEditor("HeadJavaScript");
+        // Refresh locks for everyone including self.
+        setTimeout(function () {
+            //ccmsSendSignal("NotifyRoomOfLock");
+        }, 2000);
 
-        require(['vs/editor/editor.main'], function () {
-            var diffEditor = monaco.editor.createDiffEditor(document.getElementById('compareSpace'));
-
-            diffEditor.setModel({
-                original: monaco.editor.createModel($("#leftContent").val(), 'html'),
-                modified: monaco.editor.createModel($("#rightContent").val(), 'html')
-            });
+        $("[data-ccms-fieldname]").click(function (event) {
+            var name = $(event.target).attr("data-ccms-fieldname");
+            $("[data-ccms-fieldname]").removeClass("active");
+            var fieldInfo = editFields.find(o => o.FieldName === name);
+            createAndLoadEditor(fieldInfo.FieldId);
+            $(event.target).addClass("active");
         });
+
+        $("#btnSave").hide();
+        $("#btnPreview").hide();
+        $("#btnFiles").hide();
     });
 
-    function xhr(url) {
-        var req = null;
-        return new Promise(
-            function (c, e) {
-                req = new XMLHttpRequest();
-                req.onreadystatechange = function () {
-                    if (req._canceled) {
-                        return;
-                    }
-
-                    if (req.readyState === 4) {
-                        if ((req.status >= 200 && req.status < 300) || req.status === 1223) {
-                            c(req);
-                        } else {
-                            e(req);
-                        }
-                        req.onreadystatechange = function () { };
-                    }
-                };
-
-                req.open('GET', url, true);
-                req.responseType = '';
-
-                req.send(null);
-            },
-            function () {
-                req._canceled = true;
-                req.abort();
-            }
-        );
+    function bgEditClickCustom(command) {
+        switch (command) {
+            case "Close":
+                window.location.href = "@Url.Action("Versions", "Editor")/@Model.Articles[0].ArticleNumber";
+                break;
+        }
     }
+
+    function createAndLoadEditor(id) {
+        if (editor !== null && typeof editor !== "undefined") {
+            //if (editor.getModel()) {
+            //    editor.getModel().dispose();
+            //}
+            //$("#msgBox").html("Loading...");
+            editor.dispose();
+            editor = null;
+
+            $("#editorContainer").html("");
+        }
+        fieldId = null;
+
+        // 1 second delay
+        setTimeout(function () {
+            console.log("Executed after 1 second");
+        }, 1000);
+
+        $("#EditingField").val(null);
+
+        // Monaco AMD Editor  - https://microsoft.github.io/monaco-editor/
+        require.config({ paths: { 'vs': '/lib/monaco-editor/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+
+            var divId = "editspace" + id;
+
+            $("#editorContainer").append("<div id='" + divId + "' class='m-editor-container'></div>")
+
+            var leftCode = $("#left" + id).val();
+            var rightCode = $("#right" + id).val();
+
+            editor = monaco.editor.createDiffEditor(document.getElementById(divId), { theme: "vs-dark" });
+
+            editor.setModel({
+                original: monaco.editor.createModel(leftCode, 'html'),
+                modified: monaco.editor.createModel(rightCode, 'html')
+            });
+        });
+
+    }
+
 </script>
+
+<script src="/lib/monaco-editor/min/vs/loader.js"></script>

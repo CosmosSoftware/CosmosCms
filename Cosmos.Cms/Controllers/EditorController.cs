@@ -155,7 +155,39 @@ namespace Cosmos.Cms.Controllers
             var left = await _articleLogic.Get(leftId, EnumControllerName.Edit);
             var right = await _articleLogic.Get(rightId, EnumControllerName.Edit);
 
-            return View(new ArticleViewModel[] { left, right });
+            var model = new CompareCodeViewModel()
+            {
+                EditorTitle = left.Title,
+                EditorFields = new[]
+                {
+                    new EditorField
+                    {
+                        FieldId = "HeadJavaScript",
+                        FieldName = "Head Block",
+                        EditorMode = EditorMode.Html,
+                        IconUrl = "/images/seti-ui/icons/html.svg",
+                        ToolTip = "Content to appear at the bottom of the <head> tag."
+                    },
+                    new EditorField
+                    {
+                        FieldId = "Content",
+                        FieldName = "Html Content",
+                        EditorMode = EditorMode.Html,
+                        IconUrl = "~/images/seti-ui/icons/html.svg",
+                        ToolTip = "Content to appear in the <body>."
+                    },
+                    new EditorField
+                    {
+                        FieldId = "FooterJavaScript",
+                        FieldName = "Footer Block",
+                        EditorMode = EditorMode.Html,
+                        IconUrl = "~/images/seti-ui/icons/html.svg",
+                        ToolTip = "Content to appear at the bottom of the <body> tag."
+                    }
+                },
+                Articles = new ArticleViewModel[] { left, right }
+            };
+            return View(model);
         }
 
         /// <summary>

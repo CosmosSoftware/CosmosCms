@@ -49,9 +49,9 @@
         @{
             foreach (var field in fields)
             {
-                <li class="nav-item">
-                    <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                    </li>
                 aclass = "";
             }
         }
@@ -106,6 +106,7 @@
             $("#msgBox").html("Loading...");
             editor.dispose();
             editor = null;
+
         }
 
         fieldId = null;
