@@ -22,7 +22,7 @@
     @Html.Raw(Model.Content)
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @Html.Raw(Model.FooterJavaScript)
-
+    <form>@Html.AntiForgeryToken()</form>
     <script>
         window.addEventListener("load", () => {
             if (window.location === window.parent.location) {

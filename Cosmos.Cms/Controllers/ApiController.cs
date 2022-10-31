@@ -2,6 +2,7 @@
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
 using Jering.Javascript.NodeJS;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Helpers;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -54,6 +57,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
+        [ValidateAntiForgeryToken()]
         public async Task<IActionResult> Index(string Id)
         {
             try
@@ -76,7 +80,7 @@ namespace Cosmos.Cms.Controllers
                 }
                 else
                 {
-                    script = await _dbContext.NodeScripts.WithPartitionKey(Id).Where(f => f.Published != null && f.Published <= DateTimeOffset.UtcNow).OrderByDescending(o => o.Version).FirstOrDefaultAsync();
+                    script = await _dbContext.NodeScripts.Where(f => f.Id == gid &&  f.Published != null && f.Published <= DateTimeOffset.UtcNow).OrderByDescending(o => o.Version).FirstOrDefaultAsync();
                 }
 
                 var values = CodeController.GetArgs(Request, script);

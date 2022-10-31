@@ -53,7 +53,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index()
         {
-            var data = await _dbContext.ScriptCatalog.ToListAsync();
+            var data = await _dbContext.NodeScripts.ToListAsync();
 
             return View(data.AsQueryable());
         }
@@ -120,15 +120,7 @@ namespace Cosmos.Cms.Controllers
                     InputVars = string.IsNullOrEmpty(model.InputVars) ? new[] { "" } : model.InputVars.Split(',').Select(s => s.Trim()).ToArray()
                 };
 
-                var entry = new ScriptCatalogEntry()
-                {
-                    EndPoint = script.EndPoint,
-                    Updated = script.Updated,
-                    Published = script.Published
-                };
-
                 _dbContext.NodeScripts.Add(script);
-                _dbContext.ScriptCatalog.Add(entry);
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("Edit", "Code", new { Id = model.Id });
@@ -154,6 +146,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Run(Guid Id)
         {
 
@@ -233,11 +226,34 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
+        /// Deletes an endpoint
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> Delete(Guid Id)
+        {
+            var doomed = await _dbContext.NodeScripts.FirstOrDefaultAsync(w => w.Id == Id);
+
+            _dbContext.NodeScripts.Remove(doomed);
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                var t = e;
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        /// <summary>
         /// Edit code
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> EditCode(Guid Id)
+        public async Task<IActionResult> Edit(Guid Id)
         {
             var data = await _dbContext.NodeScripts.FindAsync(Id);
 
@@ -282,7 +298,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> EditCode(EditScriptPostModel model)
+        public async Task<IActionResult> Edit(EditScriptPostModel model)
         {
             if (model == null) return NotFound();
 
@@ -332,11 +348,11 @@ namespace Cosmos.Cms.Controllers
         /// Script inventory
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Versions(string Id)
+        public async Task<IActionResult> Versions(Guid Id)
         {
             ViewData["EndPoint"] = Id;
             var data = await _dbContext.NodeScripts
-                .WithPartitionKey(Id)
+                .Where(w => w.Id == Id)
                 .OrderByDescending(o => o.Version)
                 .Select(s => new NodeScriptItemViewModel
                 {

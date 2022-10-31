@@ -39,6 +39,7 @@
                 </div>
                 <div class="card-body" style="overflow-y: auto;">
                     <form id="frmRun">
+                        @Html.AntiForgeryToken()
                         @if (Model.InputVars != null && Model.InputVars.Length > 0)
                         {
                             foreach (var item in Model.InputVars)

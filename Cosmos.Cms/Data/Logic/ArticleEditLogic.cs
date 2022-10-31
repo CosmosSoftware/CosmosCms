@@ -521,7 +521,38 @@ namespace Cosmos.Cms.Data.Logic
             // Make sure base tag is set properly.
             UpdateHeadBaseTag(model);
 
-            Article article;
+            //
+            // Retrieve the article that we will be using.
+            // This will either be used to create a new version (detached then added as new),
+            // or updated in place.
+            //
+            var article = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
+
+            if (article == null)
+            {
+                //
+                // New article
+                article = new Article()
+                {
+                    ArticleNumber = model.ArticleNumber,
+                    Content = model.Content,
+                    Expires = model.Expires,
+                    FooterJavaScript = model.FooterJavaScript,
+                    HeaderJavaScript = model.HeadJavaScript,
+                    Published = model.Published,
+                    RoleList = model.RoleList,
+                    StatusCode = (int)model.StatusCode,
+                    Title = model.Title,
+                    Updated = DateTimeOffset.Now,
+                    UrlPath = model.UrlPath,
+                    VersionNumber = 1
+                };
+            }
+            else
+            {
+                // Handle title (and URL) changes for existing 
+                await HandleTitleChange(article, model.Title, userId);
+            }
 
             //if (!string.IsNullOrEmpty(model.Content))
             //{
@@ -609,12 +640,7 @@ namespace Cosmos.Cms.Data.Logic
                 if (!await DbContext.Articles.Where(a => a.ArticleNumber == model.ArticleNumber).CosmosAnyAsync())
                     throw new Exception($"Article number: {model.ArticleNumber} not found!");
 
-                //
-                // Retrieve the article that we will be using.
-                // This will either be used to create a new version (detached then added as new),
-                // or updated in place.
-                //
-                article = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
+
 
                 //
                 // We are adding a new version.
@@ -653,97 +679,6 @@ namespace Cosmos.Cms.Data.Logic
                 else
                 {
                     await HandleLogEntry(article, "Edit existing", userId);
-                }
-
-                //
-                // Is the title changing? If so handle redirect if this is NOT the root.
-                //
-                if (!isRoot && !string.Equals(article.Title, model.Title, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    //
-                    // ARTICLE TITLE IS CHANGING, SO CREATE A REDIRECT AND CHANGE ARTICLE TITLE AND URL
-                    //
-                    // And capture old URL to flush.
-                    flushUrls.Add(model.UrlPath);
-
-                    var oldTitle = article.Title;
-                    var newTitle = model.Title;
-                    var oldUrl = article.UrlPath;
-                    var newUrl = HandleUrlEncodeTitle(model.Title);
-
-                    // Update sub articles.
-                    var subArticles = await GetAllSubArticles(model.UrlPath);
-
-                    foreach (var subArticle in subArticles)
-                    {
-                        if (!subArticle.Title.Equals("redirect", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            subArticle.Title = UpdatePrefix(oldTitle, newTitle, subArticle.Title);
-                        }
-                        subArticle.UrlPath = UpdatePrefix(oldUrl, newUrl, subArticle.UrlPath);
-
-                        // Make sure base tag is set properly.
-                        UpdateHeadBaseTag(subArticle);
-                    }
-
-                    DbContext.Articles.UpdateRange(subArticles);
-
-                    // Remove any conflicting redirects
-                    var conflictingRedirects = await DbContext.Articles.Where(a => a.Content == newUrl && a.Title.ToLower().Equals("redirect")).ToListAsync();
-
-                    if (conflictingRedirects.Any())
-                    {
-                        DbContext.Articles.RemoveRange(conflictingRedirects);
-                    }
-
-                    //
-                    // Update the path to reflect new title 
-                    //
-                    article.UrlPath = HandleUrlEncodeTitle(model.Title);
-                    //model.UrlPath = article.UrlPath;
-
-                    //
-                    // Update base href
-                    //
-                    UpdateHeadBaseTag(article);
-
-                    // Add redirect here
-                    DbContext.Articles.Add(new Article
-                    {
-                        ArticleNumber = 0,
-                        StatusCode = (int)StatusCodeEnum.Redirect,
-                        UrlPath = oldUrl, // Old URL
-                        VersionNumber = 0,
-                        Published = DateTime.Now.ToUniversalTime().AddDays(-1), // Make sure this sticks!
-                        Title = "Redirect",
-                        Content = newUrl, // New URL
-                        Updated = DateTime.Now.ToUniversalTime(),
-                        HeaderJavaScript = null,
-                        FooterJavaScript = null
-                    });
-
-
-                    await HandleLogEntry(article, $"Redirect {model.UrlPath} to {article.UrlPath}", userId);
-
-                    // We have to change the title and paths for all versions now.
-                    var articlesToUpdate = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
-                        .ToListAsync();
-
-                    foreach (var art in articlesToUpdate)
-                    {
-
-                        //
-                        // Update base href (for Angular apps)
-                        //
-                        UpdateHeadBaseTag(article);
-
-                        art.Title = model.Title;
-                        art.Updated = DateTime.Now.ToUniversalTime();
-                        art.UrlPath = article.UrlPath;
-                    }
-
-                    DbContext.Articles.UpdateRange(articlesToUpdate);
-                    await DbContext.SaveChangesAsync();
                 }
 
                 //
@@ -864,6 +799,91 @@ namespace Cosmos.Cms.Data.Logic
             };
 
             return result;
+        }
+
+        private async Task HandleTitleChange(Article article, string newTitle, string userId)
+        {
+            var oldTitle = article.Title;
+
+            if (article.UrlPath == "root" || string.Equals(oldTitle, newTitle, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return;
+            }
+
+            var oldUrl = HandleUrlEncodeTitle(oldTitle);
+            var newUrl = HandleUrlEncodeTitle(newTitle);
+
+            // Update sub articles.
+            var subArticles = await GetAllSubArticles(oldTitle);
+
+            foreach (var subArticle in subArticles)
+            {
+                if (!subArticle.Title.Equals("redirect", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    subArticle.Title = UpdatePrefix(oldTitle, newTitle, subArticle.Title);
+                }
+                subArticle.UrlPath = UpdatePrefix(oldUrl, newUrl, subArticle.UrlPath);
+
+                // Make sure base tag is set properly.
+                UpdateHeadBaseTag(subArticle);
+            }
+
+            DbContext.Articles.UpdateRange(subArticles);
+
+            // Remove any conflicting redirects
+            var conflictingRedirects = await DbContext.Articles.Where(a => a.Content == newUrl && a.Title.ToLower().Equals("redirect")).ToListAsync();
+
+            if (conflictingRedirects.Any())
+            {
+                DbContext.Articles.RemoveRange(conflictingRedirects);
+            }
+
+            //
+            // Update base href
+            //
+            UpdateHeadBaseTag(article);
+
+            // Create a redirect
+            var entity = new Article
+            {
+                ArticleNumber = 0,
+                StatusCode = (int)StatusCodeEnum.Redirect,
+                UrlPath = oldUrl, // Old URL
+                VersionNumber = 0,
+                Published = DateTime.Now.ToUniversalTime().AddDays(-1), // Make sure this sticks!
+                Title = "Redirect",
+                Content = newUrl, // New URL
+                Updated = DateTime.Now.ToUniversalTime(),
+                HeaderJavaScript = null,
+                FooterJavaScript = null
+            };
+
+            // Add redirect here
+            DbContext.Articles.Add(entity);
+
+
+            await HandleLogEntry(entity, $"Redirect {oldUrl} to {newUrl}", userId);
+
+            // We have to change the title and paths for all versions now.
+            var articlesToUpdate = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
+                .ToListAsync();
+
+            foreach (var art in articlesToUpdate)
+            {
+
+                //
+                // Update base href (for Angular apps)
+                //
+                UpdateHeadBaseTag(article);
+
+                art.Title = newTitle;
+                art.Updated = DateTime.Now.ToUniversalTime();
+                art.UrlPath = article.UrlPath;
+            }
+
+            DbContext.Articles.UpdateRange(articlesToUpdate);
+            await DbContext.SaveChangesAsync();
+
         }
 
         /// <summary>
@@ -1202,13 +1222,24 @@ namespace Cosmos.Cms.Data.Logic
             }
             else
             {
-                urlPrefix = System.Web.HttpUtility.UrlDecode(urlPrefix.ToLower().Replace("%20", "_").Replace(" ", "_")) + "/";
+                urlPrefix = System.Web.HttpUtility.UrlDecode(urlPrefix.ToLower().Replace("%20", "_").Replace(" ", "_"));
             }
 
-            var query = DbContext.Articles
-                .Where(a => a.Published <= DateTime.UtcNow && a.UrlPath.StartsWith(urlPrefix));
+            var query = DbContext.Articles.Where(a => a.UrlPath.StartsWith(urlPrefix));
+            //    .Where(a => a.Published <= DateTime.UtcNow && a.UrlPath.Like());
 
-            return await query.ToListAsync();
+            try
+            {
+                var list = await query.ToListAsync();
+                return list;
+            }
+            catch (Exception e)
+            {
+                var t = e; // For debuging purposes
+                throw;
+            }
+
+
         }
 
         #region LISTS

@@ -534,16 +534,17 @@ namespace Cosmos.Cms.Controllers
         /// <param name="Id">Layout ID</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> SetAsDefault(Guid Id)
+        public async Task<IActionResult> SetLayoutAsDefault(LayoutIndexViewModel model)
         {
 
-            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.Id == Id);
+            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.Id == model.Id);
+            layout.IsDefault = true;
 
             if (layout == null)
                 return RedirectToAction("Index", "Layouts");
 
             await _dbContext.SaveChangesAsync();
-            var items = await _dbContext.Layouts.Where(w => w.Id != Id).ToListAsync();
+            var items = await _dbContext.Layouts.Where(w => w.Id != model.Id).ToListAsync();
             foreach (var item in items)
             {
                 item.IsDefault = false;

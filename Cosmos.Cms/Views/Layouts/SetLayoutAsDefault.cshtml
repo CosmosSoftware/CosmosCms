@@ -47,15 +47,15 @@
     </div>
     <div class="row">
         <div class="col">
-            <div class="card text-light">
+            <div class="card bg-dark text-light">
                 <div class="card-body">
                     <p>Layout selected:</p>
-                    <div class="bg-dark" style="padding: 8px; width: 100%;">
+                    <div style="padding: 8px; width: 100%;">
                         <div class="h2">@Model.LayoutName</div>
                     </div>
                     <br />
                     <br />
-                    <form asp-action="SetLayoutAsDefault">
+                    <form asp-action="SetLayoutAsDefault" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="Notes" />
@@ -64,7 +64,7 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" asp-for="IsDefault" >
+                            <input id="IsDefault" class="form-check-input" type="checkbox" asp-for="IsDefault">
                             <label class="form-check-label" for="IsDefault">Enable layout change</label>
                         </div>
 

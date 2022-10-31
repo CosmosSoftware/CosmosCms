@@ -86,7 +86,7 @@
         <div class="row justify-content-center">
             <div class="col-4-md">
                 <h3>Endpoint Settings</h3>
-                <form id="frmSave" action="/Code/EditCode" method="post">
+                <form id="frmSave" action="/Code/Edit" method="post">
                     <div class="mb-3">
                         <label for="InputVars" class="form-label">Input variables:</label>
                         <input asp-for="InputVars" type="text" class="form-control" aria-describedby="Title">
@@ -229,7 +229,7 @@
         
         var form = $('#frmSave');
 
-        $.post("@Url.Action("EditCode")",
+        $.post("@Url.Action("Edit")",
             form.serialize(),
             function (response) {
 

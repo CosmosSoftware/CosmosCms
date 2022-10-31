@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Cosmos.Cms.Models
 {
+    /// <summary>
+    /// API Result
+    /// </summary>
     public class ApiResult
     {
         public ApiResult(string returnData)

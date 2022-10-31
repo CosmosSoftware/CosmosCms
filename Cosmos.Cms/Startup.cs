@@ -149,7 +149,6 @@ namespace Cosmos.Cms
             services.AddControllersWithViews();
             services.AddRazorPages();
 
-            // End before identity
             services.AddMvc()
                 .AddNewtonsoftJson(options =>
                     options.SerializerSettings.ContractResolver =

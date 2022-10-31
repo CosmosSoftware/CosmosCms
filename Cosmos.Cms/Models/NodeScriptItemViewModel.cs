@@ -13,7 +13,7 @@ namespace Cosmos.Cms.Models
         /// </summary>
         [Key]
         [Display(Name = "Script Id")]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// Published date time

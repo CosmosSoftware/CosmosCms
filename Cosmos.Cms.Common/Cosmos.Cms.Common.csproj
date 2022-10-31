@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Deterministic>true</Deterministic>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+		<Authors>toiyabe62</Authors>
+		<Company>Moonrise Software LLC</Company>
+		<Product>Cosmos CMS</Product>
+		<Description>This package contains all the common methods and objects used by the Cosmos CMS editor website, and by any website service the role of a publishing website.</Description>
+		<Copyright>Eric Kauffman</Copyright>
+		<RepositoryType>Class Library</RepositoryType>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<SignAssembly>false</SignAssembly>
+		<AnalysisLevel>5.0</AnalysisLevel>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<RepositoryUrl>https://github.com/CosmosSoftware/Cosmos.Cms</RepositoryUrl>
+		<Version>7.1.1</Version>
+		<AssemblyVersion>7.1.1.1</AssemblyVersion>
+		<FileVersion>7.1.1.1</FileVersion>
+		<UserSecretsId>498e495c-d772-4d44-870d-92009f01de57</UserSecretsId>
+		<PackageProjectUrl>https://github.com/CosmosSoftware/Cosmos.Cms</PackageProjectUrl>
+		<NeutralLanguage></NeutralLanguage>
+		<PackageTags>CCMS</PackageTags>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<PackageReleaseNotes></PackageReleaseNotes>
+		<RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+
+		<!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+		<!-- Embed source files that are not tracked by the source control manager in the PDB -->
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<WarningLevel>3</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DefineConstants>TRACE</DefineConstants>
+		<WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="nuget.config" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.20" />
+		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.8" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.101.6" />
+		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.100.6" />
+		<PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
+		<PackageReference Include="Azure.Identity" Version="1.7.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.14.1" />
+		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
+		<PackageReference Include="Microsoft.Azure.Management.Cdn" Version="6.1.0" />
+		<PackageReference Include="Google.Cloud.Translate.V3" Version="3.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="6.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.10">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.10">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.47.2" />
+		<PackageReference Include="SendGrid" Version="9.28.1" />
+	</ItemGroup>
+
+
+</Project>
