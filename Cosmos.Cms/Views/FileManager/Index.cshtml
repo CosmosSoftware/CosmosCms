@@ -9,6 +9,7 @@
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
     var editorExtensions = new string[] { ".js", ".css", ".html", ".htm", ".json", ".xml" };
+    var container = (string)ViewData["Container"];
 
     if (directoryOnly)
     {
@@ -53,7 +54,7 @@
                 <input type="file"
                    class="filepond"
                    id="filepond"
-                   name="files" data-file-metadata-path="@pathPrefix"
+                   name="files" data-file-metadata-path="@pathPrefix" data-file-metadata-container="@container"
                    multiple>
             </div>
         </div>
@@ -71,7 +72,14 @@
                         if (item != "/")
                         {
                             p += "/" + item;
-                            <li class="breadcrumb-item"><a href="/FileManager/Index?target=@p">@item</a></li>
+                            if (container.Equals("$web"))
+                            {
+                                <li class="breadcrumb-item"><a href="/FileManager/Index?target=@p">@item</a></li>
+                            }
+                            else
+                            {
+                                <li class="breadcrumb-item"><a href="/FileManager/Index?target=@p&container=@container">@item</a></li>
+                            }
                         }
                     }
                 </ol>
@@ -101,6 +109,7 @@
                 <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
                     <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
                     <input type="hidden" name="DirectoryOnly" id="DirectoryOnly" value="@directoryOnly" />
+                    <input type="hidden" name="Container" id="DirectoryOnly" value="@container" />
                     <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
 
                     <button class="btn btn-sm btn-secondary" type="submit">Create</button>
@@ -123,13 +132,13 @@
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add().RenderedAs(r => r.IsDirectory == false ?
+                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => (r.IsDirectory == false && container == "$web") ?
                     $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
-                     + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
-                     + "</div>"
-                     : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
+                    + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}&container={container}'><i class='fa-solid fa-code'></i></a>" : "")
+                    + "</div>"
+                    : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
                 })
@@ -237,13 +246,27 @@
         chunkForce: true
     });
 
+    
     FilePond.setOptions({
-        server: "@Url.Action("Process")"
+        server: "@Url.Action("Process")?container=@container"
+    });
+
+    pond.on('addfile', (error, file) => {
+        if (error) {
+            console.log('Oh no');
+            return;
+        }
+
+        var relativePath = file.relativePath;
+        file.setMetadata("relativePath", relativePath);
+        file.setMetadata("fileName", file.filename);
+
+        console.log('File added', file);
     });
 
     // Event handlers
     document.addEventListener('FilePond:processfiles', (e) => {
-        window.location.href = "@Url.Action("Index")?target=@pathPrefix";
+        window.location.href = "@Url.Action("Index")?target=@pathPrefix&container=@container";
     });
 
     let paths = [];
@@ -411,7 +434,7 @@
         switch (command) {
             case "cancel":
                 clearPaths();
-                window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
                 break;
             case "delete":
                 $("#checkFirstTitle").html("Delete Verification");
@@ -421,7 +444,7 @@
                     $("#checkFirstDialog").html("Are you sure you want to permanently delete " + arrayLength + " items?");
                 }
                 next = function () {
-                    $.post('@Url.Action("Delete")',   // url
+                    $.post('@Url.Action("Delete")?container=@container',   // url
                         {
                             ParentPath: '@pathPrefix',
                             Paths: paths
@@ -429,7 +452,7 @@
                         function (data, status, jqXHR) {// success callback
                             clearPaths();
                             resetButtons();
-                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                            window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
                         })
                 }
                 break;
@@ -454,7 +477,7 @@
                 next = function () {
                     localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
                     clearPaths();
-                    window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true'
+                    window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true&container=@container'
                 };
                 break;
             case "moveItems":
@@ -468,7 +491,7 @@
                 $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
 
                 next = function () {
-                    $.post('@Url.Action("Move")',   // url
+                    $.post('@Url.Action("Move")?container=@container',   // url
                         {
                             Destination: paths[0],
                             Items: items
@@ -476,7 +499,7 @@
                         function (data, status, jqXHR) {// success callback
                             clearPaths();
                             resetButtons();
-                            window.location.href = '@Url.Action("Index")?target=@pathPrefix';
+                            window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
                         })
                 }
                 break;
@@ -494,7 +517,7 @@
     }
 
     function download(p) {
-        window.location.href = encodeURI("@Url.Action("Download")?path=" + p);
+        window.location.href = encodeURI("@Url.Action("Download")?path=" + p + "&container=@container");
     }
 
 </script>

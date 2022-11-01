@@ -227,7 +227,13 @@ namespace Cosmos.Cms
             services.AddSignalR();
 
             // Add Node Services
+            // https://github.com/JeringTech/Javascript.NodeJS#configuring
             services.AddNodeJS();
+            // Options for the NodeJS process, here we enable debugging
+            services.Configure<NodeJSProcessOptions>(options =>
+            {
+                options.ProjectPath = "C:\\lib\\mods";
+            });
 
         }
 

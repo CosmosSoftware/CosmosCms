@@ -90,16 +90,20 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="target"></param>
         /// <param name="directoryOnly"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target, bool directoryOnly = false)
+        public async Task<IActionResult> Index(string target, bool directoryOnly = false, string container = "$web")
         {
+            _storageContext.SetContainerName(container);
+
             _storageContext.CreateFolder("/pub");
 
             target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
             ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
             ViewData["DirectoryOnly"] = directoryOnly;
+            ViewData["Container"] = container;
 
             //
             // GET FULL OR ABSOLUTE PATH
@@ -118,10 +122,12 @@ namespace Cosmos.Cms.Controllers
         /// Moves items to a new folder.
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Move(MoveFilesViewModel model)
+        public async Task<IActionResult> Move(MoveFilesViewModel model, string container = "$web")
         {
+            _storageContext.SetContainerName(container);
             _storageContext.CreateFolder("/pub");
 
             try
@@ -161,11 +167,13 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult Process([FromForm] string files)
+        public ActionResult Process([FromForm] string files, [FromQuery] string container = "$web")
         {
             var parsed = JsonConvert.DeserializeObject<FilePondMetadata>(files);
 
-            return Ok(parsed.Path.TrimEnd('/') + "/|" + Guid.NewGuid().ToString());
+            var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}";
+
+            return Ok(uid);
         }
 
         /// <summary>
@@ -173,9 +181,10 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="patch"></param>
         /// <param name="options"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
         [HttpPatch]
-        public async Task<ActionResult> Process(string patch, string options = "")
+        public async Task<ActionResult> Process(string patch, string options = "", string container = "$web")
         {
             try
             {
@@ -205,21 +214,28 @@ namespace Cosmos.Cms.Controllers
                 var totalChunks = DivideByAndRoundUp(uploadLenth, contentSize);
 
 
-                var blobName = UrlEncode(UploadName.ToLower());
+                var blobName = UrlEncode(UploadName);
+
+                var relativePath = UrlEncode(patchArray[0].TrimEnd('/'));
+
+                if (!string.IsNullOrEmpty(patchArray[1]))
+                {
+                    relativePath += "/" + UrlEncode(Path.GetDirectoryName(patchArray[1]));
+                }
 
                 var metaData = new FileUploadMetaData()
                 {
                     ChunkIndex = chunk,
                     ContentType = contentType,
                     FileName = blobName,
-                    RelativePath = UrlEncode(patchArray[0].ToLower()).TrimEnd('/') + "/" + blobName,
+                    RelativePath = relativePath + "/" + blobName,
                     TotalChunks = totalChunks,
                     TotalFileSize = uploadLenth,
                     UploadUid = patchArray[1]
                 };
 
                 // Make sure full folder path exists
-                var pathParts = patchArray[0].ToLower().Trim('/').Split('/');
+                var pathParts = patchArray[0].Trim('/').Split('/');
                 var part = "";
                 for (int i = 0; i < pathParts.Length - 1; i++)
                 {
@@ -228,7 +244,7 @@ namespace Cosmos.Cms.Controllers
                         throw new Exception("Must upload folders and files under /pub directory.");
                     }
 
-                    part = $"{part}/{pathParts[i].ToLower()}";
+                    part = $"{part}/{pathParts[i]}";
                     if (part != "/pub")
                     {
                         var folder = part.Trim('/');
@@ -238,6 +254,8 @@ namespace Cosmos.Cms.Controllers
 
                 using var memoryStream = new MemoryStream();
                 await Request.Body.CopyToAsync(memoryStream);
+
+                _storageContext.SetContainerName(container);
 
                 _storageContext.AppendBlob(memoryStream, metaData);
             }
@@ -252,7 +270,7 @@ namespace Cosmos.Cms.Controllers
 
 
         /// <summary>
-        /// Simple file upload
+        /// Simple file upload for CKEditor
         /// </summary>
         /// <param name="Id">Article Number</param>
         /// <returns></returns>
@@ -350,8 +368,6 @@ namespace Cosmos.Cms.Controllers
             return metadata;
 
         }
-
-
 
         private Rectangle GetRectangle(Image image, decimal percent)
         {
@@ -709,7 +725,7 @@ namespace Cosmos.Cms.Controllers
             var urlEncodedParts = new List<string>();
             foreach (var part in parts) urlEncodedParts.Add(HttpUtility.UrlEncode(part.Replace(" ", "-")));
 
-            return TrimPathPart(string.Join('/', urlEncodedParts).ToLowerInvariant());
+            return TrimPathPart(string.Join('/', urlEncodedParts));
         }
 
         #endregion
@@ -724,8 +740,10 @@ namespace Cosmos.Cms.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NewFolder(NewFolderViewModel model)
         {
+            _storageContext.SetContainerName(model.Container);
+
             var relativePath = string.Join('/', ParsePath(model.ParentFolder, model.FolderName));
-            relativePath = UrlEncode(relativePath.ToLower());
+            relativePath = UrlEncode(relativePath);
 
             // Check for duplicate entries
             var existingEntries = await _storageContext.GetFolderContents(model.ParentFolder);
@@ -735,16 +753,24 @@ namespace Cosmos.Cms.Controllers
                 var fileManagerEntry = _storageContext.CreateFolder(relativePath);
             }
 
-            return RedirectToAction("Index", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
+            if (model.Container.Equals("$web"))
+            {
+                return RedirectToAction("Index", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
+            }
+
+
+            return RedirectToAction("Index", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly, container = model.Container });
         }
 
         /// <summary>
         /// Download a file
         /// </summary>
         /// <param name="path"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Download(string path)
+        public async Task<IActionResult> Download(string path, string container = "$web")
         {
+            _storageContext.SetContainerName(container);
             var blob = await _storageContext.GetFileAsync(path);
 
             if (!blob.IsDirectory)
@@ -763,13 +789,15 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="target"></param>
         /// <param name="entry"></param>
+        /// <param name="container"></param>
         /// <returns><see cref="JsonResult" />(<see cref="BlobService.FileManagerEntry" />)</returns>
-        public async Task<ActionResult> Create(string target, BlobService.FileManagerEntry entry)
+        public async Task<ActionResult> Create(string target, BlobService.FileManagerEntry entry, string container = "$web")
         {
-            target = target == null ? "" : target.ToLower();
+            _storageContext.SetContainerName(container);
+            target = target == null ? "" : target;
             entry.Path = target;
-            entry.Name = UrlEncode(entry.Name.ToLower());
-            entry.Extension = entry.Extension?.ToLower();
+            entry.Name = UrlEncode(entry.Name);
+            entry.Extension = entry.Extension;
 
             if (!entry.Path.StartsWith("/pub", StringComparison.CurrentCultureIgnoreCase))
             {
@@ -808,9 +836,11 @@ namespace Cosmos.Cms.Controllers
         ///     Deletes a folder, normalizes entry to lower case.
         /// </summary>
         /// <param name="model">Item to delete using relative path</param>
+        /// <param name="container"></param>
         /// <returns></returns>
-        public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
+        public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model, string container = "$web")
         {
+            _storageContext.SetContainerName(container);
             foreach (var item in model.Paths)
             {
                 if (item.EndsWith('/'))
@@ -830,11 +860,13 @@ namespace Cosmos.Cms.Controllers
         /// Rename a blob item.
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="container"></param>
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rename(RenameBlobViewModel model)
+        public async Task<IActionResult> Rename(RenameBlobViewModel model, string container = "$web")
         {
+            _storageContext.SetContainerName(container);
             if (!string.IsNullOrEmpty(model.ToBlobName))
             {
                 // Note rules:
@@ -854,7 +886,7 @@ namespace Cosmos.Cms.Controllers
 
                 var target = $"{model.BlobRootPath}/{model.FromBlobName}";
 
-                var dest = $"{model.BlobRootPath}/{UrlEncode(model.ToBlobName.ToLower())}";
+                var dest = $"{model.BlobRootPath}/{UrlEncode(model.ToBlobName)}";
 
                 await _storageContext.RenameAsync(target, dest);
             }
@@ -1225,6 +1257,7 @@ namespace Cosmos.Cms.Controllers
         public async Task<ActionResult> Upload(IEnumerable<IFormFile> files,
             string metaData, string path)
         {
+            _storageContext.SetContainerName("$web");
             try
             {
                 if (files == null || files.Any() == false)
@@ -1251,13 +1284,13 @@ namespace Cosmos.Cms.Controllers
 
                 if (file == null) throw new Exception("No file found to upload.");
 
-                var blobName = UrlEncode(fileMetaData.FileName.ToLower());
+                var blobName = UrlEncode(fileMetaData.FileName);
 
-                fileMetaData.FileName = blobName.ToLower();
-                fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath).ToLower();
+                fileMetaData.FileName = blobName;
+                fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath);
 
                 // Make sure full folder path exists
-                var parts = fileMetaData.RelativePath.ToLower().Trim('/').Split('/');
+                var parts = fileMetaData.RelativePath.Trim('/').Split('/');
                 var part = "";
                 for (int i = 0; i < parts.Length - 1; i++)
                 {
@@ -1266,7 +1299,7 @@ namespace Cosmos.Cms.Controllers
                         throw new Exception("Must upload folders and files under /pub directory.");
                     }
 
-                    part = $"{part}/{parts[i].ToLower()}";
+                    part = $"{part}/{parts[i]}";
                     if (part != "/pub")
                     {
                         var folder = part.Trim('/');

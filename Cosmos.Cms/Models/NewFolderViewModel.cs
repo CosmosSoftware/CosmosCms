@@ -19,5 +19,9 @@
         /// Directory only mode for file browser
         /// </summary>
         public bool DirectoryOnly { get; set; }
+        /// <summary>
+        /// Directory only mode for file browser
+        /// </summary>
+        public string Container { get; set; } = "$web";
     }
 }

@@ -162,9 +162,9 @@ namespace Cosmos.Cms.Controllers
                 var values = GetArgs(Request, script);
 
                 // Send the module string to NodeJS where it's compiled, invoked and cached.
-                var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: values);
+                await _nodeJSService.InvokeFromFileAsync("SendGrid", args: values);
 
-                debugResult.ApiResult = new ApiResult(result)
+                debugResult.ApiResult = new ApiResult("Done!")
                 {
                     IsSuccess = true
                 };
