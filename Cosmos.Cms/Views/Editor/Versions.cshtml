@@ -6,6 +6,8 @@
     ViewData["Title"] = @ViewData["ArticleTitle"] + "Page Versions";
     var isReviewer = User.IsInRole("Reviewers");
     var isAuthor = User.IsInRole("Authors");
+
+    var currentVersion = (int?)ViewData["CurrentVersion"];
 }
 
 <div class="container mt-5 pt-2">
@@ -38,6 +40,10 @@
                 Html.Grid(Model)
                 .Build(c =>
                 {
+                    if (currentVersion != null)
+                    {
+                        c.Add().RenderedAs(r => (currentVersion == r.VersionNumber) ? "<div type='button' class='btn btn-sm btn-primary'>Now editing <span class='badge text-bg-secondary'><i class='fa-solid fa-right-long'></i></span></div>" : "").Titled("").Width("170px").Filterable(false).Encoded(false);
+                    }
                     c.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-id='{r.Id}'>").Encoded(false).Titled("").Width("30px");
                     c.Add(i => i.VersionNumber).RenderedAs(r => "v." + r.VersionNumber).Titled("").Width("30px").Filterable(false);
                     // Preview

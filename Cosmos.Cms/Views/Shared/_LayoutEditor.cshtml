@@ -47,8 +47,10 @@
                     <li class="nav-item">
                         <a class="nav-link" onclick="bgEditClick('Close')">Close</a>
                     </li>
+                    <li id="liBtnVersions" class="nav-item" style="display:none">
+                        <a id="btnVersions" class="nav-link" target="_blank" >Versions</a>
+                    </li>
                 </ul>
-                <div class="navbar-text text-muted ms-3 fs-6">@assemblyName.Version</div>
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
                 <div id="lblTitle" class="navbar-text">Title:</div>
                 <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
@@ -73,6 +75,7 @@
         var fileMgrPopup = null;
         var selectedFile = "";
         var saveFirstModal = null;
+        var lastPublished = "@(((DateTimeOffset?)ViewData["LastPubDateTime"]))";
 
         function bgEditClick(command) {
 
@@ -90,7 +93,6 @@
                     $("#frmSave").submit();
                     break;
                 case "Save":
-                    $("#VersionNumber").val("0"); // Always create a new version on save published
                     $("#frmSave").submit();
                     break;
                 case "Files":
@@ -150,12 +152,20 @@
             var timeZoneElement = $("#timeZone");
             timeZoneElement.html(getLocalTimeZone());
 
+            var startDate;
+            if (lastPublished === "") {
+                startDate = new Date();
+            }
+            else {
+                startDate = new Date(lastPublished);
+            }
 
             $('#tbPublished').daterangepicker({
                 autoUpdateInput: false,
                 timePicker: true,
                 singleDatePicker: true,
                 showDropdowns: true,
+                minDate: startDate,
                 locale: {
                     format: 'MM/DD/YYYY hh:mm A'
                 }

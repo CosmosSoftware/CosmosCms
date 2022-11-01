@@ -1,5 +1,4 @@
-﻿using Cosmos.BlobService.Config;
-using Cosmos.Cms.Common.Data;
+﻿using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Data.Logic;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
@@ -55,20 +54,48 @@ namespace Cosmos.Cms.Data.Logic
         /// <summary>
         ///     Validate that the title is not already taken by another article.
         /// </summary>
-        /// <param name="title"></param>
-        /// <param name="articleNumber"></param>
+        /// <param name="title">Title</param>
+        /// <param name="articleNumber">Current article number</param>
         /// <returns></returns>
-        public async Task<bool> ValidateTitle(string title, int articleNumber)
+        /// <remarks>
+        /// If article number is given, this checks  all other article
+        /// numbers to see if this title is already taken.
+        /// If not given, this method returns true if article name already in use.
+        /// </remarks>
+        public async Task<bool> ValidateTitle(string title, int? articleNumber)
         {
-            if (title.ToLower() == "pub") return false;
-            var article = await DbContext.Articles.FirstOrDefaultAsync(a =>
+
+            //
+            // Make sure it doesn't conflict with the publi blob path
+            //
+            var reservedPaths = new string[] { "pub", "api", "GetSupportedLanguages", "GetTOC", "AccessPending", "GetMicrosoftIdentityAssociation", "Error" };
+
+            foreach (var reservedPath in reservedPaths)
+            {
+                if (title.ToLower() == reservedPath.ToLower())
+                {
+                    return false;
+                }
+            }
+
+            Article article;
+            if (articleNumber.HasValue)
+            {
+                article = await DbContext.Articles.FirstOrDefaultAsync(a =>
+                    a.ArticleNumber != articleNumber && // look only at other article numbers
                     a.Title.ToLower() == title.Trim().ToLower() && // Is the title used already
-                    a.StatusCode != (int)StatusCodeEnum.Deleted // and the page is active (active or is inactive)
-            );
+                    a.StatusCode != (int)StatusCodeEnum.Deleted); // and the page is active (active or is inactive)
+            }
+            else
+            {
+                article = await DbContext.Articles.FirstOrDefaultAsync(a =>
+                    a.Title.ToLower() == title.Trim().ToLower() && // Is the title used already
+                    a.StatusCode != (int)StatusCodeEnum.Deleted); // and the page is active (active or is inactive)
+            }
 
             if (article == null) return true;
 
-            return article.ArticleNumber == articleNumber;
+            return false;
         }
 
         #endregion
@@ -100,12 +127,21 @@ namespace Cosmos.Cms.Data.Logic
             };
         }
 
+        /// <summary>
+        /// Gets the last version number, and increments by one.
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
         private async Task<int> GetNextVersionNumber(int articleNumber)
         {
             return await DbContext.Articles.Where(a => a.ArticleNumber == articleNumber)
                 .MaxAsync(m => m.VersionNumber) + 1;
         }
 
+        /// <summary>
+        /// Gets the last article number, and increments by one
+        /// </summary>
+        /// <returns></returns>
         private async Task<int> GetNextArticleNumber()
         {
             if (await DbContext.Articles.CosmosAnyAsync())
@@ -204,6 +240,11 @@ namespace Cosmos.Cms.Data.Logic
             return htmlDoc.DocumentNode.OuterHtml;
         }
 
+        /// <summary>
+        /// Resets the expiration dates, based on the last published article, saves changes to the database
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
         private async Task ResetVersionExpirations(int articleNumber)
         {
             var list = await DbContext.Articles.Where(a => a.ArticleNumber == articleNumber).ToListAsync();
@@ -225,29 +266,30 @@ namespace Cosmos.Cms.Data.Logic
         #region CREATE METHODS
 
         /// <summary>
-        ///     Creates a new article, does NOT save it to the database before returning a copy for editing.
+        ///     Creates a new article, save it to the database before returning a copy for editing.
         /// </summary>
         /// <param name="title"></param>
         /// <param name="templateId"></param>
         /// <returns>Unsaved article ready to edit and save</returns>
         /// <remarks>
         ///     <para>
-        ///         Creates a new article, unsaved, ready to edit.  Uses <see cref="ArticleLogic.GetDefaultLayout" /> to get the
+        ///         Creates a new article, saves it to the database, and is ready to edit.  Uses <see cref="ArticleLogic.GetDefaultLayout" /> to get the
         ///         layout,
         ///         and builds the <see cref="ArticleViewModel" /> using method
-        ///         <seealso cref="ArticleLogic.BuildArticleViewModel" />.
+        ///         <seealso cref="ArticleLogic.BuildArticleViewModel" />. Creates a new article number.
         ///     </para>
         ///     <para>
-        ///         If a template ID is given, the contents of this article is loaded with content from the <see cref="Template" />
-        ///         .
+        ///         If a template ID is given, the contents of this article is loaded with content from the <see cref="Template" />.
         ///     </para>
         /// </remarks>
         public async Task<ArticleViewModel> Create(string title, Guid? templateId = null)
         {
-            //var layout = await GetDefaultLayout(false);
-            var layout = await DbContext.Layouts.FirstOrDefaultAsync(f => f.IsDefault);
-            if (layout != null)
-                DbContext.Entry(layout).State = EntityState.Detached; // Prevents layout from being updated.
+            var isValidTitle = await ValidateTitle(title, null);
+
+            if (!isValidTitle)
+            {
+                throw new Exception($"Title '{title}' conflicts with another article or reserved word.");
+            }
 
             var defaultTemplate = string.Empty;
 
@@ -276,16 +318,29 @@ namespace Cosmos.Cms.Data.Logic
 
             DateTimeOffset? published = (await DbContext.Articles.CosmosAnyAsync()) ? null : DateTimeOffset.UtcNow.AddMinutes(-5);
 
-            var article = new Article
+            var nextArticleNumber = await DbContext.Articles.MaxAsync(a => a.ArticleNumber) + 1;
+
+            var isRoot = (await DbContext.Articles.CosmosAnyAsync()) == false;
+
+            //
+            // New article
+            var article = new Article()
             {
-                ArticleNumber = 0,
-                VersionNumber = 0,
-                Title = title,
+                ArticleNumber = nextArticleNumber,
                 Content = defaultTemplate,
-                Updated = DateTime.Now.ToUniversalTime(),
-                UrlPath = HttpUtility.UrlEncode(title.Replace(" ", "_")),
-                Published = published
+                StatusCode = 0,
+                Title = title,
+                Updated = DateTimeOffset.Now,
+                UrlPath = isRoot ? "root" : HandleUrlEncodeTitle(title),
+                VersionNumber = 1
             };
+
+            DbContext.Articles.Add(article);
+
+            await DbContext.SaveChangesAsync();
+
+            // Finally update the catalog entry
+            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum)article.StatusCode);
 
             return await BuildArticleViewModel(article, "en-US");
         }
@@ -355,8 +410,6 @@ namespace Cosmos.Cms.Data.Logic
 
             await DbContext.SaveChangesAsync();
 
-            await DeleteCatalogEntry(articleNumber);
-
         }
 
         /// <summary>
@@ -376,6 +429,7 @@ namespace Cosmos.Cms.Data.Logic
             await DbContext.SaveChangesAsync();
 
             await DeleteCatalogEntry(articleNumber);
+
         }
 
         /// <summary>
@@ -431,9 +485,6 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             await DbContext.SaveChangesAsync();
-
-            // Update the catalog
-            await UpdateCatalogEntry(articleNumber, StatusCodeEnum.Active);
 
             // Update the log
             await HandleLogEntry(redeemed.LastOrDefault(), "Recovered from trash.", userId);
@@ -514,13 +565,6 @@ namespace Cosmos.Cms.Data.Logic
         /// <returns></returns>
         public async Task<ArticleUpdateResult> UpdateOrInsert(ArticleViewModel model, string userId)
         {
-            var flushUrls = new List<string>();
-
-            model.Content = Ensure_ContentEditable_IsMarked(model.Content);
-
-            // Make sure base tag is set properly.
-            UpdateHeadBaseTag(model);
-
             //
             // Retrieve the article that we will be using.
             // This will either be used to create a new version (detached then added as new),
@@ -530,231 +574,16 @@ namespace Cosmos.Cms.Data.Logic
 
             if (article == null)
             {
-                //
-                // New article
-                article = new Article()
-                {
-                    ArticleNumber = model.ArticleNumber,
-                    Content = model.Content,
-                    Expires = model.Expires,
-                    FooterJavaScript = model.FooterJavaScript,
-                    HeaderJavaScript = model.HeadJavaScript,
-                    Published = model.Published,
-                    RoleList = model.RoleList,
-                    StatusCode = (int)model.StatusCode,
-                    Title = model.Title,
-                    Updated = DateTimeOffset.Now,
-                    UrlPath = model.UrlPath,
-                    VersionNumber = 1
-                };
-            }
-            else
-            {
-                // Handle title (and URL) changes for existing 
-                await HandleTitleChange(article, model.Title, userId);
+                throw new Exception($"Article ID: {model.Id} not found.");
             }
 
-            //if (!string.IsNullOrEmpty(model.Content))
-            //{
-            //    //// When we save to the database, remove content editable attribute.
-            //    model.Content = model.Content.Replace("contenteditable=", "crx=",
-            //        StringComparison.CurrentCultureIgnoreCase);
-            //}
+            #region UPDATE ENTITY WITH NEW CONTENT FROM MODEL
 
-            if (!await DbContext.Users.Where(a => a.Id == userId).CosmosAnyAsync())
-                throw new Exception($"User ID: {userId} not found!");
-
-            //
-            //  Validate that title is not already taken.
-            //
-            if (!await ValidateTitle(model.Title, model.ArticleNumber))
-                throw new Exception($"Title '{model.Title}' already taken");
-
-            var isRoot =
-                await DbContext.Articles.Where(a => a.ArticleNumber == model.ArticleNumber && a.UrlPath == "root").CosmosAnyAsync();
-
-
-            // Enforce the default layout here
-            var defaultLayout = await DbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
-
-            // ************************************
-            // DECISION: NEW ARTICLE OR EDITING EXISTING ARTICLE
-            //
-            if (model.ArticleNumber == 0)
-            {
-                //
-                // CREATING NEW ARTICLE NOW
-                // 
-                // If the article number is 0, then this is a new article.
-                // The save action will give this a new unique article number.
-                //
-
-                // If no other articles exist, then make this the new root or home page.
-                isRoot = await DbContext.Articles.CountAsync() == 0;
-
-                article = new Article
-                {
-                    ArticleNumber = await GetNextArticleNumber(),
-                    VersionNumber = 1,
-                    UrlPath = isRoot ? "root" : HandleUrlEncodeTitle(model.Title.Trim()),
-                    Updated = DateTime.Now.ToUniversalTime(),
-                    RoleList = model.RoleList
-                };
-
-                model.Published = isRoot ? DateTime.Now.ToUniversalTime() : model.Published?.ToUniversalTime();
-
-
-                //
-                // Update base href (for Angular apps)
-                //
-                UpdateHeadBaseTag(article);
-
-                var articleCount = await DbContext.Articles.CountAsync();
-
-                DbContext.Articles.Add(article); // Set in an "add" state.
-                await HandleLogEntry(article, $"New article {articleCount}", userId);
-                await HandleLogEntry(article, "New version 1", userId);
-
-                if (article.Published.HasValue || isRoot)
-                    await HandleLogEntry(article, "Publish", userId);
-
-                //
-                // Get rid of any old redirects
-                //
-                var oldRedirects = DbContext
-                    .Articles
-                    .Where(w =>
-                        w.StatusCode == (int)StatusCodeEnum.Redirect &&
-                        w.UrlPath == article.UrlPath
-                    );
-
-                DbContext.Articles.RemoveRange(oldRedirects);
-            }
-            else
-            {
-                //
-                // EDITING EXISTING ARTICLE
-                //
-                // Validate that this article already exists.
-                //
-                if (!await DbContext.Articles.Where(a => a.ArticleNumber == model.ArticleNumber).CosmosAnyAsync())
-                    throw new Exception($"Article number: {model.ArticleNumber} not found!");
-
-
-
-                //
-                // We are adding a new version.
-                // DETACH and put into an ADD state.
-                //
-                if (model.VersionNumber == 0)
-                {
-                    //
-                    // ADDING NEW ARTICLE VERSION
-                    //
-                    var versionNumber = await GetNextVersionNumber(model.ArticleNumber);
-
-                    article = new Article
-                    {
-                        ArticleNumber = model.ArticleNumber, // This stays the same
-                        VersionNumber = versionNumber,
-                        Content = model.Content,
-                        RoleList = model.RoleList,
-                        UrlPath = model.UrlPath,
-                        HeaderJavaScript = article.HeaderJavaScript,
-                        FooterJavaScript = article.FooterJavaScript,
-                        Title = article.Title, // Keep this from previous version, will handle title change below.
-                        Updated = DateTimeOffset.Now.ToUniversalTime(),
-                        Published = model.Published
-                    };
-
-                    UpdateHeadBaseTag(article);
-
-                    DbContext.Articles.Add(article); // Put this entry in an add state
-
-                    // Make sure this saves
-                    await DbContext.SaveChangesAsync();
-
-                    await HandleLogEntry(article, "New version", userId);
-                }
-                else
-                {
-                    await HandleLogEntry(article, "Edit existing", userId);
-                }
-
-                //
-                // Is the role list changing?
-                //
-                if (!string.Equals(article.RoleList, model.RoleList, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    // get all prior article versions, changing security now.
-                    var oldArticles = DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
-                        .ToListAsync().Result;
-
-                    await HandleLogEntry(article, $"Changing role access from '{article.RoleList}' to '{model.RoleList}'.",
-                        userId);
-
-                    //
-                    // We have to change the title and paths for all versions now.
-                    //
-                    foreach (var oldArticle in oldArticles) oldArticle.RoleList = model.RoleList;
-                }
-            }
-
-            //
-            // Detect if the article is being published, expire the prior
-            // published articles and add log entry
-            //
-
-
-            if (article.Published.HasValue)
-            {
-                await HandleLogEntry(article, model.Published.HasValue ? "Publish" : "Un-publish", userId);
-
-                try
-                {
-                    var others = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber && w.Published != null && w.Id != article.Id).ToListAsync();
-
-                    // This is published in the future. This means we need
-                    // to keep the last published version, and the future version(s)
-                    if (model.Published.Value > DateTimeOffset.Now)
-                    {
-                        var lastPublished = others.Where(o => o.Published < article.Published).OrderByDescending(o => o.VersionNumber).FirstOrDefault();
-
-                        foreach (var item in others)
-                        {
-                            if (item.Id != lastPublished.Id)
-                            {
-                                item.Published = null;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // This article is the last published, make sure all others are not published.
-                        foreach (var item in others)
-                        {
-                            if (item.Published.HasValue && item.Published.Value.UtcDateTime <= article.Published.Value.UtcDateTime)
-                            {
-                                item.Published = null;
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    var t = e;
-                }
-            }
-
-
-            // If was NOT published before, but now is; or
-            // if WAS published before, now is NOT; or
-            // is now published, then indicate to flush caches.
-            if (article.Published.HasValue != model.Published.HasValue
-                || model.Published.HasValue)
-                flushUrls.Add(model.UrlPath);
-
-            article.Title = model.Title.Trim();
+            model.Content = Ensure_ContentEditable_IsMarked(model.Content);
+            
+            // IMPORTANT!!!
+            // Handled title changes below....
+            //article.Title = model.Title.Trim();
 
             if (model.Content == null || model.Content.Trim() == "")
             {
@@ -781,28 +610,183 @@ namespace Cosmos.Cms.Data.Logic
 
             article.RoleList = model.RoleList;
 
+            #endregion
+
             UpdateHeadBaseTag(article);
 
-            // Save changes to database.
-            await DbContext.SaveChangesAsync();
+            // If published, make sure we increment the version
+            if (model.Published.HasValue)
+            {
+                model.VersionNumber = 0;
+            }
 
-            // Resets the expiration dates, based on the last published article
-            await ResetVersionExpirations(article.ArticleNumber);
+            // Make sure base tag is set properly.
+            UpdateHeadBaseTag(model);
 
-            // Update the catalog
-            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum)article.StatusCode);
+            // Enforce the default layout here
+            var defaultLayout = await DbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
+
+            //
+            // We are adding a new version.
+            // DETACH and put into an ADD state.
+            //
+            if (model.VersionNumber == 0)
+            {
+                DbContext.Entry(article).State = EntityState.Detached;
+
+                // Give it a new GUID and version number
+                article.VersionNumber = await GetNextVersionNumber(model.ArticleNumber);
+                article.Id = Guid.NewGuid();
+
+                DbContext.Articles.Add(article); // Put this entry in an add state
+
+                // Make sure this saves now
+                await DbContext.SaveChangesAsync();
+
+                await HandleLogEntry(article, "New version", userId);
+            }
+            else
+            {
+                await HandleLogEntry(article, "Edit existing", userId);
+            }
+
+            // IMPORTANT!
+            // Handle title (and URL) changes for existing 
+            await HandleTitleChange(article, model.Title, userId);
+
+            // HANDLE PUBLISHING OF AN ARTICLE
+            // This can be a new or existing article.
+            await HandlePublishing(article, userId);
+
+            //
+            // Is the role list changing?
+            //
+            if (!string.Equals(article.RoleList, model.RoleList, StringComparison.CurrentCultureIgnoreCase))
+            {
+                // get all prior article versions, changing security now.
+                var oldArticles = DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
+                    .ToListAsync().Result;
+
+                await HandleLogEntry(article, $"Changing role access from '{article.RoleList}' to '{model.RoleList}'.",
+                    userId);
+
+                //
+                // We have to change the title and paths for all versions now.
+                //
+                foreach (var oldArticle in oldArticles) oldArticle.RoleList = model.RoleList;
+
+                // Save changes to database.
+                await DbContext.SaveChangesAsync();
+            }
+
+            // Finally update the catalog entry
+            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum) article.StatusCode);
 
             var result = new ArticleUpdateResult
             {
-                Model = await BuildArticleViewModel(article, "en-US"),
-                Urls = flushUrls.Distinct().ToList()
+                Model = await BuildArticleViewModel(article, "en-US")
             };
 
             return result;
         }
 
+        /// <summary>
+        /// Logic handing logic for publishing articles and saves changes to the database.
+        /// </summary>
+        /// <param name="article"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private async Task HandlePublishing(Article article, string userId)
+        {
+            if (article.Published.HasValue)
+            {
+                await HandleLogEntry(article, $"Published for: {article.Published.Value}.", userId);
+
+                try
+                {
+                    var others = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber && w.Published != null && w.Id != article.Id).ToListAsync();
+
+                    var now = DateTimeOffset.Now;
+                    //
+                    // If published in the future, then keep the last published article
+                    if (article.Published.Value > now)
+                    {
+                        // Keep the article pulished just before this one
+                        var oneTokeep = others.Where(
+                            w => w.Published <= now // other published date is before the article
+                            && w.VersionNumber < article.VersionNumber).OrderByDescending(o => o.VersionNumber).FirstOrDefault();
+
+                        if (oneTokeep != null)
+                        {
+                            others.Remove(oneTokeep);
+                        }
+
+                        // Also keep the other articles that are published between now and before the current article
+                        var othersToKeep = others.Where(
+                            w => w.Published.Value > now // Save items published after now, and...
+                            && w.Published.Value < article.Published.Value // published before the current article
+                            && w.VersionNumber < article.VersionNumber // and are a version number before this one.
+                            ).ToList();
+
+                        foreach (var o in othersToKeep)
+                        {
+                            others.Remove(o);
+                        }
+
+                    }
+
+                    // Now remove the other ones published
+                    foreach(var item in others)
+                    {
+                        item.Published = null;
+                    }
+
+                    await DbContext.SaveChangesAsync();
+
+                    // Resets the expiration dates, based on the last published article
+                    await ResetVersionExpirations(article.ArticleNumber);
+
+
+                }
+                catch (Exception e)
+                {
+                    var t = e;
+                }
+            }
+        }
+
+        private Task CreateNewArticleVersion(ArticleViewModel model, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// If the title has changed, handle that here
+        /// </summary>
+        /// <param name="article"></param>
+        /// <param name="newTitle"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Upon title change:
+        /// <list type="bullet">
+        /// <item>Updates title for article and it's versions</item>
+        /// <item>Updates title of all child articles</item>
+        /// <item>Creates an automatic redirect</item>
+        /// <item>Updates base tags for all articles changed</item>
+        /// <item>Saves changes to thte database</item>
+        /// </list>
+        /// </remarks>
         private async Task HandleTitleChange(Article article, string newTitle, string userId)
         {
+            //
+            //  Validate that title is not already taken.
+            //
+            if (!await ValidateTitle(newTitle, article.ArticleNumber))
+                throw new Exception($"Title '{newTitle}' already taken");
+
             var oldTitle = article.Title;
 
             if (article.UrlPath == "root" || string.Equals(oldTitle, newTitle, StringComparison.CurrentCultureIgnoreCase))
@@ -870,7 +854,6 @@ namespace Cosmos.Cms.Data.Logic
 
             foreach (var art in articlesToUpdate)
             {
-
                 //
                 // Update base href (for Angular apps)
                 //
@@ -884,69 +867,6 @@ namespace Cosmos.Cms.Data.Logic
             DbContext.Articles.UpdateRange(articlesToUpdate);
             await DbContext.SaveChangesAsync();
 
-        }
-
-        /// <summary>
-        /// Deletes a catalog entry
-        /// </summary>
-        /// <param name="articleNumber"></param>
-        /// <returns></returns>
-        private async Task DeleteCatalogEntry(int articleNumber)
-        {
-            var catalogEntry = await DbContext.ArticleCatalog.FirstOrDefaultAsync(f => f.ArticleNumber == articleNumber);
-            DbContext.ArticleCatalog.Remove(catalogEntry);
-            await DbContext.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Update catalog entry
-        /// </summary>
-        /// <param name="articleNumber"></param>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        private async Task UpdateCatalogEntry(int articleNumber, StatusCodeEnum code)
-        {
-            var versions = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
-
-            var catalogEntry = await DbContext.ArticleCatalog.FirstOrDefaultAsync(f => f.ArticleNumber == articleNumber);
-
-            if (catalogEntry == null)
-            {
-                var data = versions.FirstOrDefault();
-
-                catalogEntry = new CatalogEntry()
-                {
-                    ArticleNumber = articleNumber,
-                    Updated = data.Updated,
-                    Status = code == StatusCodeEnum.Active ? "Active" : "Inactive",
-                    Published = data.Published,
-                    Title = data.Title,
-                    UrlPath = data.UrlPath
-                };
-
-                DbContext.ArticleCatalog.Add(catalogEntry);
-            }
-            else
-            {
-                var data = (from v in versions
-                            group v by v.Title into summary
-                            select new CatalogEntry
-                            {
-                                Title = summary.Key,
-                                ArticleNumber = articleNumber,
-                                Published = summary.Max(m => m.Published),
-                                Updated = summary.Max(m => m.Updated),
-                                UrlPath = catalogEntry.UrlPath
-                            }).FirstOrDefault();
-
-                catalogEntry.Updated = data.Updated;
-                catalogEntry.Status = code == StatusCodeEnum.Active ? "Active" : "Inactive";
-                catalogEntry.Published = data.Published;
-                catalogEntry.Title = data.Title;
-                catalogEntry.UrlPath = data.UrlPath;
-            }
-
-            await DbContext.SaveChangesAsync();
         }
 
         private string UpdatePrefix(string oldprefix, string newPrefix, string targetString)
@@ -1046,32 +966,6 @@ namespace Cosmos.Cms.Data.Logic
 
             return headerJavaScript;
         }
-
-        /// <summary>
-        ///     Updates the date/time stamp for all published articles to current UTC time.
-        /// </summary>
-        /// <returns>Number of articles updated with new date/time</returns>
-        /// <remarks>This action is used only for "publishing" entire websites.</remarks>
-        //public async Task<int> UpdateDateTimeStamps()
-        //{
-        //    var articleIds = (await PrivateGetArticleList(DbContext.Articles.AsQueryable()))?.Select(s => s.Id)
-        //        .ToList();
-        //    if (articleIds == null || articleIds.Any() == false) return 0;
-
-        //    // DateTime.Now uses DateTime.UtcNow internally and then applies localization.
-        //    // In short, use ToUniversalTime() if you already have DateTime.Now and
-        //    // to convert it to UTC, use DateTime.UtcNow if you just want to retrieve the
-        //    // current time in UTC.
-        //    var now = DateTime.Now.ToUniversalTime();
-        //    var items = await DbContext.Articles.Where(a => articleIds.Contains(a.Id)).ToListAsync();
-
-        //    foreach (var item in items)
-        //    {
-        //        item.Updated = now;
-        //    }
-
-        //    return items.Count;
-        //}
 
         /// <summary>
         ///     Changes the status of an article by marking all versions with that status.
@@ -1334,5 +1228,68 @@ namespace Cosmos.Cms.Data.Logic
         }
 
         #endregion
+
+        /// <summary>
+        /// Deletes a catalog entry
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
+        private async Task DeleteCatalogEntry(int articleNumber)
+        {
+            var catalogEntry = await DbContext.ArticleCatalog.FirstOrDefaultAsync(f => f.ArticleNumber == articleNumber);
+            DbContext.ArticleCatalog.Remove(catalogEntry);
+            await DbContext.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Update catalog entry
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        private async Task UpdateCatalogEntry(int articleNumber, StatusCodeEnum code)
+        {
+            var versions = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+
+            var catalogEntry = await DbContext.ArticleCatalog.FirstOrDefaultAsync(f => f.ArticleNumber == articleNumber);
+
+            if (catalogEntry == null)
+            {
+                var data = versions.FirstOrDefault();
+
+                catalogEntry = new CatalogEntry()
+                {
+                    ArticleNumber = articleNumber,
+                    Updated = data.Updated,
+                    Status = code == StatusCodeEnum.Active ? "Active" : "Inactive",
+                    Published = data.Published,
+                    Title = data.Title,
+                    UrlPath = data.UrlPath
+                };
+
+                DbContext.ArticleCatalog.Add(catalogEntry);
+            }
+            else
+            {
+                var data = (from v in versions
+                            group v by v.Title into summary
+                            select new CatalogEntry
+                            {
+                                Title = summary.Key,
+                                ArticleNumber = articleNumber,
+                                Published = summary.Max(m => m.Published),
+                                Updated = summary.Max(m => m.Updated),
+                                UrlPath = catalogEntry.UrlPath
+                            }).FirstOrDefault();
+
+                catalogEntry.Updated = data.Updated;
+                catalogEntry.Status = code == StatusCodeEnum.Active ? "Active" : "Inactive";
+                catalogEntry.Published = data.Published;
+                catalogEntry.Title = data.Title;
+                catalogEntry.UrlPath = data.UrlPath;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
     }
 }

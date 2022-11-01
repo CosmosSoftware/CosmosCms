@@ -232,15 +232,6 @@
         }
     }
 
-    function saveFirst() {
-        saveChanges(saveFirstModal, next);
-    }
-
-    function doNotSave() {
-        saveFirstModal.hide();
-        next();
-    }
-
     function getLocalTimeZone() {
         var datetime = new Date();
         var dateTimeString = datetime.toString();

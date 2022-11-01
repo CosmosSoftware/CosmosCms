@@ -15,8 +15,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -209,7 +211,7 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Uses <see cref="ArticleEditLogic.Create(string, Guid?)" /> to create an <see cref="ArticleViewModel" /> that is
         ///     saved to
-        ///     the database with <see cref="ArticleEditLogic.UpdateOrInsert" /> ready for editing.
+        ///     the database with <see cref="ArticleEditLogic.UpdateOrInsert(ArticleViewModel, string)" /> ready for editing.
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -219,34 +221,17 @@ namespace Cosmos.Cms.Controllers
         {
             if (model == null) return NotFound();
 
-            if (await _dbContext.Articles.Where(a => a.StatusCode != 2 && a.Title.Trim().ToLower() == model.Title.Trim().ToLower()).CosmosAnyAsync())
-                ModelState.AddModelError("Title", $"Title {model.Title} is already taken.");
+            var validTitle = await _articleLogic.ValidateTitle(model.Title, null);
 
-            // Check for conflict with blob storage root path.
-            var blobRootPath = "pub";
-
-            if (!string.IsNullOrEmpty(blobRootPath))
-                if (model.Title.ToLower() == blobRootPath.ToLower())
-                    ModelState.AddModelError("Title",
-                        $"Title {model.Title} conflicts with the file folder \"{blobRootPath}/\".");
-
-            if (!ModelState.IsValid)
+            if (!validTitle)
             {
-                model.Templates = await _dbContext.Templates.Select(s =>
-                    new SelectListItem
-                    {
-                        Value = s.Id.ToString(),
-                        Text = s.Title
-                    }).ToListAsync();
-
+                ModelState.AddModelError("Title", $"Title: {model.Title} conflicts with another article title or reserved word.");
                 return View(model);
             }
 
             var article = await _articleLogic.Create(model.Title, model.TemplateId);
-            var result =
-                await _articleLogic.UpdateOrInsert(article, _userManager.GetUserId(User));
 
-            return RedirectToAction("Edit", new { result.Model.Id });
+            return RedirectToAction("Edit", new { article.Id });
         }
 
         /// <summary>
@@ -364,7 +349,7 @@ namespace Cosmos.Cms.Controllers
             }
             else
             {
-                title = $"{ model.ParentPageTitle.Trim('/')}/{ model.Title.Trim('/')} ";
+                title = $"{model.ParentPageTitle.Trim('/')}/{model.Title.Trim('/')} ";
             }
 
             if (await _dbContext.Articles.Where(a => a.Title.ToLower() == title.ToLower()).CosmosAnyAsync())
@@ -485,33 +470,48 @@ namespace Cosmos.Cms.Controllers
         ///     Gets all the versions for an article
         /// </summary>
         /// <param name="id">Article number</param>
+        /// <param name="versionNumber"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Versions(int? id)
+        public async Task<IActionResult> Versions(int? id, int? versionNumber = null)
         {
-            ViewData["EditModeOn"] = false;
-
-            var article = await _dbContext.Articles.Where(a => a.ArticleNumber == id.Value)
-                .Select(s => new { s.Title }).FirstOrDefaultAsync();
-            ViewData["ArticleTitle"] = article.Title;
-
             if (id == null)
                 return RedirectToAction("Index");
 
+            ViewData["EditModeOn"] = false;
+
+            var article = await _dbContext.Articles.Where(a => a.ArticleNumber == id.Value)
+                .Select(s => new { s.Title, s.VersionNumber }).FirstOrDefaultAsync();
+
+            ViewData["ArticleTitle"] = article.Title;
+
+
             ViewData["ArticleId"] = id.Value;
 
-            var data = await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
-                .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
-                {
-                    Id = s.Id,
-                    Published = s.Published,
-                    Title = s.Title,
-                    Updated = s.Updated,
-                    VersionNumber = s.VersionNumber,
-                    Expires = s.Expires,
-                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
-                }).ToListAsync();
+            ViewData["CurrentVersion"] = versionNumber;
+
+            var data = await GetVersionList(id.Value);
 
             return View(data.AsQueryable());
+        }
+
+        /// <summary>
+        /// Gets an article view list
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private async Task<List<ArticleVersionViewModel>> GetVersionList(int id)
+        {
+           return await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+            .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
+            {
+                Id = s.Id,
+                Published = s.Published,
+                Title = s.Title,
+                Updated = s.Updated,
+                VersionNumber = s.VersionNumber,
+                Expires = s.Expires,
+                UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+            }).ToListAsync();
         }
 
         /// <summary>
@@ -589,6 +589,8 @@ namespace Cosmos.Cms.Controllers
             return View(article);
         }
 
+        #region HTML AND CODE EDITOR METHODS
+
         /// <summary>
         ///     Gets an article to edit by ID for the HTML (WYSIWYG) Editor.
         /// </summary>
@@ -608,6 +610,7 @@ namespace Cosmos.Cms.Controllers
                     // Get an article, or a template based on the controller name.
                     //
                     var model = await _articleLogic.Get(pageId, EnumControllerName.Edit);
+                    ViewData["LastPubDateTime"] = await GetLastPublishingDate(model.ArticleNumber);
 
                     ViewData["PageTitle"] = model.Title;
                     ViewData["Published"] = model.Published;
@@ -631,7 +634,6 @@ namespace Cosmos.Cms.Controllers
                 throw;
             }
         }
-
 
         /// <summary>
         ///     Saves an article via HTTP POST (AJAX) and returns JSON results.
@@ -791,6 +793,7 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["PageTitle"] = article.Title;
             ViewData["Published"] = article.Published;
+            ViewData["LastPubDateTime"] = await GetLastPublishingDate(article.ArticleNumber);
 
             return View(new EditCodePostModel
             {
@@ -855,77 +858,41 @@ namespace Cosmos.Cms.Controllers
         {
             if (model == null) return NotFound();
 
-            var articleViewModel = await _articleLogic.Get(model.Id, EnumControllerName.Edit);
+            // Get the user's ID for logging.
+            var user = await _userManager.GetUserAsync(User);
 
-            if (articleViewModel == null) return NotFound();
+            var article = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == model.Id);
 
-            // Validate security for authors before going further
-            if (articleViewModel.Published.HasValue && User.IsInRole("Authors"))
-                return Unauthorized();
+            if (article == null) return NotFound();
 
-            // Strip Byte Order Marks (BOM)
-            model.Content = StripBOM(model.Content);
-            model.HeadJavaScript = StripBOM(model.HeadJavaScript);
-            model.FooterJavaScript = StripBOM(model.FooterJavaScript);
+            _dbContext.Entry(article).State = EntityState.Detached;
 
-            // Validate HTML
-            model.Content = BaseValidateHtml("Content", model.Content);
-
-            // Save title, published date/time, roles
-            articleViewModel.Published = model.Published;
-            articleViewModel.Title = BaseValidateHtml("Title", model.Title);
-            articleViewModel.RoleList = model.RoleList;
-
-            // Check for validation errors...
-            if (ModelState.IsValid)
-                try
+            try
+            {
+                var result = await _articleLogic.UpdateOrInsert(new ArticleViewModel()
                 {
-                    articleViewModel.Content = model.Content;
+                    Id = model.Id,
+                    ArticleNumber = article.ArticleNumber,
+                    Content = model.Content,
+                    Title = model.Title,
+                    RoleList = model.RoleList,
+                    Published = model.Published,
+                    Expires = article.Expires,
+                    FooterJavaScript = model.FooterJavaScript,
+                    HeadJavaScript = model.HeadJavaScript,
+                    StatusCode = (StatusCodeEnum)article.StatusCode,
+                    Updated = DateTimeOffset.Now,
+                    UrlPath = article.UrlPath,
+                    VersionNumber = article.VersionNumber
+                }, user.Id);
+            }
+            catch (Exception e)
+            {
+                var provider = new EmptyModelMetadataProvider();
+                ModelState.AddModelError("Save", e, provider.GetMetadataForType(typeof(string)));
+            }
 
-                    if (string.IsNullOrEmpty(model.HeadJavaScript) ||
-                    string.IsNullOrWhiteSpace(model.HeadJavaScript))
-                        articleViewModel.HeadJavaScript = string.Empty;
-                    else
-                        articleViewModel.HeadJavaScript = model.HeadJavaScript.Trim();
-
-                    if (string.IsNullOrEmpty(model.FooterJavaScript) ||
-                        string.IsNullOrWhiteSpace(model.FooterJavaScript))
-                        articleViewModel.FooterJavaScript = string.Empty;
-                    else
-                        articleViewModel.FooterJavaScript = model.FooterJavaScript.Trim();
-                    // If no HTML errors were thrown, save here.
-
-                    // Get the user's ID for logging.
-                    var user = await _userManager.GetUserAsync(User);
-
-                    //
-                    // SAVE HERE!
-                    //
-                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, user.Id);
-
-                    //
-                    // Pull back out of the database, so user can see exactly what was saved.
-                    //
-                    var article = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == model.Id);
-                    if (article == null) throw new Exception("Could not retrieve saved code!");
-
-
-                }
-                catch (Exception e)
-                {
-                    var provider = new EmptyModelMetadataProvider();
-                    ModelState.AddModelError("Save", e, provider.GetMetadataForType(typeof(string)));
-                }
-
-            //// Now, prior to sending model back, re-enable the content editable attribute.
-            //if (!string.IsNullOrEmpty(article.Content))
-            //{
-            //    article.Content = article.Content.Replace(" crx=\"", " contenteditable=\"",
-            //        StringComparison.CurrentCultureIgnoreCase);
-            //}
-
-            // ReSharper disable once PossibleNullReferenceException
-            ViewData["Version"] = articleViewModel.VersionNumber;
+            ViewData["Version"] = article.VersionNumber;
 
             var jsonModel = new SaveCodeResultJsonModel
             {
@@ -937,14 +904,20 @@ namespace Cosmos.Cms.Controllers
                 .ToList());
             jsonModel.ValidationState = ModelState.ValidationState;
 
-            DateTimeOffset? publishedDateTime = null;
-            if (articleViewModel.Published.HasValue)
-            {
-                publishedDateTime = articleViewModel.Published.Value.ToUniversalTime();
-            }
-
             return Json(jsonModel);
         }
+
+        /// <summary>
+        /// Gets the last date this article was published.
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
+        private async Task<DateTimeOffset?> GetLastPublishingDate(int articleNumber)
+        {
+            return await _dbContext.Articles.Where(a => a.ArticleNumber == articleNumber).MaxAsync(m => m.Published);
+        }
+
+        #endregion
 
         /// <summary>
         /// Exports a page as a file
@@ -1286,7 +1259,7 @@ namespace Cosmos.Cms.Controllers
         [Authorize(Roles = "Administrators, Editors")]
         public async Task<IActionResult> RedirectEdit([FromForm] Guid Id, string FromUrl, string ToUrl)
         {
-            var redirect = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == Id && f.StatusCode == (int) StatusCodeEnum.Redirect);
+            var redirect = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == Id && f.StatusCode == (int)StatusCodeEnum.Redirect);
             if (redirect == null)
                 return NotFound();
 

@@ -1,4 +1,5 @@
 ﻿@using Newtonsoft.Json
+@using NonFactors.Mvc.Grid
 @model EditCodePostModel
 @{
     Layout = "_LayoutEditor";
@@ -62,6 +63,7 @@
 
 <form id="frmSave" asp-action="EditCode">
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ArticleNumber" />
     <input type="hidden" asp-for="EditingField" />
     <input type="hidden" asp-for="Content" />
     <input type="hidden" asp-for="Title" />
@@ -231,15 +233,6 @@
         }
     }
 
-    function saveFirst() {
-        saveChanges(saveFirstModal, next);
-    }
-
-    function doNotSave() {
-        saveFirstModal.hide();
-        next();
-    }
-
     function getLocalTimeZone() {
         var datetime = new Date();
         var dateTimeString = datetime.toString();
@@ -265,6 +258,9 @@
             $(event.target).addClass("active");
         });
 
+        $("#liBtnVersions").show();
+
+        $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
     });
 
     $(window).bind('keydown', function (event) {
@@ -284,3 +280,19 @@
 <script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
 
 
+@if (Model != null)
+{
+    <div class="modal" id="versionListModal" tabindex="-2">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h5 class="modal-title">Article Versions</h5>
+            </div>
+            <div class="modal-body">
+                @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+}
