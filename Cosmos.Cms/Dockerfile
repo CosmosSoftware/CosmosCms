@@ -31,7 +31,7 @@ RUN chmod +x /tmp/ssh_setup.sh \
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
-EXPOSE 2222 #SSH
+EXPOSE 2222
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
