@@ -37,4 +37,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "Cosmos.Cms.dll"]
+ENTRYPOINT ["bash", "init.sh"]
