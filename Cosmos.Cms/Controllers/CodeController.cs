@@ -177,6 +177,7 @@ namespace Cosmos.Cms.Controllers
                 };
 
                 error.Errors.Add("Error", e.Message);
+                error.Errors.Add("Inner:", e.InnerException.Message);
 
                 debugResult.ApiResult = error;
             }
