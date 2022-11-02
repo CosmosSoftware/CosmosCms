@@ -17,8 +17,9 @@ COPY ["Cosmos.Cms/ssh_setup.sh", "/tmp/"]
 RUN chmod +x /tmp/ssh_setup.sh \
     && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
 
+ENV SSH_PORT 2222
 WORKDIR /app
-EXPOSE 80 443
+EXPOSE 80 443 2222
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
