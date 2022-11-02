@@ -1,2 +1,2 @@
-service ssh start
+/usr/sbin/sshd
 dotnet Cosmos.Cms.dll
