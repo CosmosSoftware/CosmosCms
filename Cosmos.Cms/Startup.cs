@@ -233,7 +233,7 @@ namespace Cosmos.Cms
             var projectPath = Configuration.GetValue<string>("CosmosAdminEmail");
             services.Configure<NodeJSProcessOptions>(options =>
             {
-                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/lib/pub/mods" : projectPath;
+                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/home/code" : projectPath;
             });
 
         }
