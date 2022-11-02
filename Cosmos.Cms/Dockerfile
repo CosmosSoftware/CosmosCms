@@ -14,11 +14,12 @@ RUN apt-get update -y && apt-get install -y gnupg2 && apt-get install -y curl &&
 
 
 # Copy the sshd_config file to the /etc/ssh/ directory
-COPY sshd_config /etc/ssh/
+WORKDIR /src
+COPY ["Cosmos.Cms/sshd_config", "/etc/ssh/"]
 
 # Copy and configure the ssh_setup file
 RUN mkdir -p /tmp
-COPY ssh_setup.sh /tmp
+COPY ["Cosmos.Cms/ssh_setup.sh", "/tmp/"] 
 RUN chmod +x /tmp/ssh_setup.sh \
     && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
 
