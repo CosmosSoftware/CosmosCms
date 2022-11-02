@@ -725,7 +725,7 @@ namespace Cosmos.Cms.Controllers
         {
             var parts = ParsePath(path);
             var urlEncodedParts = new List<string>();
-            foreach (var part in parts) urlEncodedParts.Add(HttpUtility.UrlEncode(part.Replace(" ", "-")));
+            foreach (var part in parts) urlEncodedParts.Add(HttpUtility.UrlEncode(part.Replace(" ", "-")).Replace("%40", "@"));
 
             return TrimPathPart(string.Join('/', urlEncodedParts));
         }

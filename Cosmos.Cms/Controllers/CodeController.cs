@@ -83,12 +83,12 @@ namespace Cosmos.Cms.Controllers
 
             if (!string.IsNullOrEmpty(model.EndPoint))
             {
-                model.EndPoint = model.EndPoint.ToLowerInvariant();
+                model.EndPoint = model.EndPoint;
             }
 
             if (!string.IsNullOrEmpty(model.InputVars))
             {
-                model.InputVars = model.InputVars.Trim().ToLowerInvariant();
+                model.InputVars = model.InputVars.Trim();
                 var vars = model.InputVars.Split(',');
 
                 foreach (var v in vars)
@@ -162,8 +162,16 @@ namespace Cosmos.Cms.Controllers
                 var values = GetArgs(Request, script);
 
                 // Send the module string to NodeJS where it's compiled, invoked and cached.
-                await _nodeJSService.InvokeFromFileAsync("SendGrid", args: values);
-                //await _nodeJSService.InvokeFromStringAsync(script.Code, args: values);
+                if (string.IsNullOrEmpty(script.Code))
+                {
+                    await _nodeJSService.InvokeFromFileAsync(script.EndPoint, args: values);
+
+                }
+                else
+                {
+                    await _nodeJSService.InvokeFromStringAsync(script.Code, args: values);
+                }
+
 
                 debugResult.ApiResult = new ApiResult("Done!")
                 {
@@ -178,7 +186,10 @@ namespace Cosmos.Cms.Controllers
                 };
 
                 error.Errors.Add("Error", e.Message);
-                error.Errors.Add("Inner:", e.InnerException.Message);
+                if (e.InnerException != null)
+                {
+                    error.Errors.Add("Inner:", e.InnerException.Message);
+                }
 
                 debugResult.ApiResult = error;
             }
@@ -194,15 +205,20 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public static ApiArgument[] GetArgs(Microsoft.AspNetCore.Http.HttpRequest request, NodeScript script)
         {
+            var inputVarDefs = script.InputVars.Select(s => new InputVarDefinition(s)).ToList();
+
             if (request.Method == "POST")
             {
                 if (request.ContentType == null)
                 {
                     var values = new List<ApiArgument>();
 
-                    foreach (var item in script.InputVars)
+                    foreach (var item in inputVarDefs)
                     {
-                        values.Add(new ApiArgument() { Key = item, Value = request.Headers[item] });
+                        var value = (string) request.Headers[item.Name];
+                        value = string.IsNullOrEmpty(value) ? "" : value.Substring(0, item.MaxLength);
+
+                        values.Add(new ApiArgument() { Key = item.Name, Value = value });
                     }
 
                     return values.ToArray();

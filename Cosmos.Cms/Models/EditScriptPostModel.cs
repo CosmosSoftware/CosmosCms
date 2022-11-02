@@ -43,7 +43,7 @@ namespace Cosmos.Cms.Models
         /// <summary>
         /// Input variables
         /// </summary>
-        [RegularExpression("^[a-zA-Z0-9,.-]*$", ErrorMessage = "Letters and numbers only.")]
+        [RegularExpression("^[a-zA-Z0-9,.-:]*$", ErrorMessage = "Letters and numbers only.")]
         public string InputVars { get; set; }
 
         /// <summary>
