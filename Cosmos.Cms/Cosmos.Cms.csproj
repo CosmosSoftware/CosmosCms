@@ -43,16 +43,11 @@
 	<ItemGroup>
 		<None Remove="appsettings.json.BAK" />
 		<None Remove="Data\DropAllTables.sql" />
-		<None Remove="sshd_config" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Linux-x64_Single.pubxml" />
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Win-x64_Single.pubxml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Include="sshd_config" />
 	</ItemGroup>
 
 	<ItemGroup>
