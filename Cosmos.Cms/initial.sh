@@ -1,2 +1,2 @@
 service ssh start
-dotnet MyApp.dll
+dotnet Cosmos.Cms.dll
