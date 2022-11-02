@@ -220,7 +220,9 @@ namespace Cosmos.Cms.Controllers
 
                 if (!string.IsNullOrEmpty(patchArray[1]))
                 {
-                    relativePath += "/" + UrlEncode(Path.GetDirectoryName(patchArray[1]));
+                    var dpath = Path.GetDirectoryName(patchArray[1]).Replace('\\', '/'); // Convert windows paths to unix style.
+                    var epath = UrlEncode(dpath);
+                    relativePath += "/" + UrlEncode(epath);
                 }
 
                 var metaData = new FileUploadMetaData()

@@ -43,11 +43,16 @@
 	<ItemGroup>
 		<None Remove="appsettings.json.BAK" />
 		<None Remove="Data\DropAllTables.sql" />
+		<None Remove="sshd_config" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Linux-x64_Single.pubxml" />
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Win-x64_Single.pubxml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="sshd_config" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -140,6 +145,7 @@
 		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.100.6" />
 		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
 		<PackageReference Include="CDT.Akamai.Cdn" Version="6.0.0.4" />
+		<PackageReference Include="Cosmos.BlobService" Version="7.1.1" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="IntelliTect.AspNetCore.SignalR.SqlServer" Version="1.0.1" />
 		<PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
@@ -173,12 +179,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Cosmos.Cms.Common\Cosmos.Cms.Common.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="Cosmos.BlobService">
-	    <HintPath>..\..\Cosmos.BlobService\Cosmos.BlobService\bin\Debug\net6.0\Cosmos.BlobService.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 	<ProjectExtensions>

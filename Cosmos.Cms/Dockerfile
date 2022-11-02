@@ -5,9 +5,31 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 # Install NodeJS 10
 RUN apt-get update -y && apt-get install -y gnupg2 && apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_18.x | bash - && apt-get update -y && apt-get install -y nodejs
 
+# Install SSH that is only accessible via Azure Web App service
+# See: https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container?pivots=container-linux#enable-ssh
+
+# Install OpenSSH and set the password for root to "Docker!". In this example, "apk add" is the install instruction for an Alpine Linux-based image.
+RUN apk add openssh \
+     && echo "root:Docker!" | chpasswd 
+
+# Copy the sshd_config file to the /etc/ssh/ directory
+COPY sshd_config /etc/ssh/
+
+# Copy and configure the ssh_setup file
+RUN mkdir -p /tmp
+COPY ssh_setup.sh /tmp
+RUN chmod +x /tmp/ssh_setup.sh \
+    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
+
+# Open port 2222 for SSH access
+# EXPOSE 80 2222
+
+#end SSH
+
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
+EXPOSE 2222 #SSH
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src

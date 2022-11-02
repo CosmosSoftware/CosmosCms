@@ -230,9 +230,10 @@ namespace Cosmos.Cms
             // https://github.com/JeringTech/Javascript.NodeJS#configuring
             services.AddNodeJS();
             // Options for the NodeJS process, here we enable debugging
+            var projectPath = Configuration.GetValue<string>("CosmosAdminEmail");
             services.Configure<NodeJSProcessOptions>(options =>
             {
-                options.ProjectPath = "C:\\lib\\mods";
+                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/lib/pub/mods" : projectPath;
             });
 
         }

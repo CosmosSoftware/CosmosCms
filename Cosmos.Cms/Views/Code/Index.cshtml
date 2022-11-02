@@ -24,10 +24,12 @@
                 <a class="btn btn-sm btn-primary" asp-action="Create">New Script</a>
             }
             <a class="btn btn-sm btn-secondary" href="/Api">Swagger Catalog</a>
-            @(Html.Grid(Model)
-               .Build(col => {
-                    col.Add(b => b.EndPoint).Titled("Endpoint").RenderedAs(b => $"<a href='/Code/Edit/{b.Id}'>{b.EndPoint}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
-                    col.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone").Titled("Updated");
+            @(
+                Html.Grid(Model)
+                   .Build(col => {
+                       col.Add(b => b.EndPoint).Titled("Endpoint").RenderedAs(b => $"<a href='/Code/Edit/{b.Id}'>{b.EndPoint}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
+                       col.Add(b => b.Description).Titled("Description");
+                       col.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone").Titled("Updated");
                     col.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT").Titled("Published");
                     col.Add().RenderedAs(b => "<button type='button' onclick='setEndPoint(\"" + b.Id + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
                 })
