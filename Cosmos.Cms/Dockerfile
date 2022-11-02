@@ -18,6 +18,7 @@ RUN chmod +x /tmp/ssh_setup.sh \
     && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
 
 ENV SSH_PORT 2222
+
 WORKDIR /app
 EXPOSE 80 443 2222
 
