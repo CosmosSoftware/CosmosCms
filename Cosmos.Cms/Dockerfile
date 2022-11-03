@@ -16,16 +16,16 @@ RUN apt-get update -y && \
 # Copy the sshd_config file to the /etc/ssh/ directory
 WORKDIR /src
 COPY ["Cosmos.Cms/sshd_config", "/etc/ssh/"]
-COPY ["Cosmos.Cms/init.sh", "/usr/local/bin/"]
+# COPY ["Cosmos.Cms/init.sh", "/usr/local/bin/"]
 
 
 # Copy and configure the ssh_setup file
-RUN mkdir -p /tmp
-COPY ["Cosmos.Cms/ssh_setup.sh", "/tmp/"] 
-RUN chmod +x /tmp/ssh_setup.sh \
-    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
+# RUN mkdir -p /tmp
+# COPY ["Cosmos.Cms/ssh_setup.sh", "/tmp/"] 
+# RUN chmod +x /tmp/ssh_setup.sh \
+#    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
 
-ENV SSH_PORT 2222
+# ENV SSH_PORT 2222
 
 WORKDIR /app
 EXPOSE 80 443 2222
@@ -47,4 +47,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # ENTRYPOINT ["dotnet", "Cosmos.Cms.dll"]
- ENTRYPOINT ["bash", "init.sh"]
+ ENTRYPOINT ["/bin/bash", "-c", "/usr/sbin/sshd && dotnet Cosmos.Cms.dll"]
