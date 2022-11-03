@@ -3,7 +3,15 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 
 # Install NodeJS 10
-RUN apt-get update -y && apt-get install -y gnupg2 && apt-get install -y curl && curl -sL https://deb.nodesource.com/setup_18.x | bash - && apt-get update -y && apt-get install -y nodejs && apt-get install -y --no-install-recommends openssh-server && echo "root:Docker!" | chpasswd
+RUN apt-get update -y && \
+   apt-get install -y gnupg2 && \
+   apt-get install -y curl && \
+   curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
+   apt-get update -y && \
+   apt-get install -y nodejs && \
+   apt-get install -y --no-install-recommends openssh-server && \
+   mkdir -p /run/sshd && \
+   echo "root:Docker!" | chpasswd
 
 # Copy the sshd_config file to the /etc/ssh/ directory
 WORKDIR /src
