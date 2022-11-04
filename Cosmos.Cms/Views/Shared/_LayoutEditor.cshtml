@@ -62,8 +62,9 @@
                         Save
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                        <li><a class="dropdown-item" onclick="bgEditClick('Save')" href="#">Update</a></li>
-                        <li><a class="dropdown-item" onclick="bgEditClick('Draft')" id="btnSaveAsDraft" href="#">Save as Draft</a></li>
+                        <li><a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a></li>
+                        <li id="btnSaveAsDraft"><a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a></li>
+                        <li id="btnSaveAndPublish" style="display:none;"><a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a></li>
                     </ul>
                 </div>
             </div>
@@ -89,12 +90,24 @@
                     if (published !== "") {
                         $("#tbPublished").val("");
                         $("#Published").val("");
+                        $("#SaveAsNewVersion").val("true");
                     }
                     $("#frmSave").submit();
                     break;
                 case "Save":
+                    $("#SaveAsNewVersion").val("false");
                     $("#frmSave").submit();
                     break;
+                case "Publish":
+                    var date = new Date();
+                    var now = date.getDate();
+
+                    $("#tbPublished").val(now);
+                    $("#Published").val(now);
+
+                    $("#SaveAsNewVersion").val("false");
+                    $("#frmSave").submit();
+                    break
                 case "Files":
                     var id = $("#ArticleNumber").val();
                     var url = "@Url.Action("Index", "FileManager")";
@@ -178,8 +191,10 @@
             $("#btnSave").click(function () {
                 if ($('#tbPublished').val() === "") {
                     $("#btnSaveAsDraft").hide();
+                    $("#btnSaveAndPublish").show();
                 } else {
                     $("#btnSaveAsDraft").show();
+                    $("#btnSaveAndPublish").hide();
                 }
             });
         });

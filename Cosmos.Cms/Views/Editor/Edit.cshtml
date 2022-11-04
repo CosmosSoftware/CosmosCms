@@ -8,6 +8,7 @@
 <form class="d-flex" id="frmSave">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="SaveAsNewVersion" />
     <input type="hidden" asp-for="ArticleNumber" />
     <input type="hidden" asp-for="UrlPath" />
     <input type="hidden" asp-for="VersionNumber" />
@@ -52,7 +53,6 @@
                 }
                 $("#divSaveFirstDialog").html("Save before opening code editor?");
                 saveFirstModal.show();
-                break;
                 break;
             case "Preview":
                 next = function () {
@@ -162,6 +162,20 @@
                         next();
                         toastMsg("Successfully saved.");
                     }
+
+                    // Reload the changed data.
+                    $("#Id").val(response.Model.Id);
+                    $("#ArticleNumber").val(response.Model.ArticleNumber);
+                    $("#UrlPath").val(response.Model.UrlPath);
+                    $("#VersionNumber").val(response.Model.VersionNumber);
+                    $("#Content").val(response.Model.Content);
+                    $("#RoleList").val(response.Model.RoleList);
+                    $("#Title").val(response.Model.Title);
+                    $("#Published").val(response.Model.Published);
+
+                    // Reload the frame
+                    iframe.load("/Editor/CcmsContent/" + response.Model.Id);
+
                 }
                 else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
@@ -215,3 +229,19 @@
         </div>
     </div>
 </div>
+@if (Model != null)
+{
+    <div class="modal" id="versionList" tabindex="-2">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h5 class="modal-title">Article Versions</h5>
+            </div>
+            <div class="modal-body">
+                @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+}

@@ -302,7 +302,7 @@ namespace Cosmos.Cms.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            var result = await _articleLogic.UpdateOrInsert(model, userId);
+            var result = await _articleLogic.UpdateOrInsert(model, userId, true);
 
             return RedirectToAction("EditCode", "Editor", new { result.Model.Id });
         }
@@ -379,7 +379,7 @@ namespace Cosmos.Cms.Controllers
 
                 try
                 {
-                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, identityUser.Id);
+                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, identityUser.Id, true);
 
                     return RedirectToAction("Edit", new { Id = result.Model.Id });
                 }
@@ -501,17 +501,17 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         private async Task<List<ArticleVersionViewModel>> GetVersionList(int id)
         {
-           return await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
-            .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
-            {
-                Id = s.Id,
-                Published = s.Published,
-                Title = s.Title,
-                Updated = s.Updated,
-                VersionNumber = s.VersionNumber,
-                Expires = s.Expires,
-                UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
-            }).ToListAsync();
+            return await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
+             .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
+             {
+                 Id = s.Id,
+                 Published = s.Published,
+                 Title = s.Title,
+                 Updated = s.Updated,
+                 VersionNumber = s.VersionNumber,
+                 Expires = s.Expires,
+                 UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+             }).ToListAsync();
         }
 
         /// <summary>
@@ -725,7 +725,21 @@ namespace Cosmos.Cms.Controllers
                 //
                 // Now save the changes to the database here.
                 //
-                var result = await _articleLogic.UpdateOrInsert(model, user.Id);
+                var result = await _articleLogic.UpdateOrInsert(model, user.Id, model.SaveAsNewVersion);
+
+                //
+                // Echo back the changes made.
+                //
+                model.RoleList = result.Model.RoleList;
+                model.UrlPath = result.Model.UrlPath;
+                model.ArticleNumber = result.Model.ArticleNumber;
+                model.VersionNumber = result.Model.VersionNumber;
+                model.Content = result.Model.Content;
+                model.Id = result.Model.Id;
+                model.Title = result.Model.Title;
+                model.Published = result.Model.Published;
+                
+
                 //
                 // END  SAVE TO  DATABASE ********
 
@@ -867,6 +881,8 @@ namespace Cosmos.Cms.Controllers
 
             _dbContext.Entry(article).State = EntityState.Detached;
 
+            var jsonModel = new SaveCodeResultJsonModel();
+
             try
             {
                 var result = await _articleLogic.UpdateOrInsert(new ArticleViewModel()
@@ -884,7 +900,26 @@ namespace Cosmos.Cms.Controllers
                     Updated = DateTimeOffset.Now,
                     UrlPath = article.UrlPath,
                     VersionNumber = article.VersionNumber
-                }, user.Id);
+                }, user.Id, model.SaveAsNewVersion);
+
+                jsonModel.Model = new EditCodePostModel()
+                {
+                    ArticleNumber = result.Model.ArticleNumber,
+                    Content = result.Model.Content,
+                    EditingField = model.EditingField,
+                    CustomButtons = model.CustomButtons,
+                    EditorMode = model.EditorMode,
+                    EditorFields = model.EditorFields,
+                    EditorTitle = model.EditorTitle,
+                    EditorType = model.EditorType,
+                    FooterJavaScript = result.Model.FooterJavaScript,
+                    HeadJavaScript = result.Model.HeadJavaScript,
+                    Id = result.Model.Id,
+                    Published = result.Model.Published,
+                    RoleList = result.Model.RoleList,
+                    Title = result.Model.Title
+                };
+
             }
             catch (Exception e)
             {
@@ -894,11 +929,10 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["Version"] = article.VersionNumber;
 
-            var jsonModel = new SaveCodeResultJsonModel
-            {
-                ErrorCount = ModelState.ErrorCount,
-                IsValid = ModelState.IsValid
-            };
+            //
+            jsonModel.ErrorCount = ModelState.ErrorCount;
+            jsonModel.IsValid = ModelState.IsValid;
+
             jsonModel.Errors.AddRange(ModelState.Values
                 .Where(w => w.ValidationState == ModelValidationState.Invalid)
                 .ToList());

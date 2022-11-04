@@ -45,5 +45,10 @@ namespace Cosmos.Cms.Models
         ///     Errors in model state
         /// </summary>
         public List<ModelStateEntry> Errors { get; set; }
+
+        /// <summary>
+        ///   Updated model
+        /// </summary>
+        public EditCodePostModel Model { get; set; } = null;
     }
 }

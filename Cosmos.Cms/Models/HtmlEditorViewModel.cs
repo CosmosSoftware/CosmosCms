@@ -43,6 +43,11 @@ namespace Cosmos.Cms.Models
         public Guid Id { get; set; }
 
         /// <summary>
+        /// When saving, save as new version
+        /// </summary>
+        public bool SaveAsNewVersion { get; set; } = false;
+
+        /// <summary>
         ///     Article number
         /// </summary>
         public int ArticleNumber { get; set; }

@@ -8,14 +8,16 @@ RUN apt-get update -y && \
    apt-get install -y curl && \
    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
    apt-get update -y && \
-   apt-get install -y nodejs && \
-   apt-get install -y --no-install-recommends openssh-server && \
-   mkdir -p /run/sshd && \
-   echo "root:Docker!" | chpasswd
+   apt-get install -y nodejs
+
+# && \
+#   apt-get install -y --no-install-recommends openssh-server && \
+#   mkdir -p /run/sshd && \
+#   echo "root:Docker!" | chpasswd
 
 # Copy the sshd_config file to the /etc/ssh/ directory
-WORKDIR /src
-COPY ["Cosmos.Cms/sshd_config", "/etc/ssh/"]
+# WORKDIR /src
+# COPY ["Cosmos.Cms/sshd_config", "/etc/ssh/"]
 # COPY ["Cosmos.Cms/init.sh", "/usr/local/bin/"]
 
 
@@ -28,7 +30,8 @@ COPY ["Cosmos.Cms/sshd_config", "/etc/ssh/"]
 # ENV SSH_PORT 2222
 
 WORKDIR /app
-EXPOSE 80 443 2222
+EXPOSE 80 443
+# EXPOSE 80 443 2222
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
@@ -46,5 +49,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# ENTRYPOINT ["dotnet", "Cosmos.Cms.dll"]
- ENTRYPOINT ["/bin/bash", "-c", "/usr/sbin/sshd && dotnet Cosmos.Cms.dll"]
+ENTRYPOINT ["dotnet", "Cosmos.Cms.dll"]
+# ENTRYPOINT ["/bin/bash", "-c", "/usr/sbin/sshd && dotnet Cosmos.Cms.dll"]

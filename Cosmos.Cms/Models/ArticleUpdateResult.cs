@@ -17,6 +17,6 @@ namespace Cosmos.Cms.Models
         /// <summary>
         ///     Urls that need to be flushed
         /// </summary>
-        public List<string> Urls { get; set; }
+        public List<string> Urls { get; set; } = new List<string>();
     }
 }

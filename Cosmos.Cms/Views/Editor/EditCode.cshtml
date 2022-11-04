@@ -63,6 +63,7 @@
 
 <form id="frmSave" asp-action="EditCode">
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="SaveAsNewVersion" />
     <input type="hidden" asp-for="ArticleNumber" />
     <input type="hidden" asp-for="EditingField" />
     <input type="hidden" asp-for="Content" />
@@ -282,7 +283,7 @@
 
 @if (Model != null)
 {
-    <div class="modal" id="versionListModal" tabindex="-2">
+    <div class="modal" id="versionList" tabindex="-2">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h5 class="modal-title">Article Versions</h5>

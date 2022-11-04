@@ -500,8 +500,9 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
+        /// <param name="saveAsNewVersion"></param>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> UpdateOrInsert(HtmlEditorViewModel model, string userId)
+        public async Task<ArticleUpdateResult> UpdateOrInsert(HtmlEditorViewModel model, string userId, bool saveAsNewVersion)
         {
             ArticleViewModel entity;
             if (model.ArticleNumber == 0)
@@ -528,7 +529,7 @@ namespace Cosmos.Cms.Data.Logic
                 entity.VersionNumber = model.VersionNumber;
             }
 
-            return await UpdateOrInsert(entity, userId);
+            return await UpdateOrInsert(entity, userId, saveAsNewVersion);
         }
 
         /// <summary>
@@ -536,6 +537,7 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
+        /// <param name="saveAsNewVersion"></param>
         /// <remarks>
         ///     <para>
         ///         If the article number is '0', a new article is inserted.  If a version number is '0', then
@@ -563,7 +565,7 @@ namespace Cosmos.Cms.Data.Logic
         ///     </list>
         /// </remarks>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> UpdateOrInsert(ArticleViewModel model, string userId)
+        public async Task<ArticleUpdateResult> UpdateOrInsert(ArticleViewModel model, string userId, bool saveAsNewVersion)
         {
             //
             // Retrieve the article that we will be using.
@@ -572,17 +574,30 @@ namespace Cosmos.Cms.Data.Logic
             //
             var article = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
 
+            if (saveAsNewVersion)
+            {
+                DbContext.Entry(article).State = EntityState.Detached;
+                // Give it a new GUID and version number
+                article.VersionNumber = await GetNextVersionNumber(model.ArticleNumber);
+                article.Id = Guid.NewGuid();
+
+            }
+
             if (article == null)
             {
                 throw new Exception($"Article ID: {model.Id} not found.");
             }
 
+            // =======================================================
+            // BEGIN: MAKE MODEL CHANGES HERE
+            //
             #region UPDATE ENTITY WITH NEW CONTENT FROM MODEL
 
             model.Content = Ensure_ContentEditable_IsMarked(model.Content);
-            
+
             // IMPORTANT!!!
             // Handled title changes below....
+            // DO NOT CHANGE NOW!!!
             //article.Title = model.Title.Trim();
 
             if (model.Content == null || model.Content.Trim() == "")
@@ -611,6 +626,9 @@ namespace Cosmos.Cms.Data.Logic
             article.RoleList = model.RoleList;
 
             #endregion
+            //
+            // END: MAKE MODEL CHANGES HERE
+            // =======================================================
 
             UpdateHeadBaseTag(article);
 
@@ -623,32 +641,22 @@ namespace Cosmos.Cms.Data.Logic
             // Make sure base tag is set properly.
             UpdateHeadBaseTag(model);
 
-            // Enforce the default layout here
-            var defaultLayout = await DbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
-
             //
             // We are adding a new version.
             // DETACH and put into an ADD state.
             //
-            if (model.VersionNumber == 0)
+            var logEntry = "Edit existing";
+
+            if (saveAsNewVersion)
             {
-                DbContext.Entry(article).State = EntityState.Detached;
-
-                // Give it a new GUID and version number
-                article.VersionNumber = await GetNextVersionNumber(model.ArticleNumber);
-                article.Id = Guid.NewGuid();
-
                 DbContext.Articles.Add(article); // Put this entry in an add state
-
-                // Make sure this saves now
-                await DbContext.SaveChangesAsync();
-
-                await HandleLogEntry(article, "New version", userId);
+                logEntry = "New version";
             }
-            else
-            {
-                await HandleLogEntry(article, "Edit existing", userId);
-            }
+
+            await HandleLogEntry(article, logEntry, userId);
+
+            // Make sure this saves now
+            await DbContext.SaveChangesAsync();
 
             // IMPORTANT!
             // Handle title (and URL) changes for existing 
@@ -664,8 +672,8 @@ namespace Cosmos.Cms.Data.Logic
             if (!string.Equals(article.RoleList, model.RoleList, StringComparison.CurrentCultureIgnoreCase))
             {
                 // get all prior article versions, changing security now.
-                var oldArticles = DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
-                    .ToListAsync().Result;
+                var oldArticles = await DbContext.Articles.Where(w => w.ArticleNumber == article.ArticleNumber)
+                    .ToListAsync();
 
                 await HandleLogEntry(article, $"Changing role access from '{article.RoleList}' to '{model.RoleList}'.",
                     userId);
@@ -680,7 +688,7 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             // Finally update the catalog entry
-            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum) article.StatusCode);
+            await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum)article.StatusCode);
 
             var result = new ArticleUpdateResult
             {
@@ -737,7 +745,7 @@ namespace Cosmos.Cms.Data.Logic
                     }
 
                     // Now remove the other ones published
-                    foreach(var item in others)
+                    foreach (var item in others)
                     {
                         item.Published = null;
                     }
@@ -754,11 +762,6 @@ namespace Cosmos.Cms.Data.Logic
                     var t = e;
                 }
             }
-        }
-
-        private Task CreateNewArticleVersion(ArticleViewModel model, string userId)
-        {
-            throw new NotImplementedException();
         }
 
 
