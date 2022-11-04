@@ -574,6 +574,11 @@ namespace Cosmos.Cms.Data.Logic
             //
             var article = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
 
+            if (article == null)
+            {
+                throw new Exception($"Article ID: {model.Id} not found.");
+            }
+
             if (saveAsNewVersion)
             {
                 DbContext.Entry(article).State = EntityState.Detached;
@@ -581,11 +586,6 @@ namespace Cosmos.Cms.Data.Logic
                 article.VersionNumber = await GetNextVersionNumber(model.ArticleNumber);
                 article.Id = Guid.NewGuid();
 
-            }
-
-            if (article == null)
-            {
-                throw new Exception($"Article ID: {model.Id} not found.");
             }
 
             // =======================================================

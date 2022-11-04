@@ -48,7 +48,7 @@
                         <a class="nav-link" onclick="bgEditClick('Close')">Close</a>
                     </li>
                     <li id="liBtnVersions" class="nav-item" style="display:none">
-                        <a id="btnVersions" class="nav-link" target="_blank" >Versions</a>
+                        <a id="btnVersions" class="nav-link" target="_blank">Versions</a>
                     </li>
                 </ul>
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
@@ -85,13 +85,10 @@
             }
 
             switch (command) {
-                case "Draft": 
-                    var published = $("#tbPublished").val();
-                    if (published !== "") {
-                        $("#tbPublished").val("");
-                        $("#Published").val("");
-                        $("#SaveAsNewVersion").val("true");
-                    }
+                case "Draft":
+                    $("#tbPublished").val("");
+                    $("#Published").val("");
+                    $("#SaveAsNewVersion").val("true");
                     $("#frmSave").submit();
                     break;
                 case "Save":
@@ -99,8 +96,7 @@
                     $("#frmSave").submit();
                     break;
                 case "Publish":
-                    var date = new Date();
-                    var now = date.getDate();
+                    var now = new Date();
 
                     $("#tbPublished").val(now);
                     $("#Published").val(now);

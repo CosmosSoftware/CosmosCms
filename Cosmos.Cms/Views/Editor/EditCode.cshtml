@@ -50,9 +50,9 @@
         @{
             foreach (var field in fields)
             {
-                    <li class="nav-item">
-                        <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-                    </li>
+                                    <li class="nav-item">
+                                        <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                                    </li>
                 aclass = "";
             }
         }
@@ -81,6 +81,7 @@
 
     var editor;
     var fieldId;
+    var fieldName;
     var ccmsEditorIsLocked = false;
 
     $("#frmSave").submit(function (e) {
@@ -122,7 +123,8 @@
         //require.config({ paths: { vs: '/lib/node_modules/monaco-editor/dist' } }); // Emmet Abbr.
         require(['vs/editor/editor.main'],
             function () {
-                fieldId = id;
+                fieldName = id;
+
                 var fieldInfo = editFields.find(o => o.FieldName === id);
                 fieldId = fieldInfo.FieldId;
 
@@ -188,6 +190,22 @@
                     if (typeof (next) !== "undefined" && next !== null) {
                         next();
                     }
+
+                    $("#Id").val(response.Model.Id);
+                    $("#ArticleNumber").val(response.Model.ArticleNumber);
+                    //$("#EditingField").val(response.Model.EditingField); // Don't update
+                    $("#UrlPath").val(response.Model.UrlPath);
+                    $("#VersionNumber").val(response.Model.VersionNumber);
+                    $("#Content").val(response.Model.Content);
+                    $("#RoleList").val(response.Model.RoleList);
+                    $("#Title").val(response.Model.Title);
+                    $("#Published").val(response.Model.Published);
+                    $("#Published").val(response.Model.IsValid);
+                    $("#HeadJavaScript").val(response.Model.HeadJavaScript);
+                    $("#FooterJavaScript").val(response.Model.FooterJavaScript);
+
+                    createAndLoadEditor(fieldName); // Reuse the existing set fieldId
+
                     toastMsg("Successfully saved.");
                 } else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
