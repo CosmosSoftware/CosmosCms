@@ -61,7 +61,15 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/FileManager/Index?target=/"><i class="fa-solid fa-house"></i></a></li>
+                    @if (container.Equals("$web"))
+                    {
+                        <li class="breadcrumb-item"><a href="/FileManager/Index?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
+                    }
+                    else
+                    {
+                        <li class="breadcrumb-item"><a href="/FileManager/Index?target=/&container=@container&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
+                    }
+
                     @{
                         var p = "";
                     }
@@ -70,14 +78,13 @@
                         if (item != "/")
                         {
                             p += "/" + item;
-                            if (container.Equals("$web"))
+                            var href = $"/FileManager/Index?target={p}&directoryOnly={directoryOnly}";
+                            if (!container.Equals("$web"))
                             {
-                                <li class="breadcrumb-item"><a href="/FileManager/Index?target=@p">@item</a></li>
+                                href += $"&container={container}";
                             }
-                            else
-                            {
-                                <li class="breadcrumb-item"><a href="/FileManager/Index?target=@p&container=@container">@item</a></li>
-                            }
+
+                            <li class="breadcrumb-item"><a href="@href">@item</a></li>
                         }
                     }
                 </ol>
@@ -130,13 +137,13 @@
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add().RenderedAs(r => (r.IsDirectory == false && container == "$web") ?
                     $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
                     + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}&container={container}'><i class='fa-solid fa-code'></i></a>" : "")
                     + "</div>"
                     : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
+                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
                 })
@@ -182,7 +189,7 @@
 <div class="modal" id="renameModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="frmChangeName" asp-action="Rename" method="post" onsubmit="clearPaths();return true;">
+            <form id="frmChangeName" asp-action="Rename" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="BlobRootPath" name="BlobRootPath" value="@pathPrefix" />
                 <input type="hidden" id="FromBlobName" name="FromBlobName" value="@pathPrefix" />
@@ -192,12 +199,12 @@
                 <div class="modal-body">
                     <label for="FromBobName" class="form-label">Original name:</label>
                     <div class="input-group mb-3">
-                        <span id="itemPrefix1" class="input-group-text" ></span>
+                        <span id="itemPrefix1" class="input-group-text"></span>
                         <input class="form-control" id="ctrlFromBlobName" aria-describedby="emailHelp" disabled>
                     </div>
                     <label for="ToBlobName" class="form-label">Change to:</label>
                     <div class="input-group mb-3">
-                        <span id="itemPrefix2"  class="input-group-text"></span>
+                        <span id="itemPrefix2" class="input-group-text"></span>
                         <input title="Enter the new name of the item" class="form-control" id="ToBlobName" name="ToBlobName" required>
                     </div>
                 </div>
@@ -244,7 +251,7 @@
         chunkForce: true
     });
 
-    
+
     FilePond.setOptions({
         server: "@Url.Action("Process")?container=@container"
     });
@@ -361,11 +368,7 @@
         });
 
         $("#btnClear").click(function () {
-            $(".gridCheckBox").each(function (index, element) {
-                $(element).prop('checked', false);
-            });
-            clearPaths();
-            resetButtons();
+            clearSelection();
         });
 
         $("frmChangeName").submit(function (e) {
@@ -374,6 +377,33 @@
         });
 
         resetButtons();
+    });
+
+    function clearSelection() {
+        $(".gridCheckBox").each(function (index, element) {
+            $(element).prop('checked', false);
+        });
+        clearPaths();
+        resetButtons();
+    }
+
+    $("#frmChangeName").submit(function (e) {
+        e.preventDefault();
+
+        var form = $('#frmChangeName');
+
+        $.post("@Url.Action("Rename", "FileManager")",
+            form.serialize(),
+            function (response) {
+                clearSelection();
+            })
+            .done(function () {
+                window.location.href = "/FileManager/Index?target=@p&container=@container";
+            })
+            .fail(function () {
+                alert("error");
+            });
+
     });
 
     function resetButtons() {
@@ -448,8 +478,7 @@
                             Paths: paths
                         }, // data to be submit
                         function (data, status, jqXHR) {// success callback
-                            clearPaths();
-                            resetButtons();
+                            clearSelection();
                             window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
                         })
                 }
@@ -472,8 +501,7 @@
 
                     var p = "";
                     var len = pathArray.length;
-                    for(var i = 0; i < len - 1; i++)
-                    {
+                    for (var i = 0; i < len - 1; i++) {
                         if (pathArray[i] !== "") {
                             p = p + "/" + pathArray[i];
                         }
@@ -483,7 +511,7 @@
                     $("#itemPrefix2").html(p);
 
                     $("#FromBlobName").val(pathArray[pathArray.length - 1]);
-                    
+
                     $("#ctrlFromBlobName").val($("#FromBlobName").val());
                     var modal = new bootstrap.Modal(document.getElementById('renameModal'));
                     modal.show();
@@ -499,7 +527,7 @@
 
                 next = function () {
                     localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
-                    clearPaths();
+                    clearSelection();
                     window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true&container=@container'
                 };
                 break;
@@ -509,6 +537,8 @@
 
                 var items = getItemsToMove();
 
+                var dest = paths[0];
+
                 var itemCount = items.length;
 
                 $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
@@ -516,14 +546,19 @@
                 next = function () {
                     $.post('@Url.Action("Move")?container=@container',   // url
                         {
-                            Destination: paths[0],
+                            Destination: dest,
                             Items: items
                         }, // data to be submit
-                        function (data, status, jqXHR) {// success callback
-                            clearPaths();
-                            resetButtons();
-                            window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
+                        function (response) {// success callback
+                            
                         })
+                        .done(function () {
+                            clearSelection();
+                            window.location.href = '@Url.Action("Index")?target=' + dest + '&container=@container';
+                        })
+                        .fail(function () {
+                            alert("error");
+                        });
                 }
                 break;
         }

@@ -893,7 +893,7 @@ namespace Cosmos.Cms.Controllers
                 await _storageContext.RenameAsync(target, dest);
             }
 
-            return RedirectToAction("Index", new { target = model.BlobRootPath.Trim('/') });
+            return Ok();
         }
 
         #endregion
