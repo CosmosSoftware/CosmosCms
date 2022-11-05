@@ -4,8 +4,6 @@
 @inject IOptions<CosmosConfig> options
 @model IQueryable<Cosmos.BlobService.FileManagerEntry>
 @{
-
-
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
     var editorExtensions = new string[] { ".js", ".css", ".html", ".htm", ".json", ".xml" };
@@ -184,7 +182,7 @@
 <div class="modal" id="renameModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="frmChangeName" asp-action="Rename" method="post">
+            <form id="frmChangeName" asp-action="Rename" method="post" onsubmit="clearPaths();return true;">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="BlobRootPath" name="BlobRootPath" value="@pathPrefix" />
                 <input type="hidden" id="FromBlobName" name="FromBlobName" value="@pathPrefix" />
@@ -194,12 +192,12 @@
                 <div class="modal-body">
                     <label for="FromBobName" class="form-label">Original name:</label>
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">/pub/</span>
+                        <span id="itemPrefix1" class="input-group-text" ></span>
                         <input class="form-control" id="ctrlFromBlobName" aria-describedby="emailHelp" disabled>
                     </div>
                     <label for="ToBlobName" class="form-label">Change to:</label>
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">/pub/</span>
+                        <span id="itemPrefix2"  class="input-group-text"></span>
                         <input title="Enter the new name of the item" class="form-control" id="ToBlobName" name="ToBlobName" required>
                     </div>
                 </div>
@@ -460,7 +458,32 @@
                 $("#checkFirstTitle").html("Rename Verification");
                 $("#checkFirstDialog").html("Are you sure you want to rename this item?<br />/" + paths[0]);
                 next = function () {
-                    $("#FromBlobName").val(paths[0].substring(4));
+
+                    var len = paths[0].length;
+
+                    if (paths[0].lastIndexOf("/") == len - 1) {
+                        paths[0] = paths[0].substring(0, len - 1);
+                    }
+
+                    //itemPrefix
+                    var pathArray = paths[0].split("/");
+                    $("#itemPrefix1").html("");
+                    $("#itemPrefix2").html("");
+
+                    var p = "";
+                    var len = pathArray.length;
+                    for(var i = 0; i < len - 1; i++)
+                    {
+                        if (pathArray[i] !== "") {
+                            p = p + "/" + pathArray[i];
+                        }
+                    }
+
+                    $("#itemPrefix1").html(p);
+                    $("#itemPrefix2").html(p);
+
+                    $("#FromBlobName").val(pathArray[pathArray.length - 1]);
+                    
                     $("#ctrlFromBlobName").val($("#FromBlobName").val());
                     var modal = new bootstrap.Modal(document.getElementById('renameModal'));
                     modal.show();
