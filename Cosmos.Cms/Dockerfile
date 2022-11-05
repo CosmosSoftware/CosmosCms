@@ -30,7 +30,8 @@ RUN apt-get update -y && \
 # ENV SSH_PORT 2222
 
 WORKDIR /app
-EXPOSE 80 443
+EXPOSE 80
+EXPOSE 443
 # EXPOSE 80 443 2222
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
