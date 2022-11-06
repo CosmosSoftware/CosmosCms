@@ -15,8 +15,8 @@
 
 </head>
 <body style="margin:0px;padding:0px;background-color:#4d4d4d;">
-    <partial name="_CosmosMainMenuPartial" model="Model" />
-    <iframe id="iFrameWebPage" src="/@Model.UrlPath" onload="setupIframe()" style="width:100%;"></iframe>
+<partial name="_CosmosMainMenuPartial" model="Model" />
+<iframe id="iFrameWebPage" src="/@Model.UrlPath" onload="setupIframe()" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;"></iframe>
     <script>
         // The following is used to wireup the menu links to this page.
         function setupIframe() {
