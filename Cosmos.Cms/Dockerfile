@@ -10,8 +10,7 @@ RUN apt-get update -y && \
    apt-get update -y && \
    apt-get install -y nodejs && \
    apt-get install -y --no-install-recommends openssh-server && \
-   mkdir -p /run/sshd && \
-   echo "root:Docker!" | chpasswd
+   mkdir -p /run/sshd && echo "root:Docker!" | chpasswd
 
 # Copy the sshd_config file to the /etc/ssh/ directory
  WORKDIR /src
