@@ -7,6 +7,7 @@ using Cosmos.Cms.Models;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NuGet.Packaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -318,9 +319,12 @@ namespace Cosmos.Cms.Data.Logic
 
             DateTimeOffset? published = (await DbContext.Articles.CosmosAnyAsync()) ? null : DateTimeOffset.UtcNow.AddMinutes(-5);
 
-            var nextArticleNumber = await DbContext.Articles.MaxAsync(a => a.ArticleNumber) + 1;
+            int nextArticleNumber = 1; // Default to start with if there are no articles yet.
 
-            var isRoot = (await DbContext.Articles.CosmosAnyAsync()) == false;
+            if (await DbContext.Articles.CosmosAnyAsync())
+            {
+                nextArticleNumber = await DbContext.Articles.MaxAsync(a => a.ArticleNumber) + 1;
+            }
 
             //
             // New article
@@ -331,7 +335,7 @@ namespace Cosmos.Cms.Data.Logic
                 StatusCode = 0,
                 Title = title,
                 Updated = DateTimeOffset.Now,
-                UrlPath = isRoot ? "root" : HandleUrlEncodeTitle(title),
+                UrlPath = nextArticleNumber == 1 ? "root" : HandleUrlEncodeTitle(title),
                 VersionNumber = 1
             };
 
@@ -755,6 +759,8 @@ namespace Cosmos.Cms.Data.Logic
                     // Resets the expiration dates, based on the last published article
                     await ResetVersionExpirations(article.ArticleNumber);
 
+                    // Update the published pages collection
+                    await UpdatePagesCollection(article.ArticleNumber);
 
                 }
                 catch (Exception e)
@@ -762,6 +768,48 @@ namespace Cosmos.Cms.Data.Logic
                     var t = e;
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates the published pages collection by article number
+        /// </summary>
+        /// <param name="articleNumber"></param>
+        /// <returns></returns>
+        private async Task UpdatePagesCollection(int articleNumber)
+        {
+            // Now we are going to update the Pages table
+            var itemsToPublish = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber && w.Published != null)
+                .OrderByDescending(o => o.Published).AsNoTracking().ToListAsync();
+
+            // Get everything that is going to be removed
+            var itemsToRemove = await DbContext.Pages.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+
+            // Now refresh the published pages
+            foreach (var item in itemsToPublish)
+            {
+                DbContext.Pages.Add(new Common.Data.PublishedPage()
+                {
+                    ArticleNumber = item.ArticleNumber,
+                    Content = item.Content,
+                    Expires = item.Expires,
+                    FooterJavaScript = item.FooterJavaScript,
+                    HeaderJavaScript = item.HeaderJavaScript,
+                    Id = Guid.NewGuid(), // Use a new Guid
+                    Published = item.Published,
+                    RoleList = item.RoleList,
+                    StatusCode = item.StatusCode,
+                    Title = item.Title,
+                    Updated = item.Updated,
+                    UrlPath = item.UrlPath,
+                    VersionNumber = item.VersionNumber
+                });
+            }
+
+            // Mark the items to remove
+            DbContext.Pages.RemoveRange(itemsToRemove);
+
+            // Update the pages collection
+            await DbContext.SaveChangesAsync();
         }
 
 
@@ -784,6 +832,10 @@ namespace Cosmos.Cms.Data.Logic
         /// </remarks>
         private async Task HandleTitleChange(Article article, string newTitle, string userId)
         {
+            var articleNumbersToUpdate = new List<int>();
+
+            articleNumbersToUpdate.Add(article.ArticleNumber);
+
             //
             //  Validate that title is not already taken.
             //
@@ -813,6 +865,8 @@ namespace Cosmos.Cms.Data.Logic
 
                 // Make sure base tag is set properly.
                 UpdateHeadBaseTag(subArticle);
+
+                articleNumbersToUpdate.Add(article.ArticleNumber);
             }
 
             DbContext.Articles.UpdateRange(subArticles);
@@ -823,6 +877,7 @@ namespace Cosmos.Cms.Data.Logic
             if (conflictingRedirects.Any())
             {
                 DbContext.Articles.RemoveRange(conflictingRedirects);
+                articleNumbersToUpdate.AddRange(conflictingRedirects.Select(s => s.ArticleNumber).ToList());
             }
 
             //
@@ -848,7 +903,6 @@ namespace Cosmos.Cms.Data.Logic
             // Add redirect here
             DbContext.Articles.Add(entity);
 
-
             await HandleLogEntry(entity, $"Redirect {oldUrl} to {newUrl}", userId);
 
             // We have to change the title and paths for all versions now.
@@ -869,6 +923,12 @@ namespace Cosmos.Cms.Data.Logic
 
             DbContext.Articles.UpdateRange(articlesToUpdate);
             await DbContext.SaveChangesAsync();
+
+            // Now updated the published pages
+            foreach (var num in articleNumbersToUpdate)
+            {
+                await UpdatePagesCollection(num);
+            }
 
         }
 
@@ -1136,6 +1196,45 @@ namespace Cosmos.Cms.Data.Logic
                 throw;
             }
 
+
+        }
+
+        /// <summary>
+        /// Gets a page, and allows unpublished or inactive pages to be returned.
+        /// </summary>
+        /// <param name="urlPath"></param>
+        /// <param name="lang"></param>
+        /// <param name="publishedOnly"></param>
+        /// <param name="onlyActive"></param>
+        /// <returns></returns>
+        public async Task<ArticleViewModel> GetByUrl(string urlPath, string lang = "", bool publishedOnly = true,
+            bool onlyActive = true)
+        {
+            if (publishedOnly && onlyActive)
+            {
+                return await base.GetByUrl(urlPath, lang);
+            }
+
+            var activeStatusCodes =
+                onlyActive ? new[] { 0, 3 } : new[] { 0, 1, 3 }; // i.e. StatusCode.Active (DEFAULT) and StatusCode.Redirect
+
+            if (publishedOnly)
+            {
+                var article = await DbContext.Pages.WithPartitionKey(urlPath)
+                    .Where(a => a.Published <= DateTimeOffset.UtcNow &&
+                                activeStatusCodes.Contains(a.StatusCode)) // Now filter on active status code.
+                    .OrderByDescending(o => o.VersionNumber).FirstOrDefaultAsync();
+                return await base.BuildArticleViewModel(article, lang, false);
+            }
+            else
+            {
+                // Will search unpublished and published articles
+                var article = await DbContext.Articles
+                    .Where(a => a.UrlPath == urlPath && activeStatusCodes.Contains(a.StatusCode))
+                    .OrderByDescending(o => o.VersionNumber)
+                    .FirstOrDefaultAsync();
+                return await base.BuildArticleViewModel(article, lang, false);
+            }
 
         }
 

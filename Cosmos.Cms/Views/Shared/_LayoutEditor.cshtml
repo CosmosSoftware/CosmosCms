@@ -97,9 +97,8 @@
                     break;
                 case "Publish":
                     var now = new Date();
-
-                    $("#tbPublished").val(now);
-                    $("#Published").val(now);
+                    $("#tbPublished").val(now.toLocaleString());
+                    $("#Published").val(now.toLocaleString());
 
                     $("#SaveAsNewVersion").val("false");
                     $("#frmSave").submit();

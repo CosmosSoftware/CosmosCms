@@ -30,7 +30,6 @@ namespace Cosmos.Cms.Controllers
     {
 
         private readonly INodeJSService _nodeJSService;
-        private readonly IOptions<CosmosConfig> _cosmosConfig;
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<ApiController> _logger;
 
@@ -41,11 +40,9 @@ namespace Cosmos.Cms.Controllers
         /// <param name="cosmosConfig"></param>
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
-        public ApiController(INodeJSService nodeJSService, IOptions<CosmosConfig> cosmosConfig,
-            ApplicationDbContext dbContext, ILogger<ApiController> logger)
+        public ApiController(INodeJSService nodeJSService, ApplicationDbContext dbContext, ILogger<ApiController> logger)
         {
             _nodeJSService = nodeJSService;
-            _cosmosConfig = cosmosConfig;
             _dbContext = dbContext;
             _logger = logger;
         }
@@ -103,6 +100,8 @@ namespace Cosmos.Cms.Controllers
                     {
                         IsSuccess = true
                     };
+
+                    _logger.LogError(e.Message, e);
                 }
 
                 return Json(apiResult);
@@ -114,6 +113,8 @@ namespace Cosmos.Cms.Controllers
                 {
                     IsSuccess = true
                 };
+
+                _logger.LogError(e.Message, e);
 
                 apiResult.Errors.Add(Id, e.Message);
 

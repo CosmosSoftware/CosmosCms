@@ -2,7 +2,7 @@
 @using NonFactors.Mvc.Grid
 @model IQueryable<ArticleListItem>
 @{
-    ViewData["Title"] = "Page List";
+    ViewData["Title"] = "Website Page List";
 
     var publisherUrl = ViewData["PublisherUrl"];
     var isReviewer = User.IsInRole("Reviewers");
@@ -17,21 +17,24 @@
             <hr />
         </div>
     </div>
-    
+
     @if (!isReviewer)
     {
         <div class="row">
             <div class="col-md-6">
-                <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Create">New</a>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Create">New</a>
+                    <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Index" asp-controller="Templates">Templates</a>
+                    <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
+                    <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Index" asp-controller="Layouts">Layouts</a>
+                </div>
             </div>
             <div class="col-md-6 d-flex justify-content-end">
-                <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Index" asp-controller="Templates">Templates</a>
-                <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
                 <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
             </div>
         </div>
     }
-   
+
     <div class="row">
         <div class="col-md-12">
             @(Html.Grid(Model)
@@ -67,7 +70,7 @@
     var canEdit = @canEdit.ToString().ToLower();
     var clipboard = new ClipboardJS('.clipboard');
     clipboard.on('success',
-        function(e) {
+        function (e) {
             console.info('Action:', e.action);
             console.info('Text:', e.text);
             console.info('Trigger:', e.trigger);

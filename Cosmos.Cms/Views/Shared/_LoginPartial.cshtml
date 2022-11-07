@@ -4,8 +4,8 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <a class="nav-link text-light text-muted me-2" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">@User.Identity.Name</a>
-    <button id="btnNavLogoutButton" type="button" onclick="navLogout()" class="btn btn-sm bg-dark text-light" style="margin-top:-2px;">Logout</button>
+    <a class="btn btn-sm bg-dark text-light me-2" title="User account settings." asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage"><i class="fa-solid fa-user"></i></a>
+    <button id="btnNavLogoutButton" type="button" title="Log out" onclick="navLogout()" class="btn btn-sm bg-dark text-light" style="margin-top:-2px;"><i class="fa-solid fa-right-from-bracket"></i></button>
     <form name="frmNavLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new {area = ""})">
     </form>
     <script>
