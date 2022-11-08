@@ -5,17 +5,16 @@ using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data.Logic;
 using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
+using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,11 +37,13 @@ namespace Cosmos.Cms.Controllers
         private readonly ArticleEditLogic _articleLogic;
         private readonly Uri _blobPublicAbsoluteUrl;
         private readonly IViewRenderService _viewRenderService;
+        private readonly IOptions<NodeJSProcessOptions> _nodeOptions;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="nodeOptions"></param>
         /// <param name="logger"></param>
         /// <param name="dbContext"></param>
         /// <param name="storageContext"></param>
@@ -51,6 +52,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="hostEnvironment"></param>
         /// <param name="viewRenderService"></param>
         public FileManagerController(IOptions<CosmosConfig> options,
+            IOptions<NodeJSProcessOptions> nodeOptions,
             ILogger<FileManagerController> logger,
             ApplicationDbContext dbContext,
             StorageContext storageContext,
@@ -70,6 +72,7 @@ namespace Cosmos.Cms.Controllers
             _hostEnvironment = hostEnvironment;
             _userManager = userManager;
             _articleLogic = articleLogic;
+            _nodeOptions = nodeOptions;
 
             var htmlUtilities = new HtmlUtilities();
 
@@ -258,17 +261,43 @@ namespace Cosmos.Cms.Controllers
                 await Request.Body.CopyToAsync(memoryStream);
 
                 _storageContext.SetContainerName(container);
-
                 _storageContext.AppendBlob(memoryStream, metaData);
+
+                //if (container == "$web")
+                //{
+                //    // Azure blob storage
+                //    _storageContext.SetContainerName(container);
+                //    _storageContext.AppendBlob(memoryStream, metaData);
+                //}
+                //else
+                //{
+                //    // Upload to local file storage
+                //    await AppendToFile(memoryStream, metaData);
+                //}
             }
             catch (Exception e)
             {
-                var t = e;
+                //var t = e; // For debugging
+                _logger.LogError(e.Message, e);
+                throw;
             }
 
 
             return Ok();
         }
+
+        //private async Task AppendToFile(MemoryStream memoryStream, FileUploadMetaData metadata)
+        //{
+        //    var root = _nodeOptions.Value.ProjectPath;
+
+        //    var fullPath = Path.Combine(root, metadata.RelativePath);
+
+        //    using (var stream = new FileStream(fullPath, FileMode.Append))
+        //    {
+        //        var bytes = memoryStream.ToArray();
+        //        await stream.WriteAsync(bytes, 0, bytes.Length);
+        //    }
+        //}
 
 
         /// <summary>

@@ -231,9 +231,10 @@ namespace Cosmos.Cms
             services.AddNodeJS();
             // Options for the NodeJS process, here we enable debugging
             var projectPath = Configuration.GetValue<string>("CosmosNodeProjectPath");
+
             services.Configure<NodeJSProcessOptions>(options =>
             {
-                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/home/code/mods" : projectPath;
+                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/ccmssrc" : projectPath;
             });
 
         }
