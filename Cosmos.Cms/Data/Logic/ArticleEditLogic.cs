@@ -6,6 +6,7 @@ using Cosmos.Cms.Controllers;
 using Cosmos.Cms.Models;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NuGet.Packaging;
 using System;
@@ -28,11 +29,13 @@ namespace Cosmos.Cms.Data.Logic
         ///     Constructor
         /// </summary>
         /// <param name="dbContext"></param>
+        /// <param name="memoryCache"></param>
         /// <param name="config"></param>
         public ArticleEditLogic(ApplicationDbContext dbContext,
+            IMemoryCache memoryCache,
             IOptions<CosmosConfig> config) :
             base(dbContext,
-                config, true)
+                config, memoryCache, true)
         {
         }
 
@@ -1163,7 +1166,7 @@ namespace Cosmos.Cms.Data.Logic
             article.Content = Ensure_ContentEditable_IsMarked(article.Content);
 
             if (article == null) throw new Exception($"Article ID:{id} not found.");
-            return await BuildArticleViewModel(article, "en-US", false);
+            return await BuildArticleViewModel(article, "en-US");
         }
 
         /// <summary>
@@ -1224,7 +1227,7 @@ namespace Cosmos.Cms.Data.Logic
                     .Where(a => a.Published <= DateTimeOffset.UtcNow &&
                                 activeStatusCodes.Contains(a.StatusCode)) // Now filter on active status code.
                     .OrderByDescending(o => o.VersionNumber).FirstOrDefaultAsync();
-                return await base.BuildArticleViewModel(article, lang, false);
+                return await base.BuildArticleViewModel(article, lang, null);
             }
             else
             {
@@ -1233,7 +1236,7 @@ namespace Cosmos.Cms.Data.Logic
                     .Where(a => a.UrlPath == urlPath && activeStatusCodes.Contains(a.StatusCode))
                     .OrderByDescending(o => o.VersionNumber)
                     .FirstOrDefaultAsync();
-                return await base.BuildArticleViewModel(article, lang, false);
+                return await base.BuildArticleViewModel(article, lang);
             }
 
         }
