@@ -8,7 +8,7 @@
       "destination": "wwwroot/lib/signalr/"
     },
     {
-      "library": "monaco-editor@0.34.0",
+      "library": "monaco-editor@0.34.1",
       "destination": "wwwroot/lib/monaco-editor/"
     },
     {
@@ -30,7 +30,7 @@
       "destination": "wwwroot/lib/jquery/"
     },
     {
-      "library": "bootstrap@5.2.1",
+      "library": "bootstrap@5.2.2",
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
@@ -43,7 +43,7 @@
       "destination": "wwwroot/lib/jquery-validation/"
     },
     {
-      "library": "mdb-ui-kit@5.0.0",
+      "library": "mdb-ui-kit@6.0.0",
       "destination": "wwwroot/lib/mdb-ui-kit/"
     },
     {
