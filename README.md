@@ -1,12 +1,6 @@
 # Cosmos
 
-[![ubunto build](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/dotnet.yml) [![CodeQL](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/codeql-analysis.yml) 
-[![NuGet Badge](https://buildstats.info/nuget/CDT.Cosmos.Cms.Common)](https://www.nuget.org/packages/CDT.Cosmos.Cms.Common/)
-[![Unit Tests (67)](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/unittests.yml/badge.svg)](https://github.com/CosmosSoftware/Cosmos.Cms/actions/workflows/unittests.yml)
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/CosmosSoftware/CosmosCms/blob/main/Automation/Azure/azuredeploy.json)
-
-Quick links: [Getting Started](#getting-started-with-cosmos) | [Create Content](https://github.com/CosmosSoftware/Cosmos.Cms/tree/main/Documentation/Content) | [Create with VS Code](https://github.com/CosmosSoftware/Cosmos.Cms/blob/main/Documentation/Content/Editors/Creating-with-VS-Code.md) | [Technical Documentation](https://cosmos.moonrise.net/documentation)
+Cosmos is a NoSQL CMS/AMS that uses Cosmos DB, Azure Storage, and NodeJS for server-side scripting.
 
 ## Flexible Design
 
