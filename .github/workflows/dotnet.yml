@@ -25,7 +25,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Publish NuGet
-      run: dotnet nuget push /home/runner/work/CosmosCms.Common/CosmosCms.Common/Cosmos.Cms.Common/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
