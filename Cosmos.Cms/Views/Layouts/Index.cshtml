@@ -3,12 +3,18 @@
 
 @{
     ViewData["Title"] = "Website Layouts";
+    var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
 }
 
 <div class="container mt-5 pt-2">
     <div class="row">
         <div class="col">
             <h3>@ViewData["Title"]</h3>
+            
+            @if (showFirstPageBtn)
+            {
+                <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
+            }
             <hr />
             <p>Shown below lists the layouts loaded into your website.  Each gives your website a specific look for each page in your website.</p>
             <p>Click &quot;Create New&quot; to start building your own style.</p>

@@ -485,7 +485,7 @@ namespace Cosmos.Cms.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
+                    var article = await _articleLogic.Get(Id, EnumControllerName.Edit, User.Identity.Name);
 
                     var originalHtml = await _articleLogic.ExportArticle(article, _blobPublicAbsoluteUrl, _viewRenderService);
                     var originalHtmlDoc = new HtmlAgilityPack.HtmlDocument();

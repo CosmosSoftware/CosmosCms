@@ -39,6 +39,8 @@
             versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
         }
 
+        var modelId = $("#Id").val();
+
         switch (command) {
             case "Close":
                 next = function () {
@@ -49,14 +51,14 @@
                 break;
             case "Code":
                 next = function () {
-                    window.location.href = "@Url.Action("EditCode", "Editor")/@Model.Id";
+                    window.location.href = "@Url.Action("EditCode", "Editor")/" + modelId;
                 }
                 $("#divSaveFirstDialog").html("Save before opening code editor?");
                 saveFirstModal.show();
                 break;
             case "Preview":
                 next = function () {
-                    window.open("@Url.Action("Preview", "Home", new {Model?.Id})");
+                    window.open("@Url.Action("Preview", "Home")/" + modelId);
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
                 saveFirstModal.show();
@@ -101,6 +103,17 @@
 
         $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
 
+    });
+
+    $(window).bind('keydown', function (event) {
+        if (event.ctrlKey || event.metaKey) {
+            switch (String.fromCharCode(event.which).toLowerCase()) {
+                case 's':
+                    event.preventDefault();
+                    $("#frmSave").submit();
+                    break;
+            }
+        }
     });
 
     function saveChanges(myModal, next) {

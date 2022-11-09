@@ -223,7 +223,7 @@ namespace Cosmos.Cms.Controllers
                 if (Guid.TryParse(id, out var pageId))
                 {
                     ViewData["EditModeOn"] = false;
-                    var article = await _articleLogic.Get(pageId, EnumControllerName.Home);
+                    var article = await _articleLogic.Get(pageId, EnumControllerName.Home, User.Identity.Name);
 
                     // Check base header
                     article.UrlPath = $"/home/preview/{id}";

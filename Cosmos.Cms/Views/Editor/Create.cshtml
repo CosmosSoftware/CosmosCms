@@ -42,49 +42,8 @@
     <div>
         <a asp-action="Index">Back to List</a>
     </div>
-    <h4>Template preview:</h4>
-    <iframe id="ifPreview" style="background-image: url('https://beta.template.webstandards.ca.gov/images/main-banner9.jpg'); height: 100%; min-height: 600px; width: 100%;">
-    </iframe>
 </div>
-<script>
-    "use strict";
 
-    $(document).ready(function () {
-
-        $("#TemplateId").change(function () {
-            var iframe = $("#ifPreview");
-            $("#divNotes").html("");
-            if (iframe.length) {
-                var templateId = $("#TemplateId").val();
-                if (typeof (templateId) !== "undefined" && templateId !== null && templateId !== "") {
-                    getTemplateInfo(templateId);
-                    $("#previewBtn").show();
-                    var url = "@Url.Action("Preview", "Templates")/" + templateId;
-                    iframe.attr('src', url);
-                } else {
-                    $("#previewBtn").hide();
-                    iframe.attr('src', '');
-                }
-            }
-        });
-
-    });
-
-    function getTemplateInfo(templateId) {
-        $.get( "@Url.Action("GetTemplateInfo")/" + templateId, function( data ) {
-          var html = "<div><div class='card-header'>" + data.Title + "</div>";
-          html = html + "<div class='card-body'><p>Discription: </p>" + data.Description + "</div>";
-          html = html + "</div>";
-          $( "#divNotes" ).html( html );
-        });
-    }
-
-    function openPreview() {
-        var templateId = $("#TemplateId").val();
-        var url = "@Url.Action("Preview", "Templates")/" + templateId;
-        window.open(url, "Preview");
-    }
-</script>
 @{
     await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }

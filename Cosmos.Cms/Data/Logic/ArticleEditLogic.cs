@@ -273,6 +273,7 @@ namespace Cosmos.Cms.Data.Logic
         ///     Creates a new article, save it to the database before returning a copy for editing.
         /// </summary>
         /// <param name="title"></param>
+        /// <param name="userId"></param>
         /// <param name="templateId"></param>
         /// <returns>Unsaved article ready to edit and save</returns>
         /// <remarks>
@@ -280,14 +281,21 @@ namespace Cosmos.Cms.Data.Logic
         ///         Creates a new article, saves it to the database, and is ready to edit.  Uses <see cref="ArticleLogic.GetDefaultLayout" /> to get the
         ///         layout,
         ///         and builds the <see cref="ArticleViewModel" /> using method
-        ///         <seealso cref="ArticleLogic.BuildArticleViewModel" />. Creates a new article number.
+        ///         <seealso cref="ArticleLogic.BuildArticleViewModel(Article, string)" />. Creates a new article number.
         ///     </para>
         ///     <para>
         ///         If a template ID is given, the contents of this article is loaded with content from the <see cref="Template" />.
         ///     </para>
+        ///     <para>
+        ///         If this is the first article, it is saved as root and published immediately.
+        ///     </para>
         /// </remarks>
-        public async Task<ArticleViewModel> Create(string title, Guid? templateId = null)
+        public async Task<ArticleViewModel> Create(string title, string userId, Guid? templateId = null)
         {
+
+            // Is this the first article? If so, make it the root and publish it.
+            var isFirstArticle = (await DbContext.Articles.CosmosAnyAsync()) == false;
+
             var isValidTitle = await ValidateTitle(title, null);
 
             if (!isValidTitle)
@@ -338,13 +346,19 @@ namespace Cosmos.Cms.Data.Logic
                 StatusCode = 0,
                 Title = title,
                 Updated = DateTimeOffset.Now,
-                UrlPath = nextArticleNumber == 1 ? "root" : HandleUrlEncodeTitle(title),
-                VersionNumber = 1
+                UrlPath = isFirstArticle ? "root" : HandleUrlEncodeTitle(title),
+                VersionNumber = 1,
+                Published = isFirstArticle ? DateTimeOffset.UtcNow : null
             };
 
             DbContext.Articles.Add(article);
 
             await DbContext.SaveChangesAsync();
+
+            if (isFirstArticle)
+            {
+                await HandlePublishing(article, userId);
+            }
 
             // Finally update the catalog entry
             await UpdateCatalogEntry(article.ArticleNumber, (StatusCodeEnum)article.StatusCode);
@@ -391,6 +405,10 @@ namespace Cosmos.Cms.Data.Logic
             if (newHomeArticle != null)
                 await HandleLogEntry(newHomeArticle, $"Article {newHomeArticle.ArticleNumber} is now the new home page.",
                     userId);
+
+            // Handle publishing changes
+            await HandlePublishing(currentHome.FirstOrDefault(), userId);
+            await HandlePublishing(newHomeArticle, userId);
         }
 
         /// <summary>
@@ -528,7 +546,7 @@ namespace Cosmos.Cms.Data.Logic
             }
             else
             {
-                entity = await Get(model.Id, EnumControllerName.Edit);
+                entity = await Get(model.Id, EnumControllerName.Edit, userId);
                 entity.Content = model.Content;
                 entity.Published = model.Published;
                 entity.Title = model.Title;
@@ -1116,6 +1134,7 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="id">Row Id (or identity) number.  If null returns a new article.</param>
         /// <param name="controllerName"></param>
+        /// <param name="userId"></param>
         /// <remarks>
         ///     <para>
         ///         For new articles, uses <see cref="Create" /> and the method
@@ -1137,7 +1156,7 @@ namespace Cosmos.Cms.Data.Logic
         ///     </para>
         ///     <para>NOTE: Cannot access articles that have been deleted.</para>
         /// </remarks>
-        public async Task<ArticleViewModel> Get(Guid? id, EnumControllerName controllerName)
+        public async Task<ArticleViewModel> Get(Guid? id, EnumControllerName controllerName, string userId)
         {
             if (controllerName == EnumControllerName.Template)
             {
@@ -1157,7 +1176,7 @@ namespace Cosmos.Cms.Data.Logic
             if (id == null)
             {
                 var count = await DbContext.Articles.CountAsync();
-                return await Create("Page " + count);
+                return await Create("Page " + count, userId);
             }
 
             var article = await DbContext.Articles

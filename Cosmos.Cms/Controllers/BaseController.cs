@@ -38,6 +38,17 @@ namespace Cosmos.Cms.Controllers
         private readonly IOptions<CosmosConfig> _options;
 
         /// <summary>
+        /// Gets the user ID of the currently logged in user
+        /// </summary>
+        /// <returns></returns>
+        protected async Task<string> GetUserId()
+        {
+            // Get the user's ID for logging.
+            var user = await _baseUserManager.GetUserAsync(User);
+            return user.Id;
+        }
+
+        /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="dbContext"></param>

@@ -25,6 +25,7 @@ namespace CDT.Cosmos.Cms.Controllers
     {
         private readonly ArticleEditLogic _articleLogic;
         private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<IdentityUser> _userManager;
 
         /// <summary>
         /// Constructor
@@ -40,6 +41,7 @@ namespace CDT.Cosmos.Cms.Controllers
             ArticleEditLogic articleLogic) :
             base(dbContext, userManager, articleLogic, options)
         {
+            _userManager = userManager;
             _dbContext = dbContext;
             _articleLogic = articleLogic;
         }
@@ -187,7 +189,8 @@ namespace CDT.Cosmos.Cms.Controllers
         {
             var entity = await _dbContext.Templates.FirstOrDefaultAsync(f => f.Id == Id);
 
-            var model = await _articleLogic.Create("Template Preview");
+            var user = await _userManager.GetUserAsync(User);
+            var model = await _articleLogic.Create("Template Preview", user.Id);
             model.Content = entity?.Content;
             model.EditModeOn = false;
             model.ReadWriteMode = true;

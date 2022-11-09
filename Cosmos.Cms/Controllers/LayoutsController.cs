@@ -1,6 +1,4 @@
-﻿using Cosmos.BlobService.Config;
-using Cosmos.Cms.Common.Data;
-using Cosmos.Cms.Common.Data.Logic;
+﻿using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data.Logic;
@@ -8,7 +6,6 @@ using Cosmos.Cms.Models;
 using Cosmos.Cms.Services;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -131,6 +128,8 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index()
         {
+
+            ViewData["ShowFirstPageBtn"] = await _dbContext.Layouts.CosmosAnyAsync();
 
             if (!await _dbContext.Layouts.CosmosAnyAsync())
             {
@@ -431,7 +430,7 @@ namespace Cosmos.Cms.Controllers
             var layout = await _dbContext.Layouts.FindAsync(id);
             if (layout == null) return NotFound();
 
-            var model = await _articleLogic.Create("Layout Preview");
+            var model = await _articleLogic.Create("Layout Preview", await GetUserId());
             model.Layout = new LayoutViewModel(layout);
             model.EditModeOn = false;
             model.ReadWriteMode = false;
@@ -448,7 +447,7 @@ namespace Cosmos.Cms.Controllers
         public async Task<IActionResult> EditPreview(int id)
         {
             var layout = await _dbContext.Layouts.FindAsync(id);
-            var model = await _articleLogic.Create("Layout Preview");
+            var model = await _articleLogic.Create("Layout Preview", await GetUserId());
             model.Layout = new LayoutViewModel(layout);
             model.EditModeOn = true;
             model.ReadWriteMode = true;
@@ -463,7 +462,7 @@ namespace Cosmos.Cms.Controllers
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
         public async Task<IActionResult> ExportLayout(int? id)
         {
-            var article = await _articleLogic.Create("Blank Page");
+            var article = await _articleLogic.Create("Blank Page", await GetUserId());
 
             var view = "~/Views/Layouts/ExportLayout.cshtml";
             var exportName = $"layout-{article.Layout.Id}.html";

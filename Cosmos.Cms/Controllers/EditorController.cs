@@ -15,10 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,8 +36,7 @@ namespace Cosmos.Cms.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly Uri _blobPublicAbsoluteUrl;
         private readonly IViewRenderService _viewRenderService;
-
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -63,6 +60,7 @@ namespace Cosmos.Cms.Controllers
             _options = options;
             _userManager = userManager;
             _articleLogic = articleLogic;
+
 
             var htmlUtilities = new HtmlUtilities();
 
@@ -95,6 +93,8 @@ namespace Cosmos.Cms.Controllers
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
 
+            ViewData["ShowFirstPageBtn"] = await _dbContext.Layouts.CosmosAnyAsync();
+
             var model = await _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
             {
                 ArticleNumber = s.ArticleNumber,
@@ -110,43 +110,6 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        ///     Creates a <see cref="CreatePageViewModel" /> used to create a new article.
-        /// </summary>
-        /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> Create()
-        {
-            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
-
-            var templates = await _dbContext.Templates.Where(t => t.LayoutId == layout.Id).Select(s =>
-                        new SelectListItem
-                        {
-                            Value = s.Id.ToString(),
-                            Text = s.Title
-                        }).ToListAsync();
-
-            if (User.IsInRole("Team Members"))
-            {
-                var identityUser = await _userManager.GetUserAsync(User);
-
-                return View(new CreatePageViewModel
-                {
-                    Id = Guid.NewGuid(),
-                    Title = string.Empty,
-                    Templates = templates
-                });
-            }
-
-            ViewData["Teams"] = null;
-            return View(new CreatePageViewModel
-            {
-                Id = Guid.NewGuid(),
-                Title = string.Empty,
-                Templates = templates
-            });
-        }
-
-        /// <summary>
         /// Compare two versions.
         /// </summary>
         /// <param name="leftId"></param>
@@ -154,8 +117,9 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Compare(Guid leftId, Guid rightId)
         {
-            var left = await _articleLogic.Get(leftId, EnumControllerName.Edit);
-            var right = await _articleLogic.Get(rightId, EnumControllerName.Edit);
+            
+            var left = await _articleLogic.Get(leftId, EnumControllerName.Edit, await GetUserId());
+            var right = await _articleLogic.Get(rightId, EnumControllerName.Edit, await GetUserId());
 
             var model = new CompareCodeViewModel()
             {
@@ -208,10 +172,46 @@ namespace Cosmos.Cms.Controllers
             return Json(model);
         }
 
+
         /// <summary>
-        ///     Uses <see cref="ArticleEditLogic.Create(string, Guid?)" /> to create an <see cref="ArticleViewModel" /> that is
+        ///     Creates a <see cref="CreatePageViewModel" /> used to create a new article.
+        /// </summary>
+        /// <returns></returns>
+        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
+        public async Task<IActionResult> Create()
+        {
+            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
+
+            var templates = await _dbContext.Templates.Where(t => t.LayoutId == layout.Id).Select(s =>
+                        new SelectListItem
+                        {
+                            Value = s.Id.ToString(),
+                            Text = s.Title
+                        }).ToListAsync();
+
+            if (User.IsInRole("Team Members"))
+            {
+                return View(new CreatePageViewModel
+                {
+                    Id = Guid.NewGuid(),
+                    Title = string.Empty,
+                    Templates = templates
+                });
+            }
+
+            ViewData["Teams"] = null;
+            return View(new CreatePageViewModel
+            {
+                Id = Guid.NewGuid(),
+                Title = string.Empty,
+                Templates = templates
+            });
+        }
+
+        /// <summary>
+        ///     Uses <see cref="ArticleEditLogic.Create(string, string, Guid?)" /> to create an <see cref="ArticleViewModel" /> that is
         ///     saved to
-        ///     the database with <see cref="ArticleEditLogic.UpdateOrInsert(ArticleViewModel, string)" /> ready for editing.
+        ///     the database with <see cref="ArticleEditLogic.UpdateOrInsert(ArticleViewModel, string, bool)" /> ready for editing.
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -229,7 +229,7 @@ namespace Cosmos.Cms.Controllers
                 return View(model);
             }
 
-            var article = await _articleLogic.Create(model.Title, model.TemplateId);
+            var article = await _articleLogic.Create(model.Title, await GetUserId(), model.TemplateId);
 
             return RedirectToAction("Edit", new { article.Id });
         }
@@ -314,7 +314,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Duplicate(Guid id)
         {
-            var articleViewModel = await _articleLogic.Get(id, EnumControllerName.Edit);
+            var articleViewModel = await _articleLogic.Get(id, EnumControllerName.Edit, await GetUserId());
 
             ViewData["Original"] = articleViewModel;
 
@@ -364,9 +364,9 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
+            var userId = await GetUserId();
 
-
-            var articleViewModel = await _articleLogic.Get(model.Id, EnumControllerName.Edit);
+            var articleViewModel = await _articleLogic.Get(model.Id, EnumControllerName.Edit, userId);
 
             if (ModelState.IsValid)
             {
@@ -375,11 +375,9 @@ namespace Cosmos.Cms.Controllers
                 articleViewModel.Published = model.Published;
                 articleViewModel.Title = title;
 
-                var identityUser = await _userManager.GetUserAsync(User);
-
                 try
                 {
-                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, identityUser.Id, true);
+                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, userId, true);
 
                     return RedirectToAction("Edit", new { Id = result.Model.Id });
                 }
@@ -399,9 +397,9 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <returns></returns>
         [Authorize(Roles = "Administrators, Editors")]
-        public async Task<IActionResult> NewHome(Guid id)
+        public async Task<IActionResult> NewHome(int id)
         {
-            var page = await _articleLogic.Get(id, EnumControllerName.Edit);
+            var page = await _dbContext.Articles.FirstOrDefaultAsync(f => f.ArticleNumber == id);
             return View(new NewHomeViewModel
             {
                 Id = page.Id,
@@ -435,11 +433,7 @@ namespace Cosmos.Cms.Controllers
         [Authorize(Roles = "Administrators, Editors, Authors")]
         public async Task<IActionResult> Recover(int Id)
         {
-
-            // Get the user's ID for logging.
-            var user = await _userManager.GetUserAsync(User);
-
-            await _articleLogic.RetrieveFromTrash(Id, user.Id);
+            await _articleLogic.RetrieveFromTrash(Id, await GetUserId());
 
             return RedirectToAction("Trash");
         }
@@ -584,7 +578,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> CcmsContent(Guid Id)
         {
-            var article = await _articleLogic.Get(Id, EnumControllerName.Edit);
+            var article = await _articleLogic.Get(Id, EnumControllerName.Edit, await GetUserId());
 
             return View(article);
         }
@@ -609,7 +603,7 @@ namespace Cosmos.Cms.Controllers
                     //
                     // Get an article, or a template based on the controller name.
                     //
-                    var model = await _articleLogic.Get(pageId, EnumControllerName.Edit);
+                    var model = await _articleLogic.Get(pageId, EnumControllerName.Edit, await GetUserId());
                     ViewData["LastPubDateTime"] = await GetLastPublishingDate(model.ArticleNumber);
 
                     ViewData["PageTitle"] = model.Title;
@@ -673,7 +667,7 @@ namespace Cosmos.Cms.Controllers
 
 
             // Next pull the original.
-            var original = await _articleLogic.Get(model.Id, EnumControllerName.Edit);
+            var original = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
 
             // No editable divs, then don't do anything.
             if (modelEditableDivs == null)
@@ -718,14 +712,14 @@ namespace Cosmos.Cms.Controllers
             if (ModelState.IsValid)
             {
                 // Get the user's ID for logging.
-                var user = await _userManager.GetUserAsync(User);
+                var userId = await GetUserId();
 
 
                 // START SAVE TO DATABASE ********
                 //
                 // Now save the changes to the database here.
                 //
-                var result = await _articleLogic.UpdateOrInsert(model, user.Id, model.SaveAsNewVersion);
+                var result = await _articleLogic.UpdateOrInsert(model, userId, model.SaveAsNewVersion);
 
                 //
                 // Echo back the changes made.
@@ -796,7 +790,7 @@ namespace Cosmos.Cms.Controllers
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
         public async Task<IActionResult> EditCode(Guid id)
         {
-            var article = await _articleLogic.Get(id, EnumControllerName.Edit);
+            var article = await _articleLogic.Get(id, EnumControllerName.Edit, await GetUserId());
             if (article == null) return NotFound();
 
             // Validate security for authors before going further
@@ -873,7 +867,7 @@ namespace Cosmos.Cms.Controllers
             if (model == null) return NotFound();
 
             // Get the user's ID for logging.
-            var user = await _userManager.GetUserAsync(User);
+            var userId = await GetUserId();
 
             var article = await _dbContext.Articles.FirstOrDefaultAsync(f => f.Id == model.Id);
 
@@ -900,7 +894,7 @@ namespace Cosmos.Cms.Controllers
                     Updated = DateTimeOffset.Now,
                     UrlPath = article.UrlPath,
                     VersionNumber = article.VersionNumber
-                }, user.Id, model.SaveAsNewVersion);
+                }, userId, model.SaveAsNewVersion);
 
                 jsonModel.Model = new EditCodePostModel()
                 {
@@ -961,13 +955,15 @@ namespace Cosmos.Cms.Controllers
         public async Task<IActionResult> ExportPage(Guid? id)
         {
             ArticleViewModel article;
+            var userId = await GetUserId();
             if (id.HasValue)
             {
-                article = await _articleLogic.Get(id.Value, EnumControllerName.Edit);
+                article = await _articleLogic.Get(id.Value, EnumControllerName.Edit, userId);
             }
             else
             {
-                article = await _articleLogic.Create("Blank Page");
+                // Get the user's ID for logging.
+                article = await _articleLogic.Create("Blank Page", userId);
             }
 
             var html = await _articleLogic.ExportArticle(article, _blobPublicAbsoluteUrl, _viewRenderService);

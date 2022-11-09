@@ -166,7 +166,7 @@ namespace Cosmos.Cms.Hubs
                     }
                 default:
                     {
-                        var model = await _articleLogic.Get(Guid.Parse(id), Controllers.EnumControllerName.Edit);
+                        var model = await _articleLogic.Get(Guid.Parse(id), Controllers.EnumControllerName.Edit, "");
                         return JsonConvert.SerializeObject(model);
                     }
             }

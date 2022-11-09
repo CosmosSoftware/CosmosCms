@@ -7,6 +7,8 @@
     var publisherUrl = ViewData["PublisherUrl"];
     var isReviewer = User.IsInRole("Reviewers");
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
+
+    var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
 }
 <script src="~/js/clipboard.min.js"></script>
 
@@ -14,6 +16,11 @@
     <div class="row">
         <div class="col">
             <h3>@ViewData["Title"]</h3>
+
+            @if (showFirstPageBtn)
+            {
+                <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
+            }
             <hr />
         </div>
     </div>
@@ -41,7 +48,7 @@
                 .Build(col =>
                 {
                     col.Add(model => Html.ActionLink("", "Versions", "Editor", new { Id = model.ArticleNumber }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
-                    col.Add(b => b.IsDefault).RenderedAs(b => b.IsDefault == true ? "<i title='Is Home Page' class='fa-solid fa-house-user'></i>" : "").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
+                    col.Add(b => b.IsDefault).RenderedAs(b => b.IsDefault == true ? "<div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>" : "<a href='/Editor/NewHome/" + b.ArticleNumber + "' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
                     col.Add(b => b.ArticleNumber).Titled("#").Css("text-center").Sortable(false).Filterable(false).Width("80px");
                     col.Add(b => b.Title).Titled("Title").RenderedAs(b => $"<a href='/Editor/Versions/{b.ArticleNumber}'>{b.Title}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
                     col.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double);
