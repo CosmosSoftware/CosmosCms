@@ -367,6 +367,7 @@
                         "displayName": "appsettings"
                     },
                     "properties": {
+                        "CosmosIdentityDbName": "[parameters('databaseName')]",
                         "CosmosPrimaryCloud": "azure",
                         "DOCKER_REGISTRY_SERVER_PASSWORD": "",
                         "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
