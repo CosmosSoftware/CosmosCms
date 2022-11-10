@@ -2,7 +2,7 @@
 
 Cosmos is a NoSQL CMS/AMS that uses Cosmos DB, Azure Storage, and NodeJS for server-side scripting.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/CosmosSoftware/CosmosCms/blob/main/Automation/Azure/azuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgithub.com%2FCosmosSoftware%2FCosmosCms%2Fblob%2Fmain%2FAutomation%2FAzure%2Fazuredeploy.json)
 
 ## Flexible Design
 
