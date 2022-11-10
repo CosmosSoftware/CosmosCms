@@ -17,24 +17,11 @@
                 "description": "SendGrid account API Key for this application."
             }
         },
-        "accountName": {
-            "type": "string",
-            "defaultValue": "[format('cosmos-{0}', uniqueString(resourceGroup().id))]",
-            "metadata": {
-                "description": "Cosmos DB account name"
-            }
-        },
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
             "metadata": {
                 "description": "Location for the Cosmos DB account."
-            }
-        },
-        "databaseName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name for the Cosmos DB database"
             }
         }
     },
@@ -44,13 +31,15 @@
         "storageAccountName": "[concat('files', uniquestring(resourceGroup().id))]",
         "appServicePlanName": "[concat('appplan', uniquestring(resourceGroup().id))]",
         "editorName": "[concat('editor-', uniquestring(resourceGroup().id))]",
-        "publisherName": "[concat('publisher-', uniquestring(resourceGroup().id))]"
+        "publisherName": "[concat('publisher-', uniquestring(resourceGroup().id))]",
+        "accountName": "[concat('cosmos-', uniqueString(resourceGroup().id))]",
+        "databaseName": "CosmosCMS"
     },
     "resources": [
         {
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "apiVersion": "2022-05-15",
-            "name": "[toLower(parameters('accountName'))]",
+            "name": "[toLower(variables('accountName'))]",
             "location": "[parameters('location')]",
             "properties": {
                 "enableFreeTier": true,
@@ -68,17 +57,17 @@
         {
             "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
             "apiVersion": "2022-05-15",
-            "name": "[format('{0}/{1}', toLower(parameters('accountName')), parameters('databaseName'))]",
+            "name": "[format('{0}/{1}', toLower(variables('accountName')), variables('databaseName'))]",
             "properties": {
                 "resource": {
-                    "id": "[parameters('databaseName')]"
+                    "id": "[variables('databaseName')]"
                 },
                 "options": {
                     "throughput": 1000
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(parameters('accountName')))]"
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', toLower(variables('accountName')))]"
             ]
         },
         {
@@ -194,7 +183,7 @@
                         "AzureBlobStorageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName')),'2015-05-01-preview').key1))]",
                         "CosmosAdminEmail": "[parameters('adminEmail')]",
                         "CosmosAllowSetup": "true",
-                        "CosmosIdentityDbName": "[parameters('databaseName')]",
+                        "CosmosIdentityDbName": "[variables('databaseName')]",
                         "CosmosPrimaryCloud": "azure",
                         "CosmosSendGridApiKey": "[parameters('sendGridApiKey')]",
                         "CosmosPublisherUrl": "[concat('https://', variables('publisherName'), '.azurewebsites.net')]",
@@ -217,7 +206,7 @@
                     ],
                     "properties": {
                         "ApplicationDbContextConnection": {
-                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
                             "type": "Custom"
                         }
                     }
@@ -367,7 +356,7 @@
                         "displayName": "appsettings"
                     },
                     "properties": {
-                        "CosmosIdentityDbName": "[parameters('databaseName')]",
+                        "CosmosIdentityDbName": "[variables('databaseName')]",
                         "CosmosAdminEmail": "[parameters('adminEmail')]",
                         "CosmosPrimaryCloud": "azure",
                         "DOCKER_REGISTRY_SERVER_PASSWORD": "",
@@ -385,7 +374,7 @@
                     ],
                     "properties": {
                          "ApplicationDbContextConnection": {
-                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
                             "type": "Custom"
                         }
                     }
