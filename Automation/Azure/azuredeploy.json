@@ -368,6 +368,7 @@
                     },
                     "properties": {
                         "CosmosIdentityDbName": "[parameters('databaseName')]",
+                        "CosmosAdminEmail": "[parameters('adminEmail')]",
                         "CosmosPrimaryCloud": "azure",
                         "DOCKER_REGISTRY_SERVER_PASSWORD": "",
                         "DOCKER_REGISTRY_SERVER_URL": "https://index.docker.io",
