@@ -2,6 +2,8 @@
 
 Cosmos is a NoSQL CMS/AMS that uses Cosmos DB, Azure Storage, and NodeJS for server-side scripting.
 
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FCosmosSoftware%2FCosmos.Cms%2Fmain%2FAutomation%2FAzure%2Fazuredeploy.json)
+
 ## Flexible Design
 
 Cosmos is a lightweight CMS that has a built-in WYSIWYG and Source Code editor, and it also allows you to create single page applications externally with your favorite IDE, and when ready, import them. Cosmos supports your favorite framework such as Angular, jQuery, React, Vue, Google Maps, Map Box, ESRI, Bing Maps ...and others. 
