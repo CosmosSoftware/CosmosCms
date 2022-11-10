@@ -192,7 +192,7 @@
                         "AzureBlobStorageEndPoint":"[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-07-01').primaryEndpoints.web]",
                         "AzureBlobStorageContainerName": "$web",
                         "AzureBlobStorageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName')),'2015-05-01-preview').key1))]",
-                        "CosmosAdminEmail": "[variables('storageAccountName')]",
+                        "CosmosAdminEmail": "[parameters('adminEmail')]",
                         "CosmosAllowSetup": "true",
                         "CosmosIdentityDbName": "[parameters('databaseName')]",
                         "CosmosPrimaryCloud": "azure",
