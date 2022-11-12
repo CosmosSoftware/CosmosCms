@@ -27,7 +27,7 @@ EXPOSE 80
 EXPOSE 443
 EXPOSE 2222
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["nuget.config", "."]
 COPY ["Cosmos.Cms/Cosmos.Cms.csproj", "Cosmos.Cms/"]
