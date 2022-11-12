@@ -129,7 +129,7 @@ namespace Cosmos.Cms.Controllers
         public async Task<IActionResult> Index()
         {
 
-            ViewData["ShowFirstPageBtn"] = await _dbContext.Layouts.CosmosAnyAsync();
+            ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
 
             if (!await _dbContext.Layouts.CosmosAnyAsync())
             {

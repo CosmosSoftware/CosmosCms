@@ -93,7 +93,7 @@ namespace Cosmos.Cms.Controllers
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
 
-            ViewData["ShowFirstPageBtn"] = await _dbContext.Layouts.CosmosAnyAsync();
+            ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
 
             var model = await _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
             {

@@ -25,7 +25,7 @@ namespace Cosmos.Cms.Controllers
     /// <summary>
     /// Home page controller
     /// </summary>
-    [Authorize(Roles = "Reviewers,Authors,Editors,Administrators")]
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ArticleEditLogic _articleLogic;

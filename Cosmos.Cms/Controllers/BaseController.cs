@@ -137,67 +137,6 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Flushes CDN if one is configured
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="paths"></param>
-        /// <returns></returns>
-        internal async Task<JsonResult> FlushCdn(ILogger logger, string[] paths = null)
-        {
-
-            // Pause here to wait for local memory caches to drain
-            Thread.Sleep(10000);
-
-            CdnPurgeViewModel model;
-
-            if (paths == null || !paths.Any())
-            {
-                paths = new string[] { "/*" };
-            }
-
-
-            paths = paths.Select(s => s.Replace("/root", "/")).Distinct().ToArray();
-
-            if (_options.Value.CdnConfig.AzureCdnConfig != null &&
-                !string.IsNullOrEmpty(_options.Value.CdnConfig.AzureCdnConfig.CdnProfileName))
-            {
-                var cdnManager = new AzureCdnService(_options, _dbContext, _articleEditLogic, logger);
-                model = await cdnManager.Purge(paths);
-            }
-            else if (_options.Value.CdnConfig.AkamaiContextConfig != null &&
-                     !string.IsNullOrEmpty(_options.Value.CdnConfig.AkamaiContextConfig.AccessToken))
-            {
-                string data = string.Empty;
-                var cdnManager = new AkamaiService(_options);
-                if (paths.Any(p => p.Contains("/*")))
-                {
-                    data = cdnManager.PurgeCdnByCpCode();
-                }
-                else
-                {
-                    var publisherUrl = _options.Value.SiteSettings.PublisherUrl.TrimEnd('/');
-                    var url = new Uri(publisherUrl);
-                    data = cdnManager.PurgeCdnByUrls(url.Host, paths);
-                }
-                model = Newtonsoft.Json.JsonConvert.DeserializeObject<CdnPurgeViewModel>(data);
-                model.Detail = "Akamai Premium";
-            }
-            else
-            {
-                model = new CdnPurgeViewModel
-                {
-                    Detail = "No CDN configured",
-                    EstimatedSeconds = 0,
-                    HttpStatus = "OK",
-                    PurgeId = "",
-                    SupportId = ""
-                };
-            }
-
-            return Json(model);
-        }
-
-        /// <summary>
         ///     Generates a random string of 32 numbers and charachers.
         /// </summary>
         /// <returns></returns>

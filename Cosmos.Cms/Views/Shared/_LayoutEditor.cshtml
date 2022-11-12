@@ -35,21 +35,39 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item" id="btnFiles">
-                        <a class="nav-link" onclick=" bgEditClick('Files')">Files</a>
-                    </li>
-                    <li class="nav-item" id="btnCcmsCodeEditor" style="display:none">
-                        <a class="nav-link" onclick="bgEditClick('Code')">Code</a>
-                    </li>
-                    <li class="nav-item" id="btnPreview">
-                        <a class="nav-link" onclick="bgEditClick('Preview')">Preview</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" onclick="bgEditClick('Close')">Close</a>
-                    </li>
-                    <li id="liBtnVersions" class="nav-item" style="display:none">
-                        <a id="btnVersions" class="nav-link" target="_blank">Versions</a>
-                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Edit Menu
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li id="btnFiles">
+                                <a class="dropdown-item" onclick=" bgEditClick('Files')">Files</a>
+                            </li>
+                            <li id="btnCcmsCodeEditor" style="display:none">
+                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
+                            </li>
+                            <li id="btnPreview">
+                                <a class="dropdown-item" onclick="bgEditClick('Preview')">Preview</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" onclick="bgEditClick('Close')">Close</a>
+                            </li>
+                            <li id="liBtnVersions" style="display:none">
+                                <a id="btnVersions" class="dropdown-item" target="_blank">Versions</a>
+                            </li>
+                        </ul>
+                        </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="btnSave" data-bs-toggle="dropdown" aria-expanded="false">
+                            Save
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a></li>
+                            <li id="btnSaveAsDraft"><a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a></li>
+                            <li id="btnSaveAndPublish" style="display:none;"><a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a></li>
+                        </ul>
+                    </div>
                 </ul>
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
                 <div id="lblTitle" class="navbar-text">Title:</div>
@@ -57,16 +75,6 @@
                 <div class="navbar-text">Published:</div>
                 <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData["Published"])" />
 
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="btnSave" data-bs-toggle="dropdown" aria-expanded="false">
-                        Save
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end">
-                        <li><a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a></li>
-                        <li id="btnSaveAsDraft"><a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a></li>
-                        <li id="btnSaveAndPublish" style="display:none;"><a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a></li>
-                    </ul>
-                </div>
             </div>
         </div>
     </nav>
@@ -249,7 +257,7 @@
         </div>
     </div>
 
-    <div class="toast-container position-fixed top-0 end-0">
+    <div class="toast-container position-fixed top-0 start-0">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-body" id="liveToastMsg">
                 Saving...

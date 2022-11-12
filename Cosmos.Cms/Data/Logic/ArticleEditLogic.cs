@@ -330,18 +330,17 @@ namespace Cosmos.Cms.Data.Logic
 
             DateTimeOffset? published = (await DbContext.Articles.CosmosAnyAsync()) ? null : DateTimeOffset.UtcNow.AddMinutes(-5);
 
-            int nextArticleNumber = 1; // Default to start with if there are no articles yet.
-
-            if (await DbContext.Articles.CosmosAnyAsync())
-            {
-                nextArticleNumber = await DbContext.Articles.MaxAsync(a => a.ArticleNumber) + 1;
-            }
-
+            // Max returns the incorrect result.
+            var max = await DbContext.ArticleNumbers.MaxAsync(m => m.LastNumber);
+           
+            // Increment
+            max++;
+    
             //
             // New article
             var article = new Article()
             {
-                ArticleNumber = nextArticleNumber,
+                ArticleNumber = max,
                 Content = defaultTemplate,
                 StatusCode = 0,
                 Title = title,
@@ -352,6 +351,10 @@ namespace Cosmos.Cms.Data.Logic
             };
 
             DbContext.Articles.Add(article);
+            DbContext.ArticleNumbers.Add(new ArticleNumber()
+            {
+                 LastNumber = max
+            });
 
             await DbContext.SaveChangesAsync();
 
