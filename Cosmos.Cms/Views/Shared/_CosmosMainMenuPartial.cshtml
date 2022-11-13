@@ -28,7 +28,7 @@
                 @if (Model != null)
                 {
                     <li class="nav-item dropdown">
-                        <a id="navbarEditDropdown" data-ccms-urlpath="@Model.UrlPath" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a id="navbarEditDropdown" onclick="loadDdEditMenu()" data-ccms-urlpath="@Model.UrlPath" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Edit
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" id="ddEditMenu">
@@ -75,7 +75,12 @@
     function loadDdEditMenu() {
         const ddMenu = $("#ddEditMenu");
 
-        var urlPath = $("#navbarEditDropdown").attr("data-ccms-urlpath");
+        //var urlPath = $("#navbarEditDropdown").attr("data-ccms-urlpath");
+
+        const iframe = document.getElementById("iFrameWebPage");
+        const iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+
+        const urlPath = iframeWin.ccmsUrlPath;
 
         var loadList = @((Model != null).ToString().ToLower());
 
@@ -131,5 +136,4 @@
         }
     }
 
-    // $(document).ready(function () { loadDdEditMenu(); });
 </script>

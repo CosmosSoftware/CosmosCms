@@ -20,16 +20,10 @@
     <script>
         // The following is used to wireup the menu links to this page.
         function setupIframe() {
-            var iframe = document.getElementById("iFrameWebPage");
-            var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+            const iframe = document.getElementById("iFrameWebPage");
+            const iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
                 iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
-                //var anchors = iframeWin.document.querySelectorAll("a");
-                //anchors.forEach(function (el) {
-                //    el.onclick = function () {
-                //        window.location.href = el.href;
-                //    };
-                //});
             }
         };
     </script>
