@@ -184,7 +184,7 @@
             form.serialize(),
             function (response) {
 
-                //doneSaving();
+                doneSaving();
 
                 if (response.IsValid) {
                     if (typeof (next) !== "undefined" && next !== null) {
@@ -294,6 +294,22 @@
                     break;
             }
         }
+    });
+
+    var timeout;
+
+    $(window).bind('keyup', function (event) {
+       // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(timeout);
+
+        // Make a new timeout set to go off in 1000ms (1 second)
+        timeout = setTimeout(function () {
+            if (getAutoSave()) {
+                $("#frmSave").submit();
+            }
+        }, 3000);
     });
 
 </script>

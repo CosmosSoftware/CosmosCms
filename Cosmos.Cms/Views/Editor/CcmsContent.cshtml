@@ -31,13 +31,14 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <script src="/lib/ckeditor/build/ckeditor.js"></script>
+    <script src="/lib/ckeditor/build_20221113.01/ckeditor.js"></script>
     <script>
 
         // Create editors
         var editors = [];
         var editorIds = [];
         var unmoutCkBox;
+        const HTTP_SERVER_LAG = 1500;
 
         document.addEventListener("DOMContentLoaded", function (event) {
             createEditors();
@@ -45,26 +46,95 @@
 
         function createEditors() {
 
-            var editorDivs = document.querySelectorAll('[data-ccms-ceid]');
+            const inlineInjectElements = document.querySelectorAll('[data-ccms-ceid]');
 
-            editorDivs.forEach(function (e) {
+            Array.from(inlineInjectElements).forEach(inlineElement => {
 
-                var id = e.getAttribute("data-ccms-ceid");
-
-                editorIds.push(id);
-
-                InlineEditor.create(e,
-                    {
-                        updateSourceElementOnDestroy: true,
-                        simpleUpload: {
-                            // The URL that the images are uploaded to.
-                            uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
-                            // Enable the XMLHttpRequest.withCredentials property.
-                            withCredentials: true
+                const config = {
+                    toolbar: {},
+                    licenseKey: '',
+                    autosave: {
+                        save(editor) {
+                            return saveEditorChanges();
                         }
+                    },
+                    simpleUpload: {
+                        // The URL that the images are uploaded to.
+                        uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
+                        // Enable the XMLHttpRequest.withCredentials property.
+                        withCredentials: true
+                    }
+                };
+
+                if (inlineElement.tagName.toLowerCase() == 'header') {
+                    config.removePlugins = [
+                        'Alignment',
+                        'Autoformat',
+                        'AutoImage',
+                        'AutoLink',
+                        'BlockQuote',
+                        'Bold',
+                        'CloudServices',
+                        'CodeBlock',
+                        'Essentials',
+                        'FindAndReplace',
+                        'FontColor',
+                        'FontSize',
+                        'Highlight',
+                        'HorizontalLine',
+                        'Image',
+                        'ImageCaption',
+                        'ImageInsert',
+                        'ImageResize',
+                        'ImageStyle',
+                        'ImageToolbar',
+                        'ImageUpload',
+                        'Indent',
+                        'IndentBlock',
+                        'Italic',
+                        'LinkImage',
+                        'List',
+                        'ListProperties',
+                        'MediaEmbed',
+                        'MediaEmbedToolbar',
+                        'Paragraph',
+                        'PasteFromOffice',
+                        'SimpleUploadAdapter',
+                        'Table',
+                        'TableCaption',
+                        'TableCellProperties',
+                        'TableColumnResize',
+                        'TableProperties',
+                        'TableToolbar',
+                        'TextTransformation',
+                        'Underline'
+                    ];
+                    config.toolbar.items = ['heading', '|', 'link'];
+                }
+
+                InlineEditor
+                    .create(inlineElement, config)
+                    .then(editor => {
+                        window.editor = editor;
+                        editors.push(editor);
                     })
-                    .then(editor => editors.push(editor))
-                    .catch(error => { console.error(error); });
+                    .catch(error => {
+                        console.error('Oops, something went wrong!');
+                        console.error('Please, report the following error on https://github.com/ckeditor/ckeditor5/issues with the build id and the error stack trace:');
+                        console.warn('Build id: dfs1odnc554f-b7xm83g7lami');
+                        console.error(error);
+                    });
+
+            });
+
+        }// End createEditors
+
+        function saveEditorChanges() {
+            return new Promise(resolve => {
+                if (parent.getAutoSave()) {
+                    var savePromise = parent.saveChanges(null, null);
+                }
+                resolve();
             });
         }
     </script>

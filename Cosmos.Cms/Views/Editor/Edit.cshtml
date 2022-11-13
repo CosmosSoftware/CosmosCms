@@ -118,99 +118,101 @@
 
     function saveChanges(myModal, next) {
 
-        saving();
+        return new Promise(function (resolve, reject) {
+            saving();
 
-        if (typeof (myModel) !== "undefined" && myModel !== null) {
-            myModal.hide();
-        }
+            if (typeof (myModel) !== "undefined" && myModel !== null) {
+                myModal.hide();
+            }
 
-        var contents = $("#ccmsContFrame").contents();
+            var contents = $("#ccmsContFrame").contents();
 
-        var editorContainers = contents.find("[data-ccms-ceid]");
-        $(editorContainers).css("border", "");
+            var editorContainers = contents.find("[data-ccms-ceid]");
+            $(editorContainers).css("border", "");
 
-        var iframe = document.getElementById("ccmsContFrame");
+            var iframe = document.getElementById("ccmsContFrame");
 
-        var updates = [];
+            var updates = [];
 
-        iframe.contentWindow.editors.forEach(function (e, index) {
-            var id = iframe.contentWindow.editorIds[index];
-            updates.push(e.getData());
-            //e.destroy();
-        });
+            iframe.contentWindow.editors.forEach(function (e, index) {
+                var id = iframe.contentWindow.editorIds[index];
+                updates.push(e.getData());
+                //e.destroy();
+            });
 
-        iframe.contentWindow.editorIds.forEach(function (id, index) {
-            var elements = contents.find("[data-ccms-ceid='" + id + "']");
-            var el = elements[0];
-            var html = updates[index];
-            el.innerHTML = html;
-        });
-
-        var div = contents.find("[ccms-content-id='@Model.Id']");
-        var cont = div[0];
-
-        // Save content
-        $("#Content").val(cont.innerHTML);
-        
-        $("#Title").val($("#tbTitle").val());
-        $("#Published").val($("#tbPublished").val());
-
-        var form = $('#frmSave');
-
-        var data = $("#frmSave").serialize();
-
-        $.post("@Url.Action("Edit")",
-            data,
-            function (response) {
-
-                doneSaving();
-
-                // Renable editors
-                $(editorContainers).css("border", "dashed 1px #dadada");
-
-                iframe.contentWindow.createEditors();
-
-                if (response.IsValid) {
-                    if (typeof (next) !== "undefined" && next !== null) {
-                        next();
-                        toastMsg("Successfully saved.");
-                    }
-
-                    // Reload the changed data.
-                    $("#Id").val(response.Model.Id);
-                    $("#ArticleNumber").val(response.Model.ArticleNumber);
-                    $("#UrlPath").val(response.Model.UrlPath);
-                    $("#VersionNumber").val(response.Model.VersionNumber);
-                    $("#Content").val(response.Model.Content);
-                    $("#RoleList").val(response.Model.RoleList);
-                    $("#Title").val(response.Model.Title);
-                    $("#Published").val(response.Model.Published);
-
-                    // Reload the frame
-                    iframe.load("/Editor/CcmsContent/" + response.Model.Id);
-
-                }
-                else {
-                    var errorMsg = "<h5>Error(s) detected while saving:</h5>";
-
-                    // Invalid response.
-                    $.each(response.Errors,
-                        function (index, error) {
-                            errorMsg = "<p>" + error.Key + "</p><ul>";
-                            $.each(error.Errors,
-                                function (index, innerError) {
-                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
-                                });
-                            errorMsg = errorMsg + "</ul>";
-                        });
-                    $("#divErrorLog").html(errorMsg);
-                    var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
-                    errorModal.show();
+            iframe.contentWindow.editorIds.forEach(function (id, index) {
+                var elements = contents.find("[data-ccms-ceid='" + id + "']");
+                var el = elements[0];
+                var html = updates[index];
+                if (typeof html !== "undefined") {
+                    el.innerHTML = html;
                 }
             });
 
-    }
+            var div = contents.find("[ccms-content-id='@Model.Id']");
+            var cont = div[0];
 
+            // Save content
+            $("#Content").val(cont.innerHTML);
+
+            $("#Title").val($("#tbTitle").val());
+            $("#Published").val($("#tbPublished").val());
+
+            var form = $('#frmSave');
+
+            var data = $("#frmSave").serialize();
+
+            $.post("@Url.Action("Edit")",
+                data,
+                function (response) {
+
+                    doneSaving();
+
+                    // Renable editors
+                    $(editorContainers).css("border", "dashed 1px #dadada");
+
+                    iframe.contentWindow.createEditors();
+
+                    if (response.IsValid) {
+                        if (typeof (next) !== "undefined" && next !== null) {
+                            next();
+                            toastMsg("Successfully saved.");
+                        }
+
+                        // Reload the changed data.
+                        $("#Id").val(response.Model.Id);
+                        $("#ArticleNumber").val(response.Model.ArticleNumber);
+                        $("#UrlPath").val(response.Model.UrlPath);
+                        $("#VersionNumber").val(response.Model.VersionNumber);
+                        $("#Content").val(response.Model.Content);
+                        $("#RoleList").val(response.Model.RoleList);
+                        $("#Title").val(response.Model.Title);
+                        $("#Published").val(response.Model.Published);
+
+                        // Reload the frame
+                        iframe.load("/Editor/CcmsContent/" + response.Model.Id);
+
+                    }
+                    else {
+                        var errorMsg = "<h5>Error(s) detected while saving:</h5>";
+
+                        // Invalid response.
+                        $.each(response.Errors,
+                            function (index, error) {
+                                errorMsg = "<p>" + error.Key + "</p><ul>";
+                                $.each(error.Errors,
+                                    function (index, innerError) {
+                                        errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
+                                    });
+                                errorMsg = errorMsg + "</ul>";
+                            });
+                        $("#divErrorLog").html(errorMsg);
+                        var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
+                        errorModal.show();
+                    }
+                }).done(resolve).fail(reject);
+        });
+    }
 
     $(window).bind('keydown', function (event) {
         if (event.ctrlKey || event.metaKey) {

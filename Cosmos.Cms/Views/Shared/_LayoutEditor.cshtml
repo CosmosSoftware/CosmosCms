@@ -36,38 +36,49 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Actions/Tools
+                        <a class="nav-link dropdown-toggle" id="btnSave" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            File
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li id="btnFiles">
-                                <a class="dropdown-item" onclick=" bgEditClick('Files')">Files</a>
+                            <li>
+                                <a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a>
                             </li>
-                            <li id="btnCcmsCodeEditor" style="display:none">
-                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
+                            <li id="btnSaveAsDraft">
+                                <a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a>
                             </li>
-                            <li id="btnPreview">
-                                <a class="dropdown-item" onclick="bgEditClick('Preview')">Preview</a>
+                            <li id="btnSaveAndPublish" style="display:none;">
+                                <a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a>
                             </li>
                             <li>
                                 <a class="dropdown-item" onclick="bgEditClick('Close')">Close</a>
                             </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li id="btnPreview">
+                                <a class="dropdown-item" onclick="bgEditClick('Preview')">Preview</a>
+                            </li>
+                            <li id="btnFiles">
+                                <a class="dropdown-item" onclick=" bgEditClick('Files')">File Manager</a>
+                            </li>
+                            <li id="btnCcmsCodeEditor" style="display:none">
+                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
+                            </li>
                             <li id="liBtnVersions" style="display:none">
-                                <a id="btnVersions" class="dropdown-item" target="_blank">Versions</a>
+                                <a id="btnVersions" class="dropdown-item" target="_blank">Page Versions</a>
                             </li>
                         </ul>
-                        </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="btnSave" data-bs-toggle="dropdown" aria-expanded="false">
-                            Save
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a></li>
-                            <li id="btnSaveAsDraft"><a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a></li>
-                            <li id="btnSaveAndPublish" style="display:none;"><a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a></li>
-                        </ul>
-                    </div>
+                    </li>
+                    <li>
+                        <div id="divAutoSave" class="form-check form-switch mt-2 ms-3">
+                            <input id="swAutoSave" class="form-check-input" type="checkbox" role="switch" checked="true">
+                            <label id="lblAutoSave" class="form-check-label text-light" for="swAutoSave">Autosave (on)</label>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="btn btn-sm btn-secondary mt-1 ms-3">
+                            <div id="spSaving" class="spinner-border spinner-border-sm text-light" role="status" style="display:none"></div>
+                            <span id="btnSavingText">Saved</span>
+                        </div>
+                    </li>
                 </ul>
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
                 <div id="lblTitle" class="navbar-text">Title:</div>
@@ -85,6 +96,20 @@
         var selectedFile = "";
         var saveFirstModal = null;
         var lastPublished = "@(((DateTimeOffset?)ViewData["LastPubDateTime"]))";
+        
+        function getAutoSave() {
+            return $("#swAutoSave").is(":checked");
+        }
+
+        function showSaving() {
+            $("#spSaving").show();
+            $("#btnSavingText").html("Saving...");
+        }
+
+        function showSaved() {
+            $("#spSaving").hide();
+            $("#btnSavingText").html("Saved");
+        }
 
         function bgEditClick(command) {
 
@@ -200,6 +225,14 @@
                     $("#btnSaveAndPublish").hide();
                 }
             });
+
+            $("#swAutoSave").click(function () {
+                if ($("#swAutoSave").is(":checked")) {
+                    $("#lblAutoSave").html("Autosave (on)");
+                } else {
+                    $("#lblAutoSave").html("Autosave (off)");
+                }
+            });
         });
 
         // Displays a 3 second message in a bootstrap toast.
@@ -213,13 +246,14 @@
         }
 
         function saving() {
-            var toast = new bootstrap.Toast(document.getElementById('liveToast'));
-            $("#liveToastMsg").html("Saving... <img height='36' src='/images/az-busy.gif' >");
-            toast.show();
+            //var toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            //$("#liveToastMsg").html("Saving... <img height='36' src='/images/az-busy.gif' >");
+            //toast.show();
+            showSaving();
         }
 
         function doneSaving() {
-            toastMsg("Done.")
+            showSaved();
         }
 
     </script>
@@ -253,14 +287,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast-container position-fixed top-0 start-0">
-        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-body" id="liveToastMsg">
-                Saving...
             </div>
         </div>
     </div>
