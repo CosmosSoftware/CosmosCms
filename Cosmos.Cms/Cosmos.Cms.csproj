@@ -135,7 +135,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.0.22" />
+		<PackageReference Include="AspNetCore.Identity.CosmosDb" Version="2.1.1" />
 		<PackageReference Include="AspNetCore.Identity.Services.SendGrid" Version="2.0.8" />
 		<PackageReference Include="AWSSDK.SecretsManager" Version="3.7.100.16" />
 		<PackageReference Include="Azure.ResourceManager.Cdn" Version="1.0.1" />
