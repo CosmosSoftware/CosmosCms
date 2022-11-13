@@ -37,24 +37,32 @@
                         </ul>
                     </li>
                 }
-                <li class="nav-item">
-                    <a class="nav-link" title="List of pages on this website." href="/Editor/Index">Pages</a>
+                <li class="nav-item dropdown">
+                    <a href="#" role="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Manage
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" id="ddEditMenu">
+                        <li>
+                            <a class="dropdown-item" title="List of pages on this website." href="/Editor/Index">Pages</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Files</a>
+                        </li>
+                        @if (isAdministrator || isEditor)
+                        {
+                            <li>
+                                <a class="dropdown-item" title="Manage NodeJS APIs for this website." href="/Code/Index">API</a>
+                            </li>
+                        }
+                        @if (isAdministrator)
+                        {
+                            <li>
+                                <a class="dropdown-item" title="Manage user accounts." href="/Users/Index">Users</a>
+                            </li>
+                        }
+                    </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" title="Open files stored on this website." href="/FileManager/Index">Files</a>
-                </li>
-                @if (isAdministrator || isEditor)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link" title="Manage NodeJS APIs for this website." href="/Code/Index">API</a>
-                    </li>
-                }
-                @if (isAdministrator)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link" title="Manage user accounts." href="/Users/Index">Users</a>
-                    </li>
-                }
+                
             </ul>
 
             <div class="d-flex">
