@@ -24,16 +24,10 @@
     @Html.Raw(Model.FooterJavaScript)
     <form>@Html.AntiForgeryToken()</form>
     <script>
+        var ccmsUrlPath = "@Model.UrlPath";
         window.addEventListener("load", () => {
             if (window.location === window.parent.location) {
                 location.href = "/Home/CcmsContentIndex?target=@Model.UrlPath";
-            } else {
-                // Update editor link url
-                var el = window.parent.document.getElementById("navbarEditDropdown");
-
-                if (typeof (el) !== "undefined" && el !== null) {
-                    el.setAttribute("data-ccms-urlpath", "@Model.UrlPath");
-                }
             }
         });
     </script>
