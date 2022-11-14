@@ -12,7 +12,6 @@
     <input type="hidden" asp-for="ArticleNumber" />
     <input type="hidden" asp-for="UrlPath" />
     <input type="hidden" asp-for="VersionNumber" />
-    <input type="hidden" asp-for="Content" />
     <input type="hidden" asp-for="RoleList" />
     <input type="hidden" asp-for="Title" />
     <input type="hidden" asp-for="Published" />
@@ -116,10 +115,36 @@
         }
     });
 
+    function postRegions(data) {
+        return new Promise(function (resolve, reject) {
+            var id = $("#Id").val();
+            var model = { Id: id, Regions: data };
+
+            var json = JSON.stringify(model);
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("PostRegions")",
+                /* jQuery will not send JSON unless you explicitly tell it to */
+                data: json,
+                /* contentType is important for MVC to be able to unpack the json */
+                contentType: 'application/json',
+                accept: 'application/json'
+            }).done(resolve).fail(reject);
+
+        });
+    }
+
     function saveChanges(myModal, next) {
 
         return new Promise(function (resolve, reject) {
             saving();
+
+            var editieditibleAreasbleAreas = iframe.contentWindow.editibleAreas;
+
+            if (editibleAreas.length > 0) {
+                postRegions(editibleAreas);
+            }
 
             if (typeof (myModel) !== "undefined" && myModel !== null) {
                 myModal.hide();
@@ -184,7 +209,7 @@
                         $("#ArticleNumber").val(response.Model.ArticleNumber);
                         $("#UrlPath").val(response.Model.UrlPath);
                         $("#VersionNumber").val(response.Model.VersionNumber);
-                        $("#Content").val(response.Model.Content);
+                        //$("#Content").val(response.Model.Content);
                         $("#RoleList").val(response.Model.RoleList);
                         $("#Title").val(response.Model.Title);
                         $("#Published").val(response.Model.Published);

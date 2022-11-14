@@ -630,90 +630,33 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        ///     Saves an article via HTTP POST (AJAX) and returns JSON results.
+        ///     Saves an article meta data via HTTP POSTand returns JSON results.
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         /// <remarks>
-        ///     For published articles, flushes Redis and CDN
+        ///     Does not save article HTML. That is saved with <see cref="PostRegions"/>.
         /// </remarks>
         [HttpPost]
-        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
         public async Task<IActionResult> Edit(HtmlEditorViewModel model)
         {
             if (model == null) return NotFound();
-
-            // Kendo editor uses BOM, so strip that out here just in case 
-            // any find there way here.
-            //
-            // Strip Byte Order Marks (BOM)
-            model.Content = StripBOM(model.Content);
 
             //
             // The HTML editor edits the title and Content fields.
             // Next two lines detect any HTML errors with each.
             // Errors are saved in ModelState.
             model.Title = BaseValidateHtml("Title", model.Title);
-            model.Content = BaseValidateHtml("Content", model.Content);
-
-            //
-            // The WYSIWYG editor should only be allowed to edit content within the div tags
-            // marked with the attribute contenteditable="true"
-            //
-            // First pull out the editable DIVs from the model just submitted.
-            var modelHtmlDoc = new HtmlDocument();
-            modelHtmlDoc.LoadHtml(model.Content);
-            var modelEditableDivs = modelHtmlDoc.DocumentNode.SelectNodes("//*/div[@data-ccms-ceid]");
-
+            //model.Content = BaseValidateHtml("Content", model.Content);
 
             // Next pull the original.
             var original = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
-
-            // No editable divs, then don't do anything.
-            if (modelEditableDivs == null)
-            {
-                // Nothing should be edited because there are no editable DIVs.
-                model.Content = original.Content;
-            }
-            else
-            {
-                var originalHtmlDoc = new HtmlDocument();
-                originalHtmlDoc.LoadHtml(original.Content);
-                var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*/div[@data-ccms-ceid]");
-
-                // The number of editable DIVs incoming should match the number in the original.
-                if (modelEditableDivs.Count == originalEditableDivs.Count)
-                {
-                    foreach (var originaDiv in originalEditableDivs)
-                    {
-                        var id = originaDiv.Attributes["data-ccms-ceid"].Value;
-                        var inputDiv = modelEditableDivs.FirstOrDefault(w => w.Attributes["data-ccms-ceid"].Value == id);
-                        if (inputDiv != null)
-                        {
-                            originaDiv.InnerHtml = inputDiv.InnerHtml; // Modify the original
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("Content", $"Could not match editable div '{id}' with original.");
-                        }
-                    }
-
-                    // Now carry over what's beein updated to the original.
-                    model.Content = originalHtmlDoc.DocumentNode.OuterHtml;
-                }
-                else
-                {
-                    ModelState.AddModelError("Content", "The number of editable sections in this page does not match the original. Cannot save.");
-                }
-            }
-
-
+                        
             // Make sure model state is valid
             if (ModelState.IsValid)
             {
                 // Get the user's ID for logging.
                 var userId = await GetUserId();
-
 
                 // START SAVE TO DATABASE ********
                 //
@@ -728,11 +671,11 @@ namespace Cosmos.Cms.Controllers
                 model.UrlPath = result.Model.UrlPath;
                 model.ArticleNumber = result.Model.ArticleNumber;
                 model.VersionNumber = result.Model.VersionNumber;
-                model.Content = result.Model.Content;
                 model.Id = result.Model.Id;
                 model.Title = result.Model.Title;
                 model.Published = result.Model.Published;
-                
+
+
 
                 //
                 // END  SAVE TO  DATABASE ********
@@ -780,6 +723,41 @@ namespace Cosmos.Cms.Controllers
             };
 
             return Json(data);
+        }
+
+        /// <summary>
+        /// Updates editable regions
+        /// </summary>
+        /// <param name="model"></param>
+        /// <remarks>FromBody is used because the jQuery call puts the JSON in the body, not the "Form" as this is a JSON content type.</remarks>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
+        public async Task<IActionResult> PostRegions([FromBody]HtmlEditorPost model)
+        {
+            // Next pull the original.
+            var article = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
+
+            // Get the editable regions from the original document.
+            var originalHtmlDoc = new HtmlDocument();
+            originalHtmlDoc.LoadHtml(article.Content);
+            var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*/div[@data-ccms-ceid]");
+
+            foreach (var region in model.Regions)
+            {
+                var target = originalEditableDivs.FirstOrDefault(w => w.Attributes["data-ccms-ceid"].Value == region.Id);
+                if (target != null)
+                {
+                    target.InnerHtml = region.Html;
+                }
+            }
+
+            // Now carry over what's beein updated to the original.
+            article.Content = originalHtmlDoc.DocumentNode.OuterHtml;
+
+            _ = await _articleLogic.UpdateOrInsert(article, await GetUserId(), false);
+
+            return Ok();
         }
 
         /// <summary>

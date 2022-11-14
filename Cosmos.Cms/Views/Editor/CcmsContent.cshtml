@@ -37,6 +37,7 @@
         // Create editors
         var editors = [];
         var editorIds = [];
+        var editibleAreas = [];
         var unmoutCkBox;
         const HTTP_SERVER_LAG = 1500;
 
@@ -55,7 +56,7 @@
                     licenseKey: '',
                     autosave: {
                         save(editor) {
-                            return saveEditorChanges();
+                            return saveEditorChanges(editor);
                         }
                     },
                     simpleUpload: {
@@ -129,13 +130,40 @@
 
         }// End createEditors
 
-        function saveEditorChanges() {
+        function saveEditorChanges(editor) {
             return new Promise(resolve => {
+                updateArea(editor);
+
                 if (parent.getAutoSave()) {
-                    var savePromise = parent.saveChanges(null, null);
+                    var savePromise = parent.postRegions(editibleAreas);
                 }
                 resolve();
             });
+        }
+
+        function updateArea(editor) {
+
+            var sourceElement = editor.sourceElement;
+            var id = sourceElement.getAttribute("data-ccms-ceid");
+
+            if (editibleAreas.length === 0) {
+
+                var item = { Id: id, Html: editor.getData() };
+
+                editibleAreas.push(item);
+
+            } else {
+
+                var i = editibleAreas.findIndex((ed => ed.Id == id));
+
+                if (i === -1) {
+                    var item = { Id: id, Html: editor.getData() };
+                    editibleAreas.push(item);
+
+                } else {
+                    editibleAreas[i].Html = editor.getData();
+                }
+            }
         }
     </script>
 </body>

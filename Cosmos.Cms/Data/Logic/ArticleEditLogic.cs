@@ -538,7 +538,7 @@ namespace Cosmos.Cms.Data.Logic
                 entity = new ArticleViewModel()
                 {
                     ArticleNumber = model.ArticleNumber,
-                    Content = model.Content,
+                    Content = "",
                     Id = model.Id,
                     Published = model.Published,
                     RoleList = model.RoleList,
@@ -550,7 +550,7 @@ namespace Cosmos.Cms.Data.Logic
             else
             {
                 entity = await Get(model.Id, EnumControllerName.Edit, userId);
-                entity.Content = model.Content;
+                
                 entity.Published = model.Published;
                 entity.Title = model.Title;
                 entity.RoleList = model.RoleList;
