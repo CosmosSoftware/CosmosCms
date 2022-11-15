@@ -140,7 +140,9 @@
         return new Promise(function (resolve, reject) {
             saving();
 
-            var editieditibleAreasbleAreas = iframe.contentWindow.editibleAreas;
+            const iframe = document.getElementById("ccmsContFrame");
+
+            const editibleAreas = iframe.contentWindow.editibleAreas;
 
             if (editibleAreas.length > 0) {
                 postRegions(editibleAreas);
@@ -150,32 +152,30 @@
                 myModal.hide();
             }
 
-            var contents = $("#ccmsContFrame").contents();
+            const contents = $("#ccmsContFrame").contents();
 
-            var editorContainers = contents.find("[data-ccms-ceid]");
+            const editorContainers = contents.find("[data-ccms-ceid]");
             $(editorContainers).css("border", "");
 
-            var iframe = document.getElementById("ccmsContFrame");
-
-            var updates = [];
+            const updates = [];
 
             iframe.contentWindow.editors.forEach(function (e, index) {
-                var id = iframe.contentWindow.editorIds[index];
+                const id = iframe.contentWindow.editorIds[index];
                 updates.push(e.getData());
                 //e.destroy();
             });
 
             iframe.contentWindow.editorIds.forEach(function (id, index) {
-                var elements = contents.find("[data-ccms-ceid='" + id + "']");
-                var el = elements[0];
-                var html = updates[index];
+                const elements = contents.find("[data-ccms-ceid='" + id + "']");
+                const el = elements[0];
+                const html = updates[index];
                 if (typeof html !== "undefined") {
                     el.innerHTML = html;
                 }
             });
 
-            var div = contents.find("[ccms-content-id='@Model.Id']");
-            var cont = div[0];
+            const div = contents.find("[ccms-content-id='@Model.Id']");
+            const cont = div[0];
 
             // Save content
             $("#Content").val(cont.innerHTML);
@@ -183,7 +183,7 @@
             $("#Title").val($("#tbTitle").val());
             $("#Published").val($("#tbPublished").val());
 
-            var form = $('#frmSave');
+            const form = $('#frmSave');
 
             var data = $("#frmSave").serialize();
 
@@ -214,9 +214,6 @@
                         $("#Title").val(response.Model.Title);
                         $("#Published").val(response.Model.Published);
 
-                        // Reload the frame
-                        iframe.load("/Editor/CcmsContent/" + response.Model.Id);
-
                     }
                     else {
                         var errorMsg = "<h5>Error(s) detected while saving:</h5>";
@@ -232,7 +229,7 @@
                                 errorMsg = errorMsg + "</ul>";
                             });
                         $("#divErrorLog").html(errorMsg);
-                        var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
+                        const errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
                         errorModal.show();
                     }
                 }).done(resolve).fail(reject);
