@@ -1,13 +1,10 @@
 ﻿using Cosmos.Cms.Common.Data;
-using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
 using Jering.Javascript.NodeJS;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Newtonsoft.Json;
@@ -15,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
-using System.Web.Helpers;
+using System.Dynamic;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -65,6 +62,11 @@ namespace Cosmos.Cms.Controllers
                     return View();
                 }
 
+                using var memStream = new MemoryStream();
+                await Request.Body.CopyToAsync(memStream);
+
+                var json = Encoding.UTF8.GetString(memStream.ToArray());
+
                 // Try to invoke from the NodeJS cache
                 //(bool success, var result) = await _nodeJSService.TryInvokeFromCacheAsync<string>(id, args: new[] { "success" });
 
@@ -80,14 +82,12 @@ namespace Cosmos.Cms.Controllers
                     script = await _dbContext.NodeScripts.Where(f => f.Id == gid &&  f.Published != null && f.Published <= DateTimeOffset.UtcNow).OrderByDescending(o => o.Version).FirstOrDefaultAsync();
                 }
 
-                var values = CodeController.GetArgs(Request, script);
-
                 ApiResult apiResult;
 
                 try
                 {
                     // Send the module string to NodeJS where it's compiled, invoked and cached.
-                    var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: values);
+                    var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: new string[] { json } );
 
                     apiResult = new ApiResult(result)
                     {
