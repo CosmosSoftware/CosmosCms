@@ -63,6 +63,15 @@ namespace Cosmos.Cms.Controllers
                 }
 
                 using var memStream = new MemoryStream();
+
+                //switch (Request.ContentType)
+                //{
+                //    case "application/json":
+
+                //        break;
+                //        case ""
+                //}
+
                 await Request.Body.CopyToAsync(memStream);
 
                 var json = Encoding.UTF8.GetString(memStream.ToArray());

@@ -129,6 +129,11 @@ namespace Cosmos.Cms
 
             services.AddCosmosStorageContext(Configuration);
 
+            // Add file share storage context
+            var fileStorageCon = Configuration.GetValue<string>("AzureFileStorageConnectionString");
+            var fileShare = Configuration.GetValue<string>("AzureFileShare");
+            services.AddSingleton(new FileStorageContext(fileStorageCon, fileShare));
+
             services.AddTransient<TranslationServices>();
             services.AddTransient<ArticleEditLogic>();
 

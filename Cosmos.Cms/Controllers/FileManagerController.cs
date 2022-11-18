@@ -164,9 +164,8 @@ namespace Cosmos.Cms.Controllers
 
         #region FILEPOND ENDPOINTS
 
-
         /// <summary>
-        /// Gets a unique GUID
+        /// Gets a unique GUID for FilePond
         /// </summary>
         /// <returns></returns>
         [HttpPost]

@@ -10,6 +10,11 @@
 
     var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
 }
+<style>
+    .toLocalTimeZone {
+        font-size: 0.8em;
+    }
+</style>
 <script src="~/js/clipboard.min.js"></script>
 
 <div class="container mt-5 pt-2">
@@ -51,8 +56,8 @@
                     col.Add(b => b.IsDefault).RenderedAs(b => b.IsDefault == true ? "<div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>" : "<a href='/Editor/NewHome/" + b.ArticleNumber + "' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
                     col.Add(b => b.ArticleNumber).Titled("#").Css("text-center").Sortable(false).Filterable(false).Width("80px");
                     col.Add(b => b.Title).Titled("Title").RenderedAs(b => $"<a href='/Editor/Versions/{b.ArticleNumber}'>{b.Title}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
-                    col.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double);
-                    col.Add(b => b.LastPublished).Titled("Published").Filterable(GridFilterType.Double);
+                    col.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
+                    col.Add(b => b.LastPublished).Titled("Published").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
                     if (canEdit)
                     {
                         col.Add().RenderedAs(b => b.IsDefault == true ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
@@ -98,6 +103,11 @@
         window.location.href = "@Url.Action("TrashArticle", "Editor")/" + articleNumber;
     }
 
+    $(document).ready(function () {
+        $(".toLocalTimeZone").each(function (index, element) {
+            $(element).html(getLocalTime($(element).html()));
+        });
+    });
 </script>
 
 <!-- Modal -->

@@ -2,7 +2,7 @@
 @using NonFactors.Mvc.Grid
 @model IQueryable<NodeScript>
 @{
-    ViewData["Title"] = "Script Inventory";
+    ViewData["Title"] = "API Management";
 
     var versions = $"<a class=\"btn btn-sm btn-primary\" href=\"{Url.Action("Versions", "Code")}/#: EndPoint #\" title=\"See a list of versions for this page\"><span class='fa fa-files-o'></span> Edit</a>";
     var copyUrl = "<button class=\"clipboard btn btn-sm btn-primary\" data-clipboard-text=\"#: EndPoint #\"  title='Click to copy url'><span class='fa fa-clipboard'></span> Copy URL</button>";
@@ -11,10 +11,7 @@
 
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
 }
-
-<h1>Script Inventory</h1>
-
-<div class="container mt-5 pt-2">
+<div class="container mt-1">
     <div class="row">
         <div class="col">
             <h3>@ViewData["Title"]</h3>
@@ -24,6 +21,8 @@
                 <a class="btn btn-sm btn-primary" asp-action="Create">New Script</a>
             }
             <a class="btn btn-sm btn-secondary" href="/Api">Swagger Catalog</a>
+            <a class="btn btn-sm btn-secondary" href="/Code/Library">Code Library</a>
+            <p class="mt-2 text-muted">API Endpoint Inventory:</p>
             @(
                 Html.Grid(Model)
                    .Build(col => {

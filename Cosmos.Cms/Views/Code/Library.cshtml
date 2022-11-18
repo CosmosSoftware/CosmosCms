@@ -7,7 +7,6 @@
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
     var editorExtensions = new string[] { ".js", ".css", ".html", ".htm", ".json", ".xml" };
-    var container = (string)ViewData["Container"];
 
     if (directoryOnly)
     {
@@ -15,7 +14,7 @@
     }
     else
     {
-        ViewData["Title"] = "Files List";
+        ViewData["Title"] = "Code Library";
     }
 
     var isReviewer = User.IsInRole("Reviewers");
@@ -44,7 +43,7 @@
             }
         </div>
     </div>
-    @if (pathPrefix.StartsWith("/pub") && directoryOnly == false)
+    @if (directoryOnly == false)
     {
         <div class="row">
             <div class="col-md-12">
@@ -52,8 +51,7 @@
                 <input type="file"
                    class="filepond"
                    id="filepond"
-                   name="files" data-file-metadata-path="@pathPrefix" data-file-metadata-container="@container"
-                   multiple>
+                   name="files" data-file-metadata-path="@pathPrefix" multiple>
             </div>
         </div>
     }
@@ -61,14 +59,7 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    @if (container.Equals("$web"))
-                    {
-                        <li class="breadcrumb-item"><a href="/FileManager/Index?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
-                    }
-                    else
-                    {
-                        <li class="breadcrumb-item"><a href="/FileManager/Index?target=/&container=@container&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
-                    }
+                    <li class="breadcrumb-item"><a href="/Code/Library?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
 
                     @{
                         var p = "";
@@ -78,12 +69,7 @@
                         if (item != "/")
                         {
                             p += "/" + item;
-                            var href = $"/FileManager/Index?target={p}&directoryOnly={directoryOnly}";
-                            if (!container.Equals("$web"))
-                            {
-                                href += $"&container={container}";
-                            }
-
+                            var href = $"/Code/Library?target={p}&directoryOnly={directoryOnly}";
                             <li class="breadcrumb-item"><a href="@href">@item</a></li>
                         }
                     }
@@ -109,17 +95,13 @@
             </div>
         </div>
         <div class="col-md-3">
-            @if (pathPrefix.StartsWith("/pub"))
-            {
-                <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
-                    <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
-                    <input type="hidden" name="DirectoryOnly" id="DirectoryOnly" value="@directoryOnly" />
-                    <input type="hidden" name="Container" id="DirectoryOnly" value="@container" />
-                    <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
+            <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
+                <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
+                <input type="hidden" name="DirectoryOnly" id="DirectoryOnly" value="@directoryOnly" />
+                <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
 
-                    <button class="btn btn-sm btn-secondary" type="submit">Create</button>
-                </form>
-            }
+                <button class="btn btn-sm btn-secondary" type="submit">Create</button>
+            </form>
         </div>
     </div>
     <div class="row">
@@ -137,13 +119,13 @@
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add().RenderedAs(r => (r.IsDirectory == false && container == "$web") ?
+                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Library?target={r.Path}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => (r.IsDirectory == false) ?
                     $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
-                    + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path={r.Path}&container={container}'><i class='fa-solid fa-code'></i></a>" : "")
+                    + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/Code/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
                     + "</div>"
                     : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/FileManager/Index?target={r.Path}&container={container}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name + r.Extension}</div>").Titled("Name").Encoded(false);
+                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Library?target={r.Path}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
                 })
@@ -169,7 +151,7 @@
 <script src="~/lib/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.min.js"></script>
 <script src="~/lib/filepond/filepond.min.js"></script>
 
-<div class="modal" id="checkFirstModal" tabindex="-1">
+<div class="modal mt-5" id="checkFirstModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -186,10 +168,10 @@
     </div>
 </div>
 
-<div class="modal" id="renameModal" tabindex="-1">
+<div class="modal mt-5" id="renameModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="frmChangeName" asp-action="Rename" method="post">
+            <form id="frmChangeName" asp-action="Rename" asp-controller="Code" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="BlobRootPath" name="BlobRootPath" value="@pathPrefix" />
                 <input type="hidden" id="FromBlobName" name="FromBlobName" value="@pathPrefix" />
@@ -253,7 +235,7 @@
 
 
     FilePond.setOptions({
-        server: "@Url.Action("Process")?container=@container"
+        server: "@Url.Action("Process")"
     });
 
     pond.on('addfile', (error, file) => {
@@ -271,7 +253,7 @@
 
     // Event handlers
     document.addEventListener('FilePond:processfiles', (e) => {
-        window.location.href = "@Url.Action("Index")?target=@pathPrefix&container=@container";
+        window.location.href = "@Url.Action("Library")?target=@pathPrefix";
     });
 
     let paths = [];
@@ -392,13 +374,13 @@
 
         var form = $('#frmChangeName');
 
-        $.post("@Url.Action("Rename", "FileManager")",
+        $.post("@Url.Action("Rename", "Code")",
             form.serialize(),
             function (response) {
                 clearSelection();
             })
             .done(function () {
-                window.location.href = "/FileManager/Index?target=@p&container=@container";
+                window.location.href = "/Code/Library?target=@p";
             })
             .fail(function () {
                 alert("error");
@@ -462,7 +444,7 @@
         switch (command) {
             case "cancel":
                 clearPaths();
-                window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
+                window.location.href = '@Url.Action("Library")?target=@pathPrefix';
                 break;
             case "delete":
                 $("#checkFirstTitle").html("Delete Verification");
@@ -472,14 +454,14 @@
                     $("#checkFirstDialog").html("Are you sure you want to permanently delete " + arrayLength + " items?");
                 }
                 next = function () {
-                    $.post('@Url.Action("Delete")?container=@container',   // url
+                    $.post('@Url.Action("DeleteItems")',   // url
                         {
                             ParentPath: '@pathPrefix',
                             Paths: paths
                         }, // data to be submit
                         function (data, status, jqXHR) {// success callback
                             clearSelection();
-                            window.location.href = '@Url.Action("Index")?target=@pathPrefix&container=@container';
+                            window.location.href = '@Url.Action("Library")?target=@pathPrefix';
                         })
                 }
                 break;
@@ -528,7 +510,7 @@
                 next = function () {
                     localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
                     clearSelection();
-                    window.location.href = '@Url.Action("Index")?target=@pathPrefix&directoryOnly=true&container=@container'
+                    window.location.href = '@Url.Action("Library")?target=@pathPrefix&directoryOnly=true'
                 };
                 break;
             case "moveItems":
@@ -544,17 +526,17 @@
                 $("#checkFirstDialog").html("Are you sure you want to move item(s) to: <br />" + paths[0]);
 
                 next = function () {
-                    $.post('@Url.Action("Move")?container=@container',   // url
+                    $.post('@Url.Action("Move")',   // url
                         {
                             Destination: dest,
                             Items: items
                         }, // data to be submit
                         function (response) {// success callback
-                            
+
                         })
                         .done(function () {
                             clearSelection();
-                            window.location.href = '@Url.Action("Index")?target=' + dest + '&container=@container';
+                            window.location.href = '@Url.Action("Library")?target=' + dest;
                         })
                         .fail(function () {
                             alert("error");
@@ -575,7 +557,7 @@
     }
 
     function download(p) {
-        window.location.href = encodeURI("@Url.Action("Download")?path=" + p + "&container=@container");
+        window.location.href = encodeURI("@Url.Action("Download")?path=" + p);
     }
 
 </script>
