@@ -22,7 +22,10 @@
     @Html.Raw(Model.Content)
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @Html.Raw(Model.FooterJavaScript)
-    <form>@Html.AntiForgeryToken()</form>
+
+    <form id="frm__ccmsxsr">
+        @Html.AntiForgeryToken()
+    </form>
     <script>
         var ccmsUrlPath = "@Model.UrlPath";
         window.addEventListener("load", () => {

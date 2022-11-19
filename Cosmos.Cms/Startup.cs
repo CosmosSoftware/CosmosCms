@@ -242,6 +242,13 @@ namespace Cosmos.Cms
                 options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/ccmssrc" : projectPath;
             });
 
+            services.Configure<OutOfProcessNodeJSServiceOptions>(options =>
+            {
+                // options.WatchFileNamePatterns = new[] { "*index.js" }; // Defaults are OK
+                options.EnableFileWatching = true;
+                options.WatchSubdirectories = true;
+            });
+
         }
 
         /// <summary>

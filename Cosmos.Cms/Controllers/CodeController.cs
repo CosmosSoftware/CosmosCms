@@ -6,6 +6,7 @@ using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
+using Google.Rpc;
 using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -550,7 +551,6 @@ namespace Cosmos.Cms.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Run(Guid Id)
         {
-
             var debugResult = new DebugViewModel()
             {
                 Id = Id
@@ -565,7 +565,7 @@ namespace Cosmos.Cms.Controllers
                 // Send the module string to NodeJS where it's compiled, invoked and cached.
                 if (string.IsNullOrEmpty(script.Code))
                 {
-                    await _nodeJSService.InvokeFromFileAsync(script.EndPoint, args: values);
+                    await _nodeJSService.InvokeFromFileAsync($"{script.EndPoint}", args: values.Select(s => s.Value).ToArray());
 
                 }
                 else
@@ -625,17 +625,17 @@ namespace Cosmos.Cms.Controllers
                     return values.ToArray();
                 }
 
-                if (request.ContentType == "application/json")
+                if (request.Form != null)
                 {
-
+                    return request.Form.Where(a => script.InputVars.Contains(a.Key))
+                   .Select(s => new ApiArgument()
+                   {
+                       Key = s.Key,
+                       Value = s.Value
+                   }).ToArray();
                 }
 
-                return request.Form.Where(a => script.InputVars.Contains(a.Key))
-                    .Select(s => new ApiArgument()
-                    {
-                        Key = s.Key,
-                        Value = s.Value
-                    }).ToArray();
+                return null;
             }
             else if (request.Method == "GET")
             {

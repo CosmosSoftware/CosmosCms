@@ -1,5 +1,5 @@
 ﻿using Cosmos.Cms.Common.Data;
-using Cosmos.Cms.Models;
+using Cosmos.Cms.Common.Models;
 using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Dynamic;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -23,7 +21,7 @@ namespace Cosmos.Cms.Controllers
     /// </summary>
     [AllowAnonymous]
     [Authorize(Roles = "Reviewers, Administrators, Editors, Authors")]
-    public class ApiController : Controller
+    public sealed class ApiController : Controller
     {
 
         private readonly INodeJSService _nodeJSService;
@@ -34,7 +32,6 @@ namespace Cosmos.Cms.Controllers
         /// Constructor
         /// </summary>
         /// <param name="nodeJSService"></param>
-        /// <param name="cosmosConfig"></param>
         /// <param name="dbContext"></param>
         /// <param name="logger"></param>
         public ApiController(INodeJSService nodeJSService, ApplicationDbContext dbContext, ILogger<ApiController> logger)
@@ -47,89 +44,94 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// API End Point
         /// </summary>
-        /// <param name="Id"></param>
+        /// <param name="Id">EndPoint</param>
         /// <returns></returns>
         [HttpGet]
         [HttpPost]
         [ValidateAntiForgeryToken()]
         public async Task<IActionResult> Index(string Id)
         {
+            string? result;
             try
             {
+                var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.EndPoint == Id);
 
-                if (string.IsNullOrEmpty(Id))
+                var values = GetArgs(Request, script);
+
+                // Send the module string to NodeJS where it's compiled, invoked and cached.
+                if (string.IsNullOrEmpty(script.Code))
                 {
-                    return View();
-                }
-
-                using var memStream = new MemoryStream();
-
-                //switch (Request.ContentType)
-                //{
-                //    case "application/json":
-
-                //        break;
-                //        case ""
-                //}
-
-                await Request.Body.CopyToAsync(memStream);
-
-                var json = Encoding.UTF8.GetString(memStream.ToArray());
-
-                // Try to invoke from the NodeJS cache
-                //(bool success, var result) = await _nodeJSService.TryInvokeFromCacheAsync<string>(id, args: new[] { "success" });
-
-                // If the module hasn't been cached, cache it. If the NodeJS process dies and restarts, the cache will be invalidated, so always check whether success is false.
-                NodeScript script;
-
-                if (Guid.TryParse(Id, out var gid))
-                {
-                    script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Published != null && f.Published <= DateTimeOffset.UtcNow && f.Id == gid);
+                    result = await _nodeJSService.InvokeFromFileAsync<string>($"{script.EndPoint}", args: values.Select(s => s.Value).ToArray());
                 }
                 else
                 {
-                    script = await _dbContext.NodeScripts.Where(f => f.Id == gid &&  f.Published != null && f.Published <= DateTimeOffset.UtcNow).OrderByDescending(o => o.Version).FirstOrDefaultAsync();
+                    result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, script.Updated.ToString(), args: values);
                 }
-
-                ApiResult apiResult;
-
-                try
-                {
-                    // Send the module string to NodeJS where it's compiled, invoked and cached.
-                    var result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, null, args: new string[] { json } );
-
-                    apiResult = new ApiResult(result)
-                    {
-                        IsSuccess = true
-                    };
-                }
-                catch (Exception e)
-                {
-                    apiResult = new ApiResult(e.Message)
-                    {
-                        IsSuccess = true
-                    };
-
-                    _logger.LogError(e.Message, e);
-                }
-
-                return Json(apiResult);
 
             }
             catch (Exception e)
             {
-                var apiResult = new ApiResult($"Error: {Id}.")
-                {
-                    IsSuccess = true
-                };
-
                 _logger.LogError(e.Message, e);
-
-                apiResult.Errors.Add(Id, e.Message);
-
-                return Json(apiResult);
+                throw new Exception("An error has occured.");
             }
 
+            if (result == null)
+            {
+                return Ok();
+            }
+
+            return Json(result);
+        }
+
+        /// <summary>
+        /// Gets arguments from a request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="script"></param>
+        /// <returns></returns>
+        private static ApiArgument[] GetArgs(Microsoft.AspNetCore.Http.HttpRequest request, NodeScript script)
+        {
+            var inputVarDefs = script.InputVars.Select(s => new InputVarDefinition(s)).ToList();
+
+            if (request.Method == "POST")
+            {
+                if (request.ContentType == null)
+                {
+                    var values = new List<ApiArgument>();
+
+                    foreach (var item in inputVarDefs)
+                    {
+                        var value = (string)request.Headers[item.Name];
+                        value = string.IsNullOrEmpty(value) ? "" : value.Substring(0, item.MaxLength);
+
+                        values.Add(new ApiArgument() { Key = item.Name, Value = value });
+                    }
+
+                    return values.ToArray();
+                }
+
+                if (request.Form != null)
+                {
+                    return request.Form.Where(a => script.InputVars.Contains(a.Key))
+                   .Select(s => new ApiArgument()
+                   {
+                       Key = s.Key,
+                       Value = s.Value
+                   }).ToArray();
+                }
+
+                return null;
+            }
+            else if (request.Method == "GET")
+            {
+                return request.Query.Where(a => script.InputVars.Contains(a.Key))
+                    .Select(s => new ApiArgument()
+                    {
+                        Key = s.Key,
+                        Value = s.Value
+                    }).ToArray();
+            }
+            return null;
         }
 
         /// <summary>
@@ -145,7 +147,7 @@ namespace Cosmos.Cms.Controllers
             foreach (var script in scripts)
             {
                 var parameters = new List<OpenApiParameter>();
-                
+
                 foreach (var p in script.InputVars)
                 {
                     parameters.Add(new OpenApiParameter()
@@ -155,13 +157,12 @@ namespace Cosmos.Cms.Controllers
                         {
                             Type = "string"
                         },
-                        In = ParameterLocation.Header
+                        In = ParameterLocation.Query
                     });
                 }
 
                 paths.Add($"/Index/{script.EndPoint}", new OpenApiPathItem()
                 {
-
                     Operations = new Dictionary<OperationType, OpenApiOperation>
                     {
                         [OperationType.Post] = new OpenApiOperation
@@ -185,13 +186,13 @@ namespace Cosmos.Cms.Controllers
                 Info = new OpenApiInfo
                 {
                     Version = "1.0.0",
-                    Title = "Swagger Petstore (Simple)",
+                    Title = "Swagger Petstore (Simple)"
                 },
                 Servers = new List<OpenApiServer>
                             {
                                 new OpenApiServer { Url = "/api" }
                             },
-                Paths = paths
+                Paths = paths,
             };
 
 
@@ -205,5 +206,40 @@ namespace Cosmos.Cms.Controllers
             return Json(model);
         }
 
+    }
+
+    /// <summary>
+    /// Input variable definition
+    /// </summary>
+    public class InputVarDefinition
+    {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <example>InputVarDefinition("firstName:string:64")</example>
+        public InputVarDefinition(string definition)
+        {
+            var parts = definition.Split(':');
+            Name = parts[0];
+            if (parts.Length > 1)
+            {
+                MaxLength = int.Parse(parts[1]);
+            }
+            else
+            {
+                MaxLength = 256;
+            }
+        }
+
+        /// <summary>
+        /// Input variable name
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Maximum number of string characters
+        /// </summary>
+        public int MaxLength { get; set; } = 1024;
     }
 }
