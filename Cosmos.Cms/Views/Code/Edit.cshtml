@@ -18,6 +18,14 @@
         right: 1px;
     }
 
+    #editspace {
+        position: absolute;
+        top: 27px;
+        bottom: 1px;
+        left: 1px;
+        right: 1px;
+    }
+
     .code-tabs.navbar {
         margin-top: 0px;
         margin-bottom: 0px;
@@ -76,10 +84,14 @@
                aria-current="page">Configuration</a>
         </li>
     </ul>
+    
     <a class="btn btn-sm btn-secondary me-3" target="_blank" asp-action="Debug" asp-route-id="@Model.Id">Debug</a>
 </nav>
 
-<div id="editspace" class="m-editor-container"></div>
+<div class="m-editor-container bg-dark">
+    <p class="text-light ms-4 font-italic text-muted"><span class="badge badge-info">Tip: If below is empty, Cosmos will run: ./@Model.EndPoint/index.js</span></p>
+    <div id="editspace"></div>
+</div>
 
 <div id="divConfigForm" style="display:none" class="m-editor-container bg-dark text-light">
     <div class="container mt-3">
@@ -243,7 +255,7 @@
                     if (typeof (next) !== "undefined" && next !== null) {
                         next();
                     }
-                    toastMsg("Successfully saved.");
+                    //toastMsg("Successfully saved.");
                 } else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
 
@@ -261,6 +273,7 @@
                     var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
                     errorModal.show();
                 }
+                doneSaving();
             }
         );
 
@@ -314,9 +327,6 @@
             $(event.target).addClass("active");
         });
 
-        $("#lblTitle").hide();
-        $("#tbTitle").hide();
-
     });
 
     $(window).bind('keydown', function (event) {
@@ -335,3 +345,12 @@
 <script src="/lib/monaco-editor/min/vs/loader.js"></script>
 <script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
 
+<style>
+    #lblTitle, #tbTitle, #timeZone, #lblPublished, #tbPublished, #btnPreview, #btnFiles, #liBtnVersions, #btnSaveAndPublish {
+        display:none !important;
+    }
+
+    #btnSourceCode {
+        display: block !important;
+    }
+</style>

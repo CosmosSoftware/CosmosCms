@@ -10,11 +10,11 @@
 
     if (directoryOnly)
     {
-        ViewData["Title"] = "Folders";
+        ViewData["Title"] = "Source Code Folders";
     }
     else
     {
-        ViewData["Title"] = "Code Library";
+        ViewData["Title"] = "Source Code";
     }
 
     var isReviewer = User.IsInRole("Reviewers");
@@ -59,7 +59,7 @@
         <div class="col-md-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/Code/Library?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
+                    <li class="breadcrumb-item"><a href="/Code/Source?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
 
                     @{
                         var p = "";
@@ -69,7 +69,7 @@
                         if (item != "/")
                         {
                             p += "/" + item;
-                            var href = $"/Code/Library?target={p}&directoryOnly={directoryOnly}";
+                            var href = $"/Code/Source?target={p}&directoryOnly={directoryOnly}";
                             <li class="breadcrumb-item"><a href="@href">@item</a></li>
                         }
                     }
@@ -119,13 +119,13 @@
                 .Build(col =>
                 {
                     col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Library?target={r.Path}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
+                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Source?target={r.Path}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
                     col.Add().RenderedAs(r => (r.IsDirectory == false) ?
                     $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
                     + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/Code/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
                     + "</div>"
                     : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Library?target={r.Path}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name}</div>").Titled("Name").Encoded(false);
+                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Source?target={r.Path}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name}</div>").Titled("Name").Encoded(false);
                     col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
 
                 })
@@ -253,7 +253,7 @@
 
     // Event handlers
     document.addEventListener('FilePond:processfiles', (e) => {
-        window.location.href = "@Url.Action("Library")?target=@pathPrefix";
+        window.location.href = "@Url.Action("Source")?target=@pathPrefix";
     });
 
     let paths = [];
@@ -380,7 +380,7 @@
                 clearSelection();
             })
             .done(function () {
-                window.location.href = "/Code/Library?target=@p";
+                window.location.href = "/Code/Source?target=@p";
             })
             .fail(function () {
                 alert("error");
@@ -444,7 +444,7 @@
         switch (command) {
             case "cancel":
                 clearPaths();
-                window.location.href = '@Url.Action("Library")?target=@pathPrefix';
+                window.location.href = '@Url.Action("Source")?target=@pathPrefix';
                 break;
             case "delete":
                 $("#checkFirstTitle").html("Delete Verification");
@@ -461,7 +461,7 @@
                         }, // data to be submit
                         function (data, status, jqXHR) {// success callback
                             clearSelection();
-                            window.location.href = '@Url.Action("Library")?target=@pathPrefix';
+                            window.location.href = '@Url.Action("Source")?target=@pathPrefix';
                         })
                 }
                 break;
@@ -510,7 +510,7 @@
                 next = function () {
                     localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
                     clearSelection();
-                    window.location.href = '@Url.Action("Library")?target=@pathPrefix&directoryOnly=true'
+                    window.location.href = '@Url.Action("Source")?target=@pathPrefix&directoryOnly=true'
                 };
                 break;
             case "moveItems":
@@ -536,7 +536,7 @@
                         })
                         .done(function () {
                             clearSelection();
-                            window.location.href = '@Url.Action("Library")?target=' + dest;
+                            window.location.href = '@Url.Action("Source")?target=' + dest;
                         })
                         .fail(function () {
                             alert("error");

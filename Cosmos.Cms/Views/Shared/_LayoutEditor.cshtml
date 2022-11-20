@@ -59,6 +59,9 @@
                             <li id="btnFiles">
                                 <a class="dropdown-item" onclick=" bgEditClick('Files')">File Manager</a>
                             </li>
+                            <li id="btnSourceCode" style="display:none">
+                                <a class="dropdown-item" href="/Code/Source" target="_blank">Source Code</a>
+                            </li>
                             <li id="btnCcmsCodeEditor" style="display:none">
                                 <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
                             </li>
@@ -83,7 +86,7 @@
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
                 <div id="lblTitle" class="navbar-text">Title:</div>
                 <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
-                <div class="navbar-text">Published:</div>
+                <div id="lblPublished" class="navbar-text">Published:</div>
                 <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData["Published"])" />
 
             </div>

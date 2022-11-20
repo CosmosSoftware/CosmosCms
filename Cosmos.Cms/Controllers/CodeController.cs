@@ -204,7 +204,7 @@ namespace Cosmos.Cms.Controllers
                 var fileManagerEntry = _storageContext.CreateFolder(relativePath);
             }
 
-            return RedirectToAction("Library", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
+            return RedirectToAction("Source", new { target = model.ParentFolder, directoryOnly = model.DirectoryOnly });
 
         }
 
@@ -333,12 +333,12 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Code library - file manager
+        /// Source Code - file manager
         /// </summary>
         /// <param name="target"></param>
         /// <param name="directoryOnly"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Library(string target, bool directoryOnly = false)
+        public async Task<IActionResult> Source(string target, bool directoryOnly = false)
         {
             target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
