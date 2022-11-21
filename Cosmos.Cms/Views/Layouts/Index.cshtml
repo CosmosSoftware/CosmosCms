@@ -71,6 +71,13 @@
                                     <a href="@Url.Action("SetLayoutAsDefault", "Layouts")/@row.Id" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>
                                 }
                             </td>
+                            <td scope="row">
+                                <div class="btn-group" role="group" aria-label="Layer actions">
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts" )}/{m.Id}" title="Preview"><span class="fa fa-binoculars"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts" )}/{m.Id}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts" )}/{m.Id}" title="Edit Code"><span class="fa fa-edit"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts" )}/{m.Id}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
+                                </div>
                         </tr>
                     }
                 </tbody>
