@@ -60,7 +60,7 @@
                     col.Add(b => b.Published).Titled("Published").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
                     if (canEdit)
                     {
-                        col.Add().RenderedAs(b => b.IsDefault == true ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
+                        col.Add().RenderedAs(b => b.UrlPath == "root" ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
                     }
                 })
                 .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
