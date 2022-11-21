@@ -106,7 +106,7 @@ namespace Cosmos.Cms.Controllers
                 Updated = s.Updated
             });
 
-            return View(_dbContext.ArticleCatalog);
+            return View(_dbContext.Set<CatalogEntry>());
         }
 
         /// <summary>
