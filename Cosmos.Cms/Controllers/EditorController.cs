@@ -85,17 +85,87 @@ namespace Cosmos.Cms.Controllers
             base.Dispose(disposing);
         }
 
+        #region LIST METHODS
+
         /// <summary>
-        ///     Edit home page, shows list of pages.
+        /// Catalog of web pages on this website.
         /// </summary>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10)
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
-
             ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
+            
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
 
-            var model = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
+            var query = _dbContext.ArticleCatalog.AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderByDescending(o => o.ArticleNumber);
+                            break;
+                        case "Title":
+                            query = query.OrderByDescending(o => o.Title);
+                            break;
+                        case "LastPublished":
+                            query = query.OrderByDescending(o => o.Published);
+                            break;
+                        case "UrlPath":
+                            query = query.OrderByDescending(o => o.UrlPath);
+                            break;
+                        case "Status":
+                            query = query.OrderByDescending(o => o.Status);
+                            break;
+                        case "Updated":
+                            query = query.OrderByDescending(o => o.Updated);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderBy(o => o.ArticleNumber);
+                            break;
+                        case "Title":
+                            query = query.OrderBy(o => o.Title);
+                            break;
+                        case "LastPublished":
+                            query = query.OrderBy(o => o.Published);
+                            break;
+                        case "UrlPath":
+                            query = query.OrderBy(o => o.UrlPath);
+                            break;
+                        case "Status":
+                            query = query.OrderBy(o => o.Status);
+                            break;
+                        case "Updated":
+                            query = query.OrderBy(o => o.Updated);
+                            break;
+                    }
+                }
+            }
+
+            var model = query.Select(s => new ArticleListItem()
             {
                 ArticleNumber = s.ArticleNumber,
                 Title = s.Title,
@@ -104,10 +174,99 @@ namespace Cosmos.Cms.Controllers
                 UrlPath = s.UrlPath,
                 Status = s.Status,
                 Updated = s.Updated
-            });
+            }).Skip(pageNo * pageSize).Take(pageSize);
 
-            return View(_dbContext.Set<CatalogEntry>());
+            return View(await model.ToListAsync());
         }
+
+        ///<summary>
+        ///     Gets all the versions for an article
+        /// </summary>
+        /// <param name="id">Article number</param>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="versionNumber"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> Versions(int? id, string sortOrder = "desc", string currentSort = "VersionNumber", int pageNo = 0, int pageSize = 10, int? versionNumber = null)
+        {
+            if (id == null)
+                return RedirectToAction("Index");
+
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var query = _dbContext.Articles.Where(w => w.ArticleNumber == id)
+                .Select(s => new ArticleVersionViewModel()
+                {
+                    Id = s.Id,
+                    Published = s.Published,
+                    Title = s.Title,
+                    Updated = s.Updated,
+                    VersionNumber = s.VersionNumber,
+                    Expires = s.Expires,
+                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+                }).AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Published":
+                            query = query.OrderByDescending(o => o.Published);
+                            break;
+                        case "Updated":
+                            query = query.OrderByDescending(o => o.Updated);
+                            break;
+                        case "VersionNumber":
+                            query = query.OrderByDescending(o => o.VersionNumber);
+                            break;
+                        case "Expires":
+                            query = query.OrderByDescending(o => o.Expires);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Published":
+                            query = query.OrderBy(o => o.Published);
+                            break;
+                        case "Updated":
+                            query = query.OrderBy(o => o.Updated);
+                            break;
+                        case "VersionNumber":
+                            query = query.OrderBy(o => o.VersionNumber);
+                            break;
+                        case "Expires":
+                            query = query.OrderBy(o => o.Expires);
+                            break;
+                    }
+                }
+            }
+
+            var article = await _dbContext.Pages.Where(a => a.ArticleNumber == id.Value)
+                .Select(s => new { s.Title, s.VersionNumber }).FirstOrDefaultAsync();
+
+            ViewData["ArticleTitle"] = article.Title;
+            ViewData["ArticleId"] = id.Value;
+
+            return View(await query.ToListAsync());
+        }
+
+        #endregion
 
         /// <summary>
         /// Compare two versions.
@@ -459,55 +618,7 @@ namespace Cosmos.Cms.Controllers
         {
             return View();
         }
-
-        /// <summary>
-        ///     Gets all the versions for an article
-        /// </summary>
-        /// <param name="id">Article number</param>
-        /// <param name="versionNumber"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Versions(int? id, int? versionNumber = null)
-        {
-            if (id == null)
-                return RedirectToAction("Index");
-
-            ViewData["EditModeOn"] = false;
-
-            var article = await _dbContext.Articles.Where(a => a.ArticleNumber == id.Value)
-                .Select(s => new { s.Title, s.VersionNumber }).FirstOrDefaultAsync();
-
-            ViewData["ArticleTitle"] = article.Title;
-
-
-            ViewData["ArticleId"] = id.Value;
-
-            ViewData["CurrentVersion"] = versionNumber;
-
-            var data = await GetVersionList(id.Value);
-
-            return View(data.AsQueryable());
-        }
-
-        /// <summary>
-        /// Gets an article view list
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private async Task<List<ArticleVersionViewModel>> GetVersionList(int id)
-        {
-            return await _dbContext.Articles.OrderByDescending(o => o.VersionNumber)
-             .Where(a => a.ArticleNumber == id).Select(s => new ArticleVersionViewModel
-             {
-                 Id = s.Id,
-                 Published = s.Published,
-                 Title = s.Title,
-                 Updated = s.Updated,
-                 VersionNumber = s.VersionNumber,
-                 Expires = s.Expires,
-                 UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
-             }).ToListAsync();
-        }
-
+                
         /// <summary>
         /// Open Cosmos CMS logs
         /// </summary>

@@ -126,7 +126,7 @@ namespace Cosmos.Cms.Controllers
         /// Gets a list of layouts
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder = "asc", string currentSort = "LayoutName", int pageNo = 0, int pageSize = 10)
         {
 
             ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
@@ -137,15 +137,49 @@ namespace Cosmos.Cms.Controllers
                 await _dbContext.SaveChangesAsync();
             }
 
-            var model = await _dbContext.Layouts.Select(s => new LayoutIndexViewModel
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var query = _dbContext.Layouts.AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "LayoutName":
+                            query = query.OrderByDescending(o => o.LayoutName);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "LayoutName":
+                            query = query.OrderBy(o => o.LayoutName);
+                            break;
+                    }
+                }
+            }
+
+            var model = _dbContext.Layouts.Select(s => new LayoutIndexViewModel
             {
                 Id = s.Id,
                 IsDefault = s.IsDefault,
                 LayoutName = s.LayoutName,
                 Notes = s.Notes
-            }).ToListAsync();
+            });
 
-            return View(model.AsQueryable());
+            return View(await model.ToListAsync());
         }
 
         /// <summary>

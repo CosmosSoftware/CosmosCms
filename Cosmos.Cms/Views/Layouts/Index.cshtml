@@ -1,16 +1,25 @@
 ﻿@using NonFactors.Mvc.Grid
-@model IQueryable<LayoutIndexViewModel>
+@model List<LayoutIndexViewModel>
 
 @{
     ViewData["Title"] = "Website Layouts";
     var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Layouts/Index");
+
 }
 
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
         <div class="col">
             <h3>@ViewData["Title"]</h3>
-            
+
             @if (showFirstPageBtn)
             {
                 <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
@@ -19,46 +28,96 @@
             <p>Shown below lists the layouts loaded into your website.  Each gives your website a specific look for each page in your website.</p>
             <p>Click &quot;Create New&quot; to start building your own style.</p>
 
-            <a class="btn btn-sm btn-secondary" href="@Url.Action("Create")">New Layout</a>
-            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
-            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
-            |
-            <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
-
-            @(Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add().RenderedAs(m =>
-                    m.IsDefault ?
-                    "<div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
-                    $"<a href=\"{Url.Action("SetLayoutAsDefault", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>").Encoded(false).Titled("");
-
-                    col.Add().RenderedAs(m =>
-                    "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditNotes", "Layouts")}/{m.Id}\" title =\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportLayout", "Layouts")}/{m.Id}\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>" +
-                    "</div>"
-                    ).Encoded(false).Titled("");
-
-                    col.Add(m => m.Id).Hidden();
-                    col.Add(m => m.IsDefault).Hidden();
-                    col.Add(m => m.LayoutName).Encoded(false);
-                    col.Add(m => m.Notes).Encoded(false);
-                    col.Add().RenderedAs(m => 
-                        m.IsDefault ?
-                    "<a class=\"btn btn-sm  btn-secondary\" title=\"Cannot delete default layout\"> - </a>" :
-                    $"<a class=\"btn btn-sm  btn-secondary\" href=\"{Url.Action("Delete", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>").Encoded(false).Titled("");
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No layouts found")
-                .Filterable()
-                .Sortable()
-                .Pageable()
-                )
-
             <p>Beyond appearance, changing layouts can have far reaching affects on how your site functions. Change layouts with caution.</p>
         </div>
     </div>
 </div>
+
+<div class="row bg-dark">
+    <div class="col-md-6">
+        <div class="btn-group" role="group" aria-label="Page Actions">
+            <a class="btn btn-sm btn-secondary" href="@Url.Action("Create")">New Layout</a>
+            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
+            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
+            <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
+        </div>
+    </div>
+    <div class="col-md-6 d-flex justify-content-end">
+        <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive custom-table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th scope="col">
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td scope="row">
+                                @if (row.IsDefault)
+                                {
+                                    <div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("SetLayoutAsDefault", "Layouts")/@row.Id" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row bg-dark">
+    <div class="col-md-12 d-flex justify-content-center">
+        <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+    </div>
+</div>
+
+<form>
+    <input id="selected" type="hidden" />
+</form>
+
+@(Html.Grid(Model)
+        .Build(col =>
+        {
+            col.Add().RenderedAs(m =>
+            m.IsDefault ?
+            "<div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
+            $"<a href=\"{Url.Action("SetLayoutAsDefault", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>").Encoded(false).Titled("");
+
+            col.Add().RenderedAs(m =>
+            "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +
+            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
+            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditNotes", "Layouts")}/{m.Id}\" title =\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>" +
+            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
+            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportLayout", "Layouts")}/{m.Id}\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>" +
+            "</div>"
+            ).Encoded(false).Titled("");
+
+            col.Add(m => m.Id).Hidden();
+            col.Add(m => m.IsDefault).Hidden();
+            col.Add(m => m.LayoutName).Encoded(false);
+            col.Add(m => m.Notes).Encoded(false);
+            col.Add().RenderedAs(m =>
+                m.IsDefault ?
+            "<a class=\"btn btn-sm  btn-secondary\" title=\"Cannot delete default layout\"> - </a>" :
+            $"<a class=\"btn btn-sm  btn-secondary\" href=\"{Url.Action("Delete", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>").Encoded(false).Titled("");
+        })
+        .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+        .Empty("No layouts found")
+        .Filterable()
+        .Sortable()
+        .Pageable()
+        )

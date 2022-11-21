@@ -1,27 +1,29 @@
 @using Cosmos.Cms.Services
 @using NonFactors.Mvc.Grid
-@model IQueryable<CatalogEntry>
+@model List<ArticleListItem>
 @{
-    ViewData["Title"] = "Website Page List";
+    ViewData["Title"] = "Web Page Inventory";
 
     var publisherUrl = ViewData["PublisherUrl"];
     var isReviewer = User.IsInRole("Reviewers");
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors");
 
     var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index");
 }
-<style>
-    .toLocalTimeZone {
-        font-size: 0.8em;
-    }
-</style>
 <script src="~/js/clipboard.min.js"></script>
 
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
         <div class="col">
-            <h3>@ViewData["Title"]</h3>
-
+            <h3 class="text-light">@ViewData["Title"]</h3>
             @if (showFirstPageBtn)
             {
                 <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
@@ -30,48 +32,101 @@
         </div>
     </div>
 
-    @if (!isReviewer)
-    {
-        <div class="row">
-            <div class="col-md-6">
-                <div class="btn-group" role="group" aria-label="Basic example">
+    <div class="row bg-dark">
+        <div class="col-md-6">
+            @if (!isReviewer)
+            {
+                <div class="btn-group" role="group" aria-label="Page Actions">
                     <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Create">New</a>
                     <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Index" asp-controller="Templates">Templates</a>
                     <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
                     <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Index" asp-controller="Layouts">Layouts</a>
+                    <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
                 </div>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end">
-                <a title="Manage Trash" class="btn btn-sm btn-secondary" asp-action="Trash">Trash</a>
-            </div>
+            }
         </div>
-    }
+        <div class="col-md-6 d-flex justify-content-end">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-12">
-            @(Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add(model => Html.ActionLink("", "Versions", "Editor", new { Id = model.ArticleNumber }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
-                    col.Add().RenderedAs(b => b.UrlPath == "root" ? "<div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>" : "<a href='/Editor/NewHome/" + b.ArticleNumber + "' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
-                    col.Add(b => b.ArticleNumber).Titled("#").Css("text-center").Sortable(false).Filterable(false).Width("80px");
-                    col.Add(b => b.Title).Titled("Title").RenderedAs(b => $"<a href='/Editor/Versions/{b.ArticleNumber}'>{b.Title}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
-                    col.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
-                    col.Add(b => b.Published).Titled("Published").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
-                    if (canEdit)
-                    {
-                        col.Add().RenderedAs(b => b.UrlPath == "root" ? "" : "<button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false);
-                    }
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No pages found")
-                .Filterable()
-                .Sortable()
-                .Pageable()
-                )
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                Select
+                                @*<label class="control control--checkbox">
+                                    <input type="checkbox" class="js-check-all">
+                                    <span class="control__indicator"></span>
+                                </label>*@
+                            </th>
+                            <th scope="col"><i class="fa-solid fa-house"></i></th>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Last Updated</th>
+                            <th scope="col">Trash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr scope="row">
+                                <td scope="row">
+                                    <a asp-action="Versions" asp-route-id="@row.ArticleNumber" title="Select" class="btn btn-sm fa-solid fa-play"></a>
+                                </td>
+                                <td>
+                                    @if (row.UrlPath == "root")
+                                    {
+                                        <div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>
+                                    }
+                                    else
+                                    {
+                                        <a href='/Editor/NewHome/@row.ArticleNumber' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>
+                                    }
+                                </td>
+                                <td>
+                                    @row.ArticleNumber
+                                </td>
+                                <td>
+                                    <a asp-action="Versions" asp-route-id="@row.ArticleNumber" title="Select">@row.Title</a>
+                                    @if (row.LastPublished.HasValue)
+                                    {
+                                        <small class="d-block">
+                                            <span class="badge badge-success"> Published: </span><span class='toLocalTimeZone'>@row.LastPublished.Value</span>
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small>- DRAFT -</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class='toLocalTimeZone'>@row.Updated</div>
+                                </td>
+                                <td>
+                                    @if (canEdit && row.UrlPath != "root")
+                                    {
+                                        <button type='button' onclick='selectArticle(" + b.ArticleNumber + ", \"" + b.Title + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
             <form>
                 <input id="selected" type="hidden" />
             </form>
+        </div>
+    </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>

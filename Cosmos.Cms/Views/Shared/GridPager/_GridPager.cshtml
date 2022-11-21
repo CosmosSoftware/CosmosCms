@@ -1,0 +1,32 @@
+﻿@model GridPagerPartialViewModel
+<div class="btn-group" role="group" aria-label="Page Actions">
+    <a class="btn btn-sm btn-secondary" title="First page" href="@Model.GetUrl?pageNo=0&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-backward-fast"></i></a>
+    <a class="btn btn-sm btn-secondary" title="Previous page" href="@Model.GetUrl?pageNo=@Model.PreviousPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-backward-step"></i></a>
+    <div class="btn btn-sm btn-secondary">
+        @(Model.PageNumber + 1)
+    </div>
+    <a class="btn btn-sm btn-secondary" title="Next page" href="@Model.GetUrl?pageNo=@Model.NextPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-forward-step"></i></a>
+    <a class="btn btn-sm btn-secondary" title="Last page" href="@Model.GetUrl?pageNo=@Model.LastPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-forward-fast"></i></a>
+    <button id="btnGroupDrop1" type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Page:
+    </button>
+    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="btnGroupDrop1">
+        @for (long i = 0; i < Model.PageCount; i++)
+        {
+            <li>
+                <a class="dropdown-item" href="@Model.GetUrl?pageNo=@i&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize">@(i + 1)</a>
+            </li>
+        }
+    </ul>
+    <button id="btnGroupDrop1" type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Page Size: @Model.PageSize
+    </button>
+    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="btnGroupDrop1">
+        @for (var i = 10; i < 100; i = i + 10)
+        {
+            <li>
+                <a class="dropdown-item" href="@Model.GetUrl?pageNo=0&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@i">@i</a>
+            </li>
+        }
+    </ul>
+</div>

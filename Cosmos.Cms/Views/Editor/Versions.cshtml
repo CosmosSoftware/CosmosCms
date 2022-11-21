@@ -1,92 +1,139 @@
 ﻿@using Cosmos.Cms.Services
 @using NonFactors.Mvc.Grid
-@model IQueryable<ArticleVersionViewModel>
+@model List<ArticleVersionViewModel>
 @{
     // /Views/Editor/Versions
     ViewData["Title"] = @ViewData["ArticleTitle"] + "Page Versions";
     var isReviewer = User.IsInRole("Reviewers");
     var isAuthor = User.IsInRole("Authors");
 
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Versions");
+
     var currentVersion = (int?)ViewData["CurrentVersion"];
 }
-<style>
-    .toLocalTimeZone {
-        font-size: 0.8em;
-    }
-</style>
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 text-light">
             <h3>Versions for: &quot;@ViewData["ArticleTitle"]&quot;</h3>
-
-            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
+            <a title="Return to page list" class="btn btn-sm btn-secondary mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
     <hr />
-    <div class="row">
+    <div class="row bg-dark">
         <div class="col-md-6">
-            @if (!isReviewer)
-            {
-                <a id="btnNewVersion" class="btn btn-sm btn-secondary"
-               title="New version created from the lastest."
-               asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">New</a>
-                <button id="btnCompare" class="btn btn-sm btn-secondary" title="Compare two versions." type="button" disabled>Compare</button>
-                <button id="btnClear" class="btn btn-sm btn-secondary" title="Clear selection." type="button" disabled>Clear</button>
-            }
+            <div class="btn-group" role="group" aria-label="Page Actions">
+                @if (!isReviewer)
+                {
+                    <a id="btnNewVersion" class="btn btn-sm btn-secondary" title="New version created from the lastest." asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">New</a>
+                    <button id="btnCompare" class="btn btn-sm btn-secondary" title="Compare two versions." type="button" disabled>Compare</button>
+                    <button id="btnClear" class="btn btn-sm btn-secondary" title="Clear selection." type="button" disabled>Clear</button>
+                }
+            </div>
         </div>
         <div class="col-md-6 d-flex justify-content-end">
-           
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
+
     <div class="row">
         <div class="col-md-12">
-            @(
-                Html.Grid(Model)
-                .Build(c =>
-                {
-                    if (currentVersion != null)
-                    {
-                        c.Add().RenderedAs(r => (currentVersion == r.VersionNumber) ? "<div type='button' class='btn btn-sm btn-primary'>Now editing <span class='badge text-bg-secondary'><i class='fa-solid fa-right-long'></i></span></div>" : "").Titled("").Width("170px").Filterable(false).Encoded(false);
-                    }
-                    c.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-id='{r.Id}'>").Encoded(false).Titled("").Width("30px");
-                    c.Add(i => i.VersionNumber).RenderedAs(r => "v." + r.VersionNumber).Titled("").Width("30px").Filterable(false);
-                    // Preview
-                    c.Add(i => i.Id)
-                    .RenderedAs(r => "<a class='btn btn-sm btn-secondary' target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>" +
-                    // Code editor (Monaco)
-                    (((isAuthor && r.Published != null) || (isReviewer)) ? "" : "<a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>") +
-                    // Html WYSIWYG editor
-                    (((isAuthor && r.Published != null) || (isReviewer) || r.UsesHtmlEditor == false) ? "" :
-                    "<a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>") +
-                    // Export
-                    ((isReviewer) ? "" : "<a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>")
-                    )
-                    .Titled("")
-                    .Width("160px")
-                    .Encoded(false).Sortable(false).Filterable(false);
-                    c.Add(i => i.Updated).Filterable(GridFilterType.Double).Css("toLocalTimeZone");
-                    c.Add(i => i.Published).Filterable(GridFilterType.Double).Css("toLocalTimeZone").RenderedAs(r => r.Published.HasValue ? r.Published : "DRAFT");
-                    c.Add(i => i.Expires).Filterable(GridFilterType.Double).Css("toLocalTimeZone");
-                    // Promoteto new version
-                    c.Add(i => i.Id)
-                    .RenderedAs(r => ((isAuthor && r.Published != null) || (isReviewer)) ? "" :
-                    $"<a class='btn btn-sm btn-secondary' title='Promote this version to the latest version and put it in edit mode' href='/Editor/CreateVersion?id={ViewData["ArticleId"]}&entityId=" + r.Id + "'><i class='fa fa-arrow-circle-up'></i></a>")
-                    .Titled("Promote")
-                    .Width("30px")
-                    .Encoded(false).Sortable(false).Filterable(false);
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No versions found")
-                .Filterable()
-                .Sortable()
-                .Pageable()
-                )
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col"></th>
+                            <th scope="col">#</th>
+                            <th scope="col"></th>
+                            <th scope="col">Updated</th>
+                            <th scope="col">Published</th>
+                            <th scope="col">Expires</th>
+                            <th scope="col">Promote</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr scope="row">
+                                <td scope="row">
+                                    @if (currentVersion != null & currentVersion == row.VersionNumber)
+                                    {
+                                        <div type='button' class='btn btn-sm btn-primary'>Now editing <span class='badge text-bg-secondary'><i class='fa-solid fa-right-long'></i></span></div>
+                                    }
+                                </td>
+                                <td scope="row" style="width:30px;">
+                                    <input type='checkbox' class='gridCheckBox' data-ccms-id='@row.Id'>
+                                </td>
+                                <td scope="row" style="width:30px;">
+                                    v.@row.VersionNumber
+                                </td>
+                                <td scope="row" style="width:160px">
+                                    <div class="btn-group" role="group" aria-label="Version actions">
+                                        <a class='btn btn-sm btn-secondary' target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>
+                                        @if ((isAuthor && row.Published != null) || (isReviewer))
+                                        {
+                                            <span></span>
+                                        }
+                                        else
+                                        {
+                                            <a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>
+                                        }
+                                        @if ((isAuthor && row.Published != null) || (isReviewer) || row.UsesHtmlEditor == false)
+                                        {
+                                            <span></span>
+                                        }
+                                        else
+                                        {
+                                            <a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>
+                                        }
+                                        @if (isReviewer)
+                                        {
+                                            <a class='btn btn-sm btn-secondary' title='Export version' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>
+                                        }
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    <div class='toLocalTimeZone'>@row.Updated</div>
+                                </td>
+                                <td scope="row">
+                                    <div class='toLocalTimeZone'>@row.Published</div>
+                                </td>
+                                <td scope="row">
+                                    <div class='toLocalTimeZone'>@row.Expires</div>
+                                </td>
+                                <td scope="row" style="width:30px">
+                                    @if ((isAuthor && row.Published != null) || (isReviewer))
+                                    {
+                                        <span></span>
+                                    }
+                                    else
+                                    {
+                                        <a class='btn btn-sm btn-secondary' title='Promote this version to the latest version and put it in edit mode' href='/Editor/CreateVersion?id=@ViewData["ArticleId"]&entityId=@row.Id'><i class='fa fa-arrow-circle-up'></i></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 
     <div class="row">
         <div class="col">
-            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
+            <a title="Return to page list" class="btn btn-sm btn-secondary mt-2" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
 </div>
@@ -159,7 +206,7 @@
         } else {
             $("#btnCompare").prop('disabled', true);
         }
-                
+
     }
 
 
