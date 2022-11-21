@@ -106,7 +106,7 @@ namespace Cosmos.Cms.Controllers
                 Updated = s.Updated
             });
 
-            return View(model.AsQueryable());
+            return View(_dbContext.Set<ArticleCatalog>());
         }
 
         /// <summary>
