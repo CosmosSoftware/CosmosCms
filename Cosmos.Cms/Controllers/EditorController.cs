@@ -95,7 +95,7 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
 
-            var model = await _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
+            var model = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
             {
                 ArticleNumber = s.ArticleNumber,
                 Title = s.Title,
