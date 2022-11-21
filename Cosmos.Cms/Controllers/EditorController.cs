@@ -104,7 +104,7 @@ namespace Cosmos.Cms.Controllers
                 UrlPath = s.UrlPath,
                 Status = s.Status,
                 Updated = s.Updated
-            }).ToListAsync();
+            });
 
             return View(model.AsQueryable());
         }
