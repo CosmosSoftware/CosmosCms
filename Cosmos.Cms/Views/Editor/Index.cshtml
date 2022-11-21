@@ -53,7 +53,7 @@
                 .Build(col =>
                 {
                     col.Add(model => Html.ActionLink("", "Versions", "Editor", new { Id = model.ArticleNumber }, new { @class = "btn btn-sm fa-solid fa-play", title = "Select" })).Width("30px");
-                    col.Add(b => b.IsDefault).RenderedAs(b => b.IsDefault == true ? "<div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>" : "<a href='/Editor/NewHome/" + b.ArticleNumber + "' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
+                    col.Add().RenderedAs(b => b.UrlPath == "root" ? "<div title='Current home page.' class='btn btn-sm btn-primary'><i title='Is Home Page' class='fa-solid fa-toggle-on'></i></div>" : "<a href='/Editor/NewHome/" + b.ArticleNumber + "' title='Make this the new home page.' class='btn btn-sm btn-secondary'><i class='fa-solid fa-toggle-off'></i></a>").Titled("").Encoded(false).Sortable(false).Filterable(false).Width("30px");
                     col.Add(b => b.ArticleNumber).Titled("#").Css("text-center").Sortable(false).Filterable(false).Width("80px");
                     col.Add(b => b.Title).Titled("Title").RenderedAs(b => $"<a href='/Editor/Versions/{b.ArticleNumber}'>{b.Title}</a>").Encoded(false).Filterable(GridFilterCase.Lower);
                     col.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double).Css("toLocalTimeZone");
