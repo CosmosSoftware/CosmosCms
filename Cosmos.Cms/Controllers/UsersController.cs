@@ -83,7 +83,7 @@ namespace Cosmos.Cms.Controllers
             {
                 var identityRole = await _roleManager.FindByIdAsync(Id);
 
-                var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name).;
+                var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
 
                 query = usersInRole.AsQueriable();
             }
