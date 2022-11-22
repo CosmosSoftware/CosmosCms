@@ -266,6 +266,81 @@ namespace Cosmos.Cms.Controllers
             return View(await query.ToListAsync());
         }
 
+        /// <summary>
+        /// Open trash
+        /// </summary>
+        /// <returns></returns>
+        [Authorize(Roles = "Administrators, Editors, Authors")]
+        public async Task<IActionResult> Trash(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10)
+        {
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var data = await _articleLogic.GetArticleTrashList();
+            var query = data.AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderByDescending(o => o.ArticleNumber);
+                            break;
+                        case "Title":
+                            query = query.OrderByDescending(o => o.Title);
+                            break;
+                        case "LastPublished":
+                            query = query.OrderByDescending(o => o.Published);
+                            break;
+                        case "UrlPath":
+                            query = query.OrderByDescending(o => o.UrlPath);
+                            break;
+                        case "Status":
+                            query = query.OrderByDescending(o => o.Status);
+                            break;
+                        case "Updated":
+                            query = query.OrderByDescending(o => o.Updated);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderBy(o => o.ArticleNumber);
+                            break;
+                        case "Title":
+                            query = query.OrderBy(o => o.Title);
+                            break;
+                        case "LastPublished":
+                            query = query.OrderBy(o => o.Published);
+                            break;
+                        case "UrlPath":
+                            query = query.OrderBy(o => o.UrlPath);
+                            break;
+                        case "Status":
+                            query = query.OrderBy(o => o.Status);
+                            break;
+                        case "Updated":
+                            query = query.OrderBy(o => o.Updated);
+                            break;
+                    }
+                }
+            }
+            
+            return View(model.AsQueryable());
+        }
         #endregion
 
         /// <summary>
@@ -595,18 +670,6 @@ namespace Cosmos.Cms.Controllers
             await _articleLogic.RetrieveFromTrash(Id, await GetUserId());
 
             return RedirectToAction("Trash");
-        }
-
-
-        /// <summary>
-        /// Open trash
-        /// </summary>
-        /// <returns></returns>
-        [Authorize(Roles = "Administrators, Editors, Authors")]
-        public async Task<IActionResult> Trash()
-        {
-            var model = await _articleLogic.GetArticleTrashList();
-            return View(model.AsQueryable());
         }
 
         /// <summary>
@@ -1490,7 +1553,7 @@ namespace Cosmos.Cms.Controllers
         #endregion
 
         /// <summary>
-        /// Recieves an encrypted signal from another editor to do something.
+        /// Receives an encrypted signal from another editor to do something.
         /// </summary>
         /// <param name="data">Encrypted arguments</param>
         /// <returns></returns>

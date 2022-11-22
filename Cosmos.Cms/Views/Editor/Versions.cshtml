@@ -48,9 +48,9 @@
                     <thead>
                         <tr>
                             <th scope="col"></th>
-                            <th scope="col"></th>
+                            <th scope="col">Select</th>
                             <th scope="col">#</th>
-                            <th scope="col"></th>
+                            <th scope="col">Actions</th>
                             <th scope="col">Updated</th>
                             <th scope="col">Published</th>
                             <th scope="col">Expires</th>
@@ -75,14 +75,14 @@
                                 </td>
                                 <td scope="row" style="width:160px">
                                     <div class="btn-group" role="group" aria-label="Version actions">
-                                        <a class='btn btn-sm btn-secondary' target='_blank' title='Preview' href='/Home/Preview/" + r.Id + "'><i class='fas fa-search'></i></a>
+                                        <a class='btn btn-sm btn-secondary' target='_blank' title='Preview' href='/Home/Preview/@row.Id'><i class='fas fa-search'></i></a>
                                         @if ((isAuthor && row.Published != null) || (isReviewer))
                                         {
                                             <span></span>
                                         }
                                         else
                                         {
-                                            <a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/" + r.Id + "'><i class='fa-solid fa-code'></i></a>
+                                            <a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/@row.Id'><i class='fa-solid fa-code'></i></a>
                                         }
                                         @if ((isAuthor && row.Published != null) || (isReviewer) || row.UsesHtmlEditor == false)
                                         {
@@ -90,11 +90,11 @@
                                         }
                                         else
                                         {
-                                            <a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/" + r.Id + "'><i class='fa-brands fa-html5'></i></a>
+                                            <a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/@row.Id'><i class='fa-brands fa-html5'></i></a>
                                         }
                                         @if (isReviewer)
                                         {
-                                            <a class='btn btn-sm btn-secondary' title='Export version' href='/Editor/ExportPage/" + r.Id + "'><i class='fa-solid fa-cloud-arrow-down'></i></a>
+                                            <a class='btn btn-sm btn-secondary' title='Export version' href='/Editor/ExportPage/@row.Id'><i class='fa-solid fa-cloud-arrow-down'></i></a>
                                         }
                                     </div>
                                 </td>

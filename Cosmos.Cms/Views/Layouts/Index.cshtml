@@ -52,9 +52,11 @@
             <table class="table custom-table">
                 <thead>
                     <tr>
-                        <th scope="col">
-
-                        </th>
+                        <th scope="col"></th>
+                        <th scope="col">Actions</th>
+                        <th scope="col">Layout Name</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col">Trash</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,17 +75,17 @@
                             </td>
                             <td scope="row">
                                 <div class="btn-group" role="group" aria-label="Layer actions">
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts" )}/{m.Id}" title="Preview"><span class="fa fa-binoculars"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts" )}/{m.Id}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts" )}/{m.Id}" title="Edit Code"><span class="fa fa-edit"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts" )}/{m.Id}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts", new { Id = row.Id})}" title="Preview"><span class="fa fa-binoculars"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts", new { Id = row.Id})}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts", new { Id = row.Id})}" title="Edit Code"><span class="fa fa-edit"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts", new { Id = row.Id})}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
                                 </div>
                             </td>
                             <td>
-                                <div class='toLocalTimeZone'>@row.LayoutName</div>
+                                @row.LayoutName
                             </td>
                             <td>
-                                <div class='toLocalTimeZone'>@Html.Raw(row.Notes)</div>
+                                @row.Notes
                             </td>
                             <td>
                                 @if (row.IsDefault)
@@ -92,7 +94,7 @@
                                 }
                                 else
                                 {
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts" )/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts", new { Id = row.Id })" title="Delete layout"><span class="fa fa-trash-can"></span></a>
                                 }
                             </td>
                         </tr>
@@ -113,35 +115,3 @@
     <input id="selected" type="hidden" />
 </form>
 
-@(Html.Grid(Model)
-        .Build(col =>
-        {
-            col.Add().RenderedAs(m =>
-            m.IsDefault ?
-            "<div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>" :
-            $"<a href=\"{Url.Action("SetLayoutAsDefault", "Layouts")}/{m.Id}\" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>").Encoded(false).Titled("");
-
-            col.Add().RenderedAs(m =>
-            "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +
-            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Preview", "Layouts")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
-            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditNotes", "Layouts")}/{m.Id}\" title =\"Edit Notes\"><span class=\"fa fa-clipboard\"></span></a>" +
-            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
-            $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportLayout", "Layouts")}/{m.Id}\" title=\"Export layout\"><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>" +
-            "</div>"
-            ).Encoded(false).Titled("");
-
-            col.Add(m => m.Id).Hidden();
-            col.Add(m => m.IsDefault).Hidden();
-            col.Add(m => m.LayoutName).Encoded(false);
-            col.Add(m => m.Notes).Encoded(false);
-            col.Add().RenderedAs(m =>
-                m.IsDefault ?
-            "<a class=\"btn btn-sm  btn-secondary\" title=\"Cannot delete default layout\"> - </a>" :
-            $"<a class=\"btn btn-sm  btn-secondary\" href=\"{Url.Action("Delete", "Layouts")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>").Encoded(false).Titled("");
-        })
-        .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-        .Empty("No layouts found")
-        .Filterable()
-        .Sortable()
-        .Pageable()
-        )
