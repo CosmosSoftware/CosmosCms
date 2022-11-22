@@ -50,23 +50,68 @@ namespace CDT.Cosmos.Cms.Controllers
         /// Index view model
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder = "asc", string currentSort = "Title", int pageNo = 0, int pageSize = 10)
         {
             var defautLayout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.IsDefault);
 
-            var model = await _dbContext.Templates.OrderBy(t => t.Title)
-                .Where(l => l.LayoutId == null || l.LayoutId == defautLayout.Id)
+            ViewData["Layouts"] = await BaseGetLayoutListItems();
+
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var query = _dbContext.Templates.OrderBy(t => t.Title)
+                .Where(w => w.LayoutId == defautLayout.Id)
                 .Select(s => new TemplateIndexViewModel
                 {
                     Id = s.Id,
                     LayoutName = defautLayout.LayoutName,
                     Description = s.Description,
                     Title = s.Title
-                }).ToListAsync();
+                }).AsQueryable();
 
-            ViewData["Layouts"] = await BaseGetLayoutListItems();
+            ViewData["RowCount"] = await query.CountAsync();
 
-            return View(model.AsQueryable());
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "LayoutName":
+                            query = query.OrderByDescending(o => o.LayoutName);
+                            break;
+                        case "Description":
+                            query = query.OrderByDescending(o => o.Description);
+                            break;
+                        case "Title":
+                            query = query.OrderByDescending(o => o.Title);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "LayoutName":
+                            query = query.OrderBy(o => o.LayoutName);
+                            break;
+                        case "Title":
+                            query = query.OrderBy(o => o.Title);
+                            break;
+                        case "Description":
+                            query = query.OrderBy(o => o.Description);
+                            break;
+                    }
+                }
+            }
+
+            return View(await query.ToListAsync());
         }
 
         /// <summary>

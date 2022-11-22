@@ -2,7 +2,7 @@
 @model List<LayoutIndexViewModel>
 
 @{
-    ViewData["Title"] = "Website Layouts";
+    ViewData["Title"] = "Website Layout Inventory";
     var showFirstPageBtn = (bool)ViewData["ShowFirstPageBtn"];
 
     var rowCount = (int)ViewData["RowCount"];
@@ -18,98 +18,97 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col">
-            <h3>@ViewData["Title"]</h3>
+            <h3 class="text-light">@ViewData["Title"]</h3>
 
             @if (showFirstPageBtn)
             {
                 <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
             }
             <hr />
-            <p>Shown below lists the layouts loaded into your website.  Each gives your website a specific look for each page in your website.</p>
-            <p>Click &quot;Create New&quot; to start building your own style.</p>
-
-            <p>Beyond appearance, changing layouts can have far reaching affects on how your site functions. Change layouts with caution.</p>
         </div>
     </div>
-</div>
 
-<div class="row bg-dark">
-    <div class="col-md-6">
-        <div class="btn-group" role="group" aria-label="Page Actions">
-            <a class="btn btn-sm btn-secondary" href="@Url.Action("Create")">New Layout</a>
-            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
-            <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
-            <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
+    <div class="row bg-dark">
+        <div class="col-md-6">
+            <div class="btn-group" role="group" aria-label="Page Actions">
+                <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">New Layout</a>
+                <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
+                <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
+                <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
+                <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index", "Editor")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
-    <div class="col-md-6 d-flex justify-content-end">
-        <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="table-responsive custom-table-responsive">
-            <table class="table custom-table">
-                <thead>
-                    <tr>
-                        <th scope="col"></th>
-                        <th scope="col">Actions</th>
-                        <th scope="col">Layout Name</th>
-                        <th scope="col">Notes</th>
-                        <th scope="col">Trash</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in Model)
-                    {
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
                         <tr>
-                            <td scope="row">
-                                @if (row.IsDefault)
-                                {
-                                    <div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>
-                                }
-                                else
-                                {
-                                    <a href="@Url.Action("SetLayoutAsDefault", "Layouts")/@row.Id" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>
-                                }
-                            </td>
-                            <td scope="row">
-                                <div class="btn-group" role="group" aria-label="Layer actions">
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts", new { Id = row.Id})}" title="Preview"><span class="fa fa-binoculars"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts", new { Id = row.Id})}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts", new { Id = row.Id})}" title="Edit Code"><span class="fa fa-edit"></span></a>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts", new { Id = row.Id})}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
-                                </div>
-                            </td>
-                            <td>
-                                @row.LayoutName
-                            </td>
-                            <td>
-                                @row.Notes
-                            </td>
-                            <td>
-                                @if (row.IsDefault)
-                                {
-                                    <a class="btn btn-sm btn-secondary" title="Cannot delete default layout"> - </a>
-                                }
-                                else
-                                {
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts", new { Id = row.Id })" title="Delete layout"><span class="fa fa-trash-can"></span></a>
-                                }
-                            </td>
+                            <th scope="col"></th>
+                            <th scope="col">Actions</th>
+                            <th scope="col">Layout Name</th>
+                            <th scope="col">Notes</th>
+                            <th scope="col">Trash</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr>
+                                <td scope="row">
+                                    @if (row.IsDefault)
+                                    {
+                                        <div class='btn btn-sm btn-secondary' title='Is now the default layout for this website.'><span class='fa fa-check-circle'></span></div>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("SetLayoutAsDefault", "Layouts")/@row.Id" title='Set this as the default layout.' class='btn btn-sm btn-secondary'><i class='fa-regular fa-circle'></i></a>
+                                    }
+                                </td>
+                                <td scope="row">
+                                    <div class="btn-group" role="group" aria-label="Layer actions">
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts", new { Id = row.Id})}" title="Preview"><span class="fa fa-binoculars"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts", new { Id = row.Id})}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts", new { Id = row.Id})}" title="Edit Code"><span class="fa fa-edit"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts", new { Id = row.Id})}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
+                                    </div>
+                                </td>
+                                <td style="min-width:30%;">
+                                    @row.LayoutName
+                                </td>
+                                <td>
+                                    @Html.Raw(row.Notes)
+                                </td>
+                                <td>
+                                    @if (row.IsDefault)
+                                    {
+                                        <a class="btn btn-sm btn-secondary" title="Cannot delete default layout"> - </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts", new { Id = row.Id })" title="Delete layout"><span class="fa fa-trash-can"></span></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>
 
-<div class="row bg-dark">
-    <div class="col-md-12 d-flex justify-content-center">
-        <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
-    </div>
-</div>
 
 <form>
     <input id="selected" type="hidden" />

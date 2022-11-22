@@ -1,42 +1,77 @@
 ﻿@using NonFactors.Mvc.Grid
-@model IQueryable<TemplateIndexViewModel>
+@model List<TemplateIndexViewModel>
 @{
-    Layout = "_Layout";
-    ViewData["Title"] = "Page Template List";
+    ViewData["Title"] = "Page Template Inventory";
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index");
 }
 
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
         <div class="col">
-            <h3>@ViewData["Title"]</h3>
+            <h3 class="text-light">@ViewData["Title"]</h3>
             <hr />
-            <p>Page templates are pre-build web pages that can help quickly build your website.</p>
-            <p>Create a new template by clicking &quot;New&quot; below.</p>
         </div>
     </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-6">
+            <div class="btn-group" role="group" aria-label="Actions">
+                <a title="Return to page list" class="btn btn-sm btn-primary" href="@Url.Action("Create", "Layouts")">New Template</a>
+                <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index", "Layouts")">Layout list <i class="fa-solid fa-circle-arrow-right"></i></a>
+                <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index", "Editor")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
-            @(
-                Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add().RenderedAs(m =>
-                    "<div class=\"btn-group\" role=\"group\" aria-label=\"Basic example\">" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Preview", "Templates")}/{m.Id}\" title=\"Preview\"><span class=\"fa fa-binoculars\"></span></a>" +
-                    $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Templates")}/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-edit\"></span></a>" +
-                    "</div>").Encoded(false).Titled("");
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr scope="col">
+                            <th scope="col">Action</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Trash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
 
-                    col.Add(m => m.LayoutName);
-                    col.Add(m => m.Title);
+                            <tr scope="row">
+                                <td scope="row">
+                                    <div class="btn-group" role="group" aria-label="Actions for this template">
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Templates", new { Id = row.Id })" title="Preview"><span class="fa fa-binoculars"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Templates", new { Id = row.Id })" title="Edit Code"><span class="fa fa-edit"></span></a>
+                                    </div>
+                                </td>
+                                <td scope="row">
+                                    @row.Title
+                                </td>
+                                <td scope="row">
+                                    <button type='button' onclick="selectId('@row.Id')" class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-                    col.Add().RenderedAs(m => $"<button type='button' onclick='selectId(\"" + m.Id + "\")' class='btn btn-sm btn-secondary' data-bs-toggle='modal' data-bs-target='#delConfModal'><i title='Send to trash' class='fa-solid fa-trash'></i></button>").Encoded(false).Titled("");
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No templates found")
-                .Filterable()
-                .Sortable()
-                .Pageable()
-                )
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>

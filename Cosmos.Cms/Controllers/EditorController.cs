@@ -109,7 +109,6 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["RowCount"] = await query.CountAsync();
 
-
             if (sortOrder == "desc")
             {
                 if (!string.IsNullOrEmpty(currentSort))
@@ -281,7 +280,7 @@ namespace Cosmos.Cms.Controllers
             var data = await _articleLogic.GetArticleTrashList();
             var query = data.AsQueryable();
 
-            ViewData["RowCount"] = await query.CountAsync();
+            ViewData["RowCount"] = query.Count();
 
 
             if (sortOrder == "desc")
@@ -297,7 +296,7 @@ namespace Cosmos.Cms.Controllers
                             query = query.OrderByDescending(o => o.Title);
                             break;
                         case "LastPublished":
-                            query = query.OrderByDescending(o => o.Published);
+                            query = query.OrderByDescending(o => o.LastPublished);
                             break;
                         case "UrlPath":
                             query = query.OrderByDescending(o => o.UrlPath);
@@ -324,7 +323,7 @@ namespace Cosmos.Cms.Controllers
                             query = query.OrderBy(o => o.Title);
                             break;
                         case "LastPublished":
-                            query = query.OrderBy(o => o.Published);
+                            query = query.OrderBy(o => o.LastPublished);
                             break;
                         case "UrlPath":
                             query = query.OrderBy(o => o.UrlPath);
@@ -339,7 +338,7 @@ namespace Cosmos.Cms.Controllers
                 }
             }
             
-            return View(model.AsQueryable());
+            return View(query.ToList());
         }
         #endregion
 

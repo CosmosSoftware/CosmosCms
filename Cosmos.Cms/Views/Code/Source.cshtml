@@ -1,8 +1,7 @@
 ﻿@using Cosmos.Cms.Common.Services.Configurations
 @using Microsoft.Extensions.Options
-@using NonFactors.Mvc.Grid
 @inject IOptions<CosmosConfig> options
-@model IQueryable<Cosmos.BlobService.FileManagerEntry>
+@model List<Cosmos.BlobService.FileManagerEntry>
 @{
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
@@ -26,60 +25,69 @@
 
     if (!string.IsNullOrEmpty(pathPrefix) && pathPrefix != "/")
     {
-        pathParts.AddRange(pathPrefix.Trim('/').Split('/'));
+        pathParts.AddRange(pathPrefix.Trim('/').Split('/').Where(w => w != "/"));
     }
 
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index");
 }
 <link href="~/lib/filepond/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
-<div class="container">
-    <div class="row">
-        <div class="col mt-1">
-            <h3>@ViewData["Title"]</h3>
-            <hr />
+<div class="container mt-3">
+    <div class="row bg-dark">
+        <div class="col">
+            <h3 class="text-light">@ViewData["Title"]</h3>
             @if (directoryOnly)
             {
                 <h5>Select the folder where you want to place the file(s).</h5>
             }
         </div>
     </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 text-truncate">
+            <nav class="d-flex bg-dark">
+                <h6 class="mb-3 mt-3 text-bg-dark">
+                    <a class="text-reset" href="/Code/Source?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a>
+                   @{
+                        var p = "";
+                        int counter = 0;
+                    }
+                    @foreach (var item in pathParts)
+                    {
+                        counter++;
+                        p += "/" + item;
+                        var href = $"/Code/Source?target={p}&directoryOnly={directoryOnly}";
+                        <span class="text-reset">/</span> <a class="text-reset" href="@href.TrimStart('/')">@item</a>
+                    }
+                </h6>
+            </nav>
+        </div>
+    </div>
+
     @if (directoryOnly == false)
     {
-        <div class="row">
+        <div class="row bg-dark">
             <div class="col-md-12">
                 <!-- Filepond File Uploader -->
                 <input type="file"
                    class="filepond"
                    id="filepond"
-                   name="files" data-file-metadata-path="@pathPrefix" multiple>
+                   name="files"
+                   data-file-metadata-path="@pathPrefix"
+                   multiple>
             </div>
         </div>
     }
-    <div class="row">
-        <div class="col-md-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/Code/Source?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a></li>
-
-                    @{
-                        var p = "";
-                    }
-                    @foreach (var item in pathParts)
-                    {
-                        if (item != "/")
-                        {
-                            p += "/" + item;
-                            var href = $"/Code/Source?target={p}&directoryOnly={directoryOnly}";
-                            <li class="breadcrumb-item"><a href="@href">@item</a></li>
-                        }
-                    }
-                </ol>
-            </nav>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-9">
-            <div class="btn-group" role="group" aria-label="Basic example">
+    
+    <div class="row bg-dark">
+        <div class="col-md-4">
+            <div class="btn-group" role="group" aria-label="File and folder actions">
                 @if (directoryOnly)
                 {
                     <button id="btnCancel" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('cancel')">Cancel</button>
@@ -94,16 +102,19 @@
                 }
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+        <div class="col-md-4">
             <form id="frmNewFolder" class="d-flex" asp-action="NewFolder" method="post">
                 <input type="hidden" name="ParentFolder" id="ParentFolder" value="@pathPrefix" />
                 <input type="hidden" name="DirectoryOnly" id="DirectoryOnly" value="@directoryOnly" />
                 <input class="form-control form-control-sm me-2" name="FolderName" id="FolderName" type="text" placeholder="New folder name" aria-label="New folder name" minlength="2" required />
-
                 <button class="btn btn-sm btn-secondary" type="submit">Create</button>
             </form>
         </div>
     </div>
+
     <div class="row">
         <div class="col-md-12">
             <!-- Flexbox container for aligning the toasts -->
@@ -115,31 +126,80 @@
                     </div>
                 </div>
             </div>
-            @(Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add().RenderedAs((r, row) => $"<input type='checkbox' class='gridCheckBox' data-ccms-isdir='{r.IsDirectory}' data-ccms-blob='{r.Path.Trim('/')}'>").Encoded(false).Titled("").Width("30px");
-                    col.Add().RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Source?target={r.Path}&directoryOnly={directoryOnly}'><i class='fa-solid fa-folder'></i></a>" : "<div><i class='fa-solid fa-file'></i></div>").Titled("").Width("30px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add().RenderedAs(r => (r.IsDirectory == false) ?
-                    $"<div class='btn-group' role='group'><button class='btn btn-sm btn-secondary ccms-clip-board' title='Copy URL to clipbard' data-clipboard-text='{@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/{r.Path}'><i class=\"fa-regular fa-clipboard\"></i></button>"
-                    + (editorExtensions.Contains(r.Extension) ? $"<a class='btn btn-sm btn-secondary' title='Open code editor' href='/Code/EditCode?path={r.Path}'><i class='fa-solid fa-code'></i></a>" : "")
-                    + "</div>"
-                    : "").Titled("").Width("100px").Encoded(false).Sortable(false).Filterable(false);
-                    col.Add(r => r.Name).RenderedAs(r => r.IsDirectory ? $"<a href='/Code/Source?target={r.Path}&directoryOnly={directoryOnly}'>{r.Name}</a>" : $"<a href=\"javascript:download('{r.Path}')\">{r.Name}</div>").Titled("Name").Encoded(false);
-                    col.Add(r => r.Modified).Titled("Modified").Css("toLocalTimeZone").Filterable(GridFilterType.Double).Width("240px");
+        </div>
+    </div>
 
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No pages found")
-                .Filterable()
-                .Sortable()
-                .Pageable(p => p.ShowPageSizes = true)
-                )
+    <div class="row">
+        <div class="col-md-12 bg-dark">
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                Select
+                            </th>
+                            <th>Type</th>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr scope="row">
+                                <td scope="row" style="width:30px;">
+                                    <input type='checkbox' class='gridCheckBox' data-ccms-isdir='@row.IsDirectory' data-ccms-blob='@row.Path.Trim('/')'>
+                                </td>
+                                <td style="width:30px;">
+                                    @if (row.IsDirectory)
+                                    {
+                                        <a href='/Code/Source?target=@row.Path&directoryOnly=@directoryOnly'><i class='fa-solid fa-folder'></i></a>
+                                    }
+                                    else
+                                    {
+                                        <div><i class='fa-solid fa-file'></i></div>
+                                    }
+                                </td>
+                                <td style="width:60px;">
+                                    <div class='btn-group' role='group'>
+                                        @if (row.IsDirectory == false)
+                                        {
+                                            <button class="btn btn-sm btn-secondary ccms-clip-board" title="Copy URL to clipbard" data-clipboard-text="@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')/@row.Path"><i class="fa-regular fa-clipboard"></i></button>
+                                            @if (editorExtensions.Contains(row.Extension))
+                                            {
+                                                <a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path=@row.Path'><i class='fa-solid fa-code'></i></a>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (row.IsDirectory)
+                                    {
+                                        <a href='/Code/Source?target=@row.Path&directoryOnly=@directoryOnly'>@row.Name</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:download('@row.Path')">@(row.Name + row.Extension)</a>
+                                    }
+                                </td>
+                                <td style="width:240px">
+                                    <div class='toLocalTimeZone'>@row.ModifiedUtc</div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-dark pb-3">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>
-
-@Html.AjaxGrid(Url.Action("Folders"))
 
 <form>
     @Html.AntiForgeryToken()

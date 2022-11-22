@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -92,11 +93,15 @@ namespace Cosmos.Cms.Controllers
         /// File manager index page
         /// </summary>
         /// <param name="target"></param>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
         /// <param name="directoryOnly"></param>
         /// <param name="container"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target, bool directoryOnly = false, string container = "$web")
+        public async Task<IActionResult> Index(string target, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10, bool directoryOnly = false, string container = "$web")
         {
             _storageContext.SetContainerName(container);
 
@@ -113,12 +118,81 @@ namespace Cosmos.Cms.Controllers
             //
             var model = await _storageContext.GetFolderContents(target);
 
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var query = model.AsQueryable();
+
+            ViewData["RowCount"] = query.Count();
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Name":
+                            query = query.OrderByDescending(o => o.Name);
+                            break;
+                        case "IsDirectory":
+                            query = query.OrderByDescending(o => o.IsDirectory);
+                            break;
+                        case "CreatedUtc":
+                            query = query.OrderByDescending(o => o.CreatedUtc);
+                            break;
+                        case "Extension":
+                            query = query.OrderByDescending(o => o.Extension);
+                            break;
+                        case "ModifiedUtc":
+                            query = query.OrderByDescending(o => o.ModifiedUtc);
+                            break;
+                        case "Path":
+                            query = query.OrderByDescending(o => o.Path);
+                            break;
+                        case "Size":
+                            query = query.OrderByDescending(o => o.Size);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Name":
+                            query = query.OrderBy(o => o.Name);
+                            break;
+                        case "IsDirectory":
+                            query = query.OrderBy(o => o.IsDirectory);
+                            break;
+                        case "CreatedUtc":
+                            query = query.OrderBy(o => o.CreatedUtc);
+                            break;
+                        case "Extension":
+                            query = query.OrderBy(o => o.Extension);
+                            break;
+                        case "ModifiedUtc":
+                            query = query.OrderBy(o => o.ModifiedUtc);
+                            break;
+                        case "Path":
+                            query = query.OrderBy(o => o.Path);
+                            break;
+                        case "Size":
+                            query = query.OrderBy(o => o.Size);
+                            break;
+                    }
+                }
+            }
             if (directoryOnly)
             {
-                return View(model.Where(w => w.IsDirectory == true).AsQueryable());
+                return View(model.Where(w => w.IsDirectory == true).ToList());
             }
 
-            return View(model.AsQueryable());
+            return View(model.ToList());
         }
 
         /// <summary>

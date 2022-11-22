@@ -37,7 +37,7 @@
             @if (!isReviewer)
             {
                 <div class="btn-group" role="group" aria-label="Page Actions">
-                    <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Create">New</a>
+                    <a class="btn btn-sm btn-primary" title="Create a new web page" asp-action="Create">New Page</a>
                     <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Index" asp-controller="Templates">Templates</a>
                     <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
                     <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Index" asp-controller="Layouts">Layouts</a>
@@ -95,12 +95,14 @@
                                     @if (row.LastPublished.HasValue)
                                     {
                                         <small class="d-block">
-                                            <span class="badge badge-success"> Published: </span><span class='toLocalTimeZone'>@row.LastPublished.Value</span>
+                                            <span class="badge badge-primary"> Published: </span><span class='toLocalTimeZone'>@row.LastPublished.Value</span>
                                         </small>
                                     }
                                     else
                                     {
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts" )/@row.Id" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>
+                                        <small class="d-block">
+                                            <span class="badge badge-secondary">- DRAFT -</span>
+                                        </small>
                                     }
                                 </td>
                                 <td>

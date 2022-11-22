@@ -49,50 +49,49 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// User manager home page
+        /// User account inventory
         /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Index(string Id = "")
+        public async Task<IActionResult> Index(string Id = "", string sortOrder = "asc", string currentSort = "EmailAddress", int pageNo = 0, int pageSize = 10)
         {
             var users = new List<UserIndexViewModel>();
 
-            try
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            IQueryable<UserIndexViewModel> query;
+
+            if (string.IsNullOrEmpty(Id))
             {
-
-                if (string.IsNullOrEmpty(Id))
+                query = _userManager.Users.Select(s => new UserIndexViewModel
                 {
-                    users.AddRange(await _userManager.Users.Select(s => new UserIndexViewModel
-                    {
-                        UserId = s.Id,
-                        EmailAddress = s.Email,
-                        EmailConfirmed = s.EmailConfirmed,
-                        PhoneNumber = s.PhoneNumber,
-                        IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
-                    }).OrderBy(o => o.EmailAddress).ToArrayAsync());
-
-                }
-                else
-                {
-                    var identityRole = await _roleManager.FindByIdAsync(Id);
-
-                    var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
-
-                    users.AddRange(usersInRole.Select(s => new UserIndexViewModel
-                    {
-                        UserId = s.Id,
-                        EmailAddress = s.Email,
-                        EmailConfirmed = s.EmailConfirmed,
-                        PhoneNumber = s.PhoneNumber,
-                        IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
-                    }).OrderBy(o => o.EmailAddress).ToArray());
-                }
+                    UserId = s.Id,
+                    EmailAddress = s.Email,
+                    EmailConfirmed = s.EmailConfirmed,
+                    PhoneNumber = s.PhoneNumber,
+                    IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
+                });
             }
-            catch (Exception e)
+            else
             {
-                _logger.LogError(e, e.Message);
+                var identityRole = await _roleManager.FindByIdAsync(Id);
+
+                var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name).;
+
+                query = usersInRole.AsQueriable();
             }
 
-            return View(users.AsQueryable());
+            ViewData["RowCount"] = await query.CountAsync();
+
+
+            return View(await query.ToListAsync());
         }
 
         /// <summary>

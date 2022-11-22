@@ -287,7 +287,7 @@ h2 {
     }
 
         .custom-table tbody tr th a, .custom-table tbody tr td a {
-            color: #b3b3b3;
+            color: whitesmoke;
         }
 
         .custom-table tbody tr th:first-child, .custom-table tbody tr td:first-child {
