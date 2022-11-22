@@ -78,6 +78,23 @@
                                     <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts" )}/{m.Id}" title="Edit Code"><span class="fa fa-edit"></span></a>
                                     <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts" )}/{m.Id}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
                                 </div>
+                            </td>
+                            <td>
+                                <div class='toLocalTimeZone'>@row.LayoutName</div>
+                            </td>
+                            <td>
+                                <div class='toLocalTimeZone'>@Html.Raw(row.Notes)</div>
+                            </td>
+                            <td>
+                                @if (row.IsDefault)
+                                {
+                                    <a class="btn btn-sm btn-secondary" title="Cannot delete default layout"> - </a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Delete", "Layouts" )/{m.Id}\" title=\"Edit Code\"><span class=\"fa fa-trash-can\"></span></a>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
