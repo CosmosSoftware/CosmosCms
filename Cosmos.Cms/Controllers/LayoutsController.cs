@@ -323,7 +323,7 @@ namespace Cosmos.Cms.Controllers
         {
             if (id == null) return NotFound();
 
-            var layout = await _dbContext.Layouts.FindAsync(id);
+            var layout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.Id == id.Value);
             if (layout == null) return NotFound();
 
             var model = new LayoutCodeViewModel
