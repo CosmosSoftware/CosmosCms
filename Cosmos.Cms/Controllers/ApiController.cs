@@ -51,7 +51,7 @@ namespace Cosmos.Cms.Controllers
         [ValidateAntiForgeryToken()]
         public async Task<IActionResult> Index(string Id)
         {
-            string? result;
+            string result;
             try
             {
                 var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.EndPoint == Id);

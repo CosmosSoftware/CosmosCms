@@ -66,26 +66,23 @@ namespace Cosmos.Cms.Controllers
             ViewData["pageNo"] = pageNo;
             ViewData["pageSize"] = pageSize;
 
-            IQueryable<UserIndexViewModel> query;
-
-            if (string.IsNullOrEmpty(Id))
+            IQueryable<UserIndexViewModel> query = _userManager.Users.Select(s => new UserIndexViewModel
             {
-                query = _userManager.Users.Select(s => new UserIndexViewModel
-                {
-                    UserId = s.Id,
-                    EmailAddress = s.Email,
-                    EmailConfirmed = s.EmailConfirmed,
-                    PhoneNumber = s.PhoneNumber,
-                    IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
-                });
-            }
-            else
+                UserId = s.Id,
+                EmailAddress = s.Email,
+                EmailConfirmed = s.EmailConfirmed,
+                PhoneNumber = s.PhoneNumber,
+                IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
+            });
+
+            if (!string.IsNullOrEmpty(Id))
             {
                 var identityRole = await _roleManager.FindByIdAsync(Id);
 
                 var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
 
-                query = usersInRole.AsQueriable();
+                var userIds = usersInRole.Select(s => s.Id).ToArray();
+                query = query.Where(w => userIds.Contains(w.UserId));
             }
 
             ViewData["RowCount"] = await query.CountAsync();

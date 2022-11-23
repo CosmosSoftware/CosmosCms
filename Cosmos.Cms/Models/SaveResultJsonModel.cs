@@ -10,6 +10,6 @@ namespace Cosmos.Cms.Models
         /// <summary>
         ///     Content model as saved
         /// </summary>
-        public HtmlEditorViewModel Model { get; set; }
+        public new HtmlEditorViewModel Model { get; set; }
     }
 }

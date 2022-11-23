@@ -1,43 +1,86 @@
 ﻿@using NonFactors.Mvc.Grid
-@model IQueryable<IdentityRole>
+@model List<IdentityRole>
 @using Microsoft.AspNetCore.Identity
 @{
     var userIds = (string[])ViewData["UserIds"];
 
-    ViewData["Title"] = "Role Management";
+    ViewData["Title"] = "Role Inventory";
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index");
 }
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-8">
-            <h3>@ViewData["Title"]</h3>
+<div class="container mt-3">
+    <div class="row">
+        <div class="col">
+            <h3 class="text-light">@ViewData["Title"]</h3>
             <hr />
         </div>
     </div>
     @if (Model != null && Model.Any())
     {
-        <div class="row justify-content-center">
-            <div class="col-8">
-                <p>@Model.Count() users selected.</p>
-                <button type="button" id="btnAddToRoles" class="btn btn-sm btn-primary" style="display:none;color: #e6ccff">Add Selected Users to Roles</button>
-                <button type="button" id="btnRemoveFromRoles" class="btn btn-sm btn-primary" style="display:none">Remove Selected Users from Roles</button>
+        <div class="row bg-dark">
+            <div class="col-md-6">
+                <div class="btn-group" role="group" aria-label="Page Actions">
+                    <p>@Model.Count() users selected.</p>
+                    <button type="button" id="btnAddToRoles" class="btn btn-sm btn-primary" style="display:none;color: #e6ccff">Add Selected Users to Roles</button>
+                    <button type="button" id="btnRemoveFromRoles" class="btn btn-sm btn-primary" style="display:none">Remove Selected Users from Roles</button>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end">
+                <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
             </div>
         </div>
     }
-    <div class="row justify-content-center">
-        <div class="col-8">
-            <a class="btn btn-sm btn-primary" asp-action="Index" asp-controller="Home">Home</a>
-            <span id="spanChangeNotice" class="text-muted" style="display:none">Remember to click &quot;Save&quot; or &quot;Cancel&quot; when done.</span>
-            @(Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add().RenderedAs(r => $"<input type='checkbox' data-ccms-userid='{r.Id}' class='gridCheckBox' >").Encoded(false).Sortable(false).Filterable(false).Titled("").Width("30px");
-                    col.Add(b => b.Name).Titled("Role Name");
-                    col.Add().RenderedAs(r => $"<button title='Manage membership.' type='button' onclick=\"manageUsers('{r.Id}')\" class='btn btn-sm'><i class='fa fa-user'></i></button>").Encoded(false).Sortable(false).Filterable(false).Titled("");
-                }).Filterable().Sortable().Pageable())
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                Select
+                            </th>
+                            <th scope="col">
+                                Role Name
+                            </th>
+                            <th scope="col">
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <input type='checkbox' data-ccms-userid='@row.Id' class='gridCheckBox'>
+                                </td>
+                                <td>
+                                    @row.Name
+                                </td>
+                                <td style="width:30px;">
+                                    <button title='Manage membership.' type='button' onclick="manageUsers('@row.Id')" class='btn btn-sm'><i class='fa fa-user'></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>
-
 <script>
     var selectedIds;
     function error_handler(e) {

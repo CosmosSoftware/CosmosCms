@@ -37,11 +37,15 @@ namespace Cosmos.IdentityManagement.Website.Controllers
         }
 
         /// <summary>
-        /// Gets list of users
+        /// Role inventory
         /// </summary>
         /// <param name="ids"></param>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Index([Bind("ids")] string ids)
+        public async Task<IActionResult> Index([Bind("ids")] string ids, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10)
         {
             if (string.IsNullOrEmpty(ids))
             {
@@ -52,9 +56,43 @@ namespace Cosmos.IdentityManagement.Website.Controllers
                 ViewData["Ids"] = ids.Split(',');
             }
 
-            var model = await _roleManager.Roles.OrderBy(o => o.Name).ToListAsync();
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
 
-            return View(model.AsQueryable());
+            var query = _roleManager.Roles.AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Name":
+                            query = query.OrderByDescending(o => o.Name);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Name":
+                            query = query.OrderBy(o => o.Name);
+                            break;
+                    }
+                }
+            }
+            
+            var model = query.Skip(pageNo * pageSize).Take(pageSize);
+
+            return View(await model.ToListAsync());
         }
 
         //public async Task<IActionResult> Create_Roles([DataSourceRequest] DataSourceRequest request, [Bind(Prefix = "models")] IEnumerable<IdentityRole> models)
