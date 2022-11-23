@@ -1,5 +1,4 @@
 ﻿@model HtmlEditorViewModel
-@using NonFactors.Mvc.Grid
 @{
     Layout = "_LayoutEditor";
     ViewData["Title"] = "Editing: " + Model.Title;
@@ -274,7 +273,7 @@
                 <h5 class="modal-title">Article Versions</h5>
             </div>
             <div class="modal-body">
-                @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))
+               @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

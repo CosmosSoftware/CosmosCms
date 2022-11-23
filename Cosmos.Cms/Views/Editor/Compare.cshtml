@@ -42,6 +42,22 @@
             color: white;
             border-color: black;
         }
+
+    /* Disable options */
+    #btnSaveChanges,
+    #btnSaveAsDraft,
+    #btnPreview,
+    #btnFiles,
+    #btnSourceCode,
+    #btnCcmsCodeEditor,
+    #btnSaveAndPublish,
+    #liBtnVersions,
+    #divAutoSave,
+    #msgSaving,
+    #lblPublished,
+    #tbPublished {
+        display: none !important;
+    }
 </style>
 
 <nav class="code-tabs navbar">
@@ -100,9 +116,10 @@
             $(event.target).addClass("active");
         });
 
-        $("#btnSave").hide();
-        $("#btnPreview").hide();
-        $("#btnFiles").hide();
+        var versions = '<div class="btn btn-sm btn-secondary mt-1 ms-3">Comparing: v.@ViewData["LeftVersion"] <i class="fa-solid fa-arrows-left-right"></i> v.@ViewData["RightVersion"]</div>'
+
+        $("#msgSpecial").html(versions);
+
     });
 
     function bgEditClickCustom(command) {

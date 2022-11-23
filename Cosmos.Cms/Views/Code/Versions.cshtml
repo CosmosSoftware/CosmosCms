@@ -1,62 +1,104 @@
 ﻿@using Cosmos.Cms.Services
-@using NonFactors.Mvc.Grid
-@model IQueryable<NodeScriptItemViewModel>
+@model List<NodeScriptItemViewModel>
 @{
     // /Views/Code/Versions
     ViewData["Title"] = @ViewData["ArticleTitle"] + " Versions";
     var isReviewer = User.IsInRole("Reviewers");
     var isAuthor = User.IsInRole("Authors");
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Code/Versions");
+
 }
 
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 text-light">
             <h3>Versions for end point: &quot;@ViewData["EndPoint"]&quot;</h3>
-            <h5>Version List</h5>
-            <a title="Return to script list" class="mt-2" href="@Url.Action("Index")">Script list <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
-    <hr />
+    <div class="row bg-dark">
+        <div class="col-md-6">
+            <div class="btn-group" role="group" aria-label="Page Actions">
+                @if (!isReviewer)
+                {
+                    <a id="btnNewVersion" class="btn btn-sm btn-primary"
+                   title="Creates a new version of this article using the latest version, and puts it in edit mode."
+                   asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">
+                        New Version
+                    </a>
+                    <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index")">Code list <i class="fa-solid fa-circle-arrow-right"></i></a>
+                }
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
-            <p>Shown below are all the different version(s) of this page.  Each shows if it a &quot;drafT&quot; or the data/time when it was &quot;published.&quot;</p>
-            <p>&quot;Expires&quot; date/time is when a previously published version is replaced by a new published version.</p>
-            <br />
-            @if (!isReviewer)
-            {
-                <a id="btnNewVersion" class="btn btn-primary"
-               title="Creates a new version of this article using the latest version, and puts it in edit mode."
-               asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">
-                    Create new version from latest version
-                </a>
-            }
-            @(Html.Grid(Model)
-                .Build(c =>
-                {
-                    c.Add(b => b.Version).RenderedAs(r => $"v.{r.Version}").Titled("");
-                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("EditCode", "Code")}/{r.Id}\" title=\"Edit code using Monaco code editor.\"><i class='fa-solid fa-code'></i></a>").Titled("Edit Tool").Encoded(false).Sortable(false).Filterable(false);
-                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("Duplicate", "Code")}/#: Id #\" title=\"Create a new web page based on this version.\"><span class=\"fa fa-external-link\"></span></a> <a class=\"btn btn-sm btn-secondary\" href=\"{Url.Action("ExportPage", "Code")}/#: Id #\" title=\"Export page.\" #: visibleStyle('{isReviewer}', '{isAuthor}', Published, true) #><span class=\"fa-solid fa-cloud-arrow-down\"></span></a>").Titled("New Page/Download").Encoded(false).Sortable(false).Filterable(false);
-                    
-                    c.Add(b => b.Updated).Titled("Updated").Filterable(GridFilterType.Double);
-                    c.Add(b => b.Published).Titled("Published").Filterable(GridFilterType.Double);
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr scope="col">
+                            Version
+                        </tr>
+                        <tr scope="col">
+                            Edit Tool
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr scope="row">
+                                <td scope="row">
+                                    v.@row.Version
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Code", new { Id = row.Id })" title="Edit code using Monaco code editor."><i class='fa-solid fa-code'></i></a>
+                                </td>
+                                <td>
+                                    @if (isReviewer == false && row.Published.HasValue == false)
+                                    {
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Duplicate", "Code", new { Id = row.Id })" title="Create a new web page based on this version."><span class="fa fa-external-link"></span></a> <a class="btn btn-sm btn-secondary" href="@Url.Action(" ExportPage", "Code", new { Id = row.Id })" title="Export page."><span class="fa-solid fa-cloud-arrow-down"></span></a>
+                                    }
+                                </td>
+                                <td scope="row">
+                                    <div class='toLocalTimeZone'>@row.Updated</div>
+                                </td>
+                                <td scope="row">
+                                    <div class='toLocalTimeZone'>@row.Published</div>
+                                </td>
+                                <td style="width:50px;">
+                                    <a class="btn btn-sm btn-secondary" title="Promote this version to the latest version and put it in edit mode." href="@Url.Action("CreateVersion")?id={Model}&entityId=@row.Id"><span class="text-white fa fa-arrow-circle-up" aria-hidden="true"></span></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-                    c.Add().RenderedAs(r => $"<a class=\"btn btn-sm btn-success\" title=\"Promote this version to the latest version and put it in edit mode.\" href=\"{Url.Action("CreateVersion")}?id={Model}&entityId=#: Id #\"><span class=\"text-white fa fa-arrow-circle-up\" aria-hidden=\"true\"></span></a>").Titled("Promote").Width(50).Encoded(false).Sortable(false).Filterable(false);
-                })
-                .Sortable()
-                .Filterable()
-                .Pageable()
-                )
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
         </div>
     </div>
 </div>
 
 <script>
-    function visibleStyle(isReviewer, isAuthor, isPublished, usesEditor) {
-        if (isReviewer === "True" || usesEditor === false || (isAuthor === "True" && isPublished !== null)) {
-            return "style=display:none";
-        }
-        return "";
-    }
+    //function visibleStyle(isReviewer, isAuthor, isPublished, usesEditor) {
+    //    if (isReviewer === "True" || usesEditor === false || (isAuthor === "True" && isPublished !== null)) {
+    //        return "style=display:none";
+    //    }
+    //    return "";
+    //}
 
     var editCodeUrl = "@Url.Action("Edit", "Code")";
     var editorChoice; // HTML or CODE

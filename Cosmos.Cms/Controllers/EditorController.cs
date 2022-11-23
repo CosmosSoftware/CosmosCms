@@ -353,6 +353,10 @@ namespace Cosmos.Cms.Controllers
             
             var left = await _articleLogic.Get(leftId, EnumControllerName.Edit, await GetUserId());
             var right = await _articleLogic.Get(rightId, EnumControllerName.Edit, await GetUserId());
+            @ViewData["PageTitle"] = left.Title;
+
+            ViewData["LeftVersion"] = left.VersionNumber;
+            ViewData["RightVersion"] = right.VersionNumber;
 
             var model = new CompareCodeViewModel()
             {
@@ -1408,12 +1412,63 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Redirect manager page
         /// </summary>
+        /// <param name="sortOrder"></param>
+        /// <param name="currentSort"></param>
+        /// <param name="pageNo"></param>
+        /// <param name="pageSize"></param>
         /// <returns></returns>
         [Authorize(Roles = "Administrators, Editors")]
-        public async Task<IActionResult> Redirects()
+        public async Task<IActionResult> Redirects(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10)
         {
-            var model = await _articleLogic.GetArticleRedirects();
-            return View(model.AsQueryable());
+
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var data = await _articleLogic.GetArticleRedirects();
+            var query = data.AsQueryable();
+
+            ViewData["RowCount"] = await query.CountAsync();
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "FromUrl":
+                            query = query.OrderByDescending(o => o.FromUrl);
+                            break;
+                        case "Title":
+                            query = query.OrderByDescending(o => o.Id);
+                            break;
+                        case "LastPublished":
+                            query = query.OrderByDescending(o => o.ToUrl);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "FromUrl":
+                            query = query.OrderBy(o => o.FromUrl);
+                            break;
+                        case "Id":
+                            query = query.OrderBy(o => o.Id);
+                            break;
+                        case "ToUrl":
+                            query = query.OrderBy(o => o.ToUrl);
+                            break;
+                    }
+                }
+            }
+
+            return View(query.ToList());
         }
 
         /// <summary>

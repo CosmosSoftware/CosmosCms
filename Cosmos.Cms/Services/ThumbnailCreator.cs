@@ -8,6 +8,9 @@ using System.IO;
 
 namespace Cosmos.Cms.Services
 {
+    /// <summary>
+    /// Image thumbnail creator
+    /// </summary>
     public class ThumbnailCreator
     {
         private static readonly IDictionary<string, ImageFormat> ImageFormats = new Dictionary<string, ImageFormat>
@@ -19,11 +22,21 @@ namespace Cosmos.Cms.Services
 
         private readonly ImageResizer resizer;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ThumbnailCreator()
         {
             resizer = new ImageResizer();
         }
 
+        /// <summary>
+        /// Create thumbnail
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="desiredSize"></param>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
         public byte[] Create(Stream source, ImageSizeModel desiredSize, string contentType)
         {
             using (var image = Image.FromStream(source))
@@ -50,6 +63,13 @@ namespace Cosmos.Cms.Services
             }
         }
 
+        /// <summary>
+        /// Create filkl
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="desiredSize"></param>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
         public byte[] CreateFill(Stream source, ImageSizeModel desiredSize, string contentType)
         {
             using (var image = Image.FromStream(source))

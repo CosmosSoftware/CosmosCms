@@ -185,10 +185,60 @@ namespace Cosmos.Cms.Controllers
         /// Page returns a list of community layouts.
         /// </summary>
         /// <returns></returns>
-        public IActionResult CommunityLayouts()
+        public IActionResult CommunityLayouts(string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10)
         {
+
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
             var utilities = new LayoutUtilities();
-            return View(utilities.CommunityCatalog.LayoutCatalog.AsQueryable());
+
+            var query = utilities.CommunityCatalog.LayoutCatalog.AsQueryable();
+
+            ViewData["RowCount"] = query.Count();
+
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderByDescending(o => o.License);
+                            break;
+                        case "Name":
+                            query = query.OrderByDescending(o => o.Name);
+                            break;
+                        case "Description":
+                            query = query.OrderByDescending(o => o.Description);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "ArticleNumber":
+                            query = query.OrderBy(o => o.License);
+                            break;
+                        case "Name":
+                            query = query.OrderBy(o => o.Name);
+                            break;
+                        case "Description":
+                            query = query.OrderBy(o => o.Description);
+                            break;
+                    }
+                }
+            }
+
+
+            return View(query.ToList());
         }
 
         /// <summary>

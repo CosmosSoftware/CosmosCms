@@ -273,6 +273,22 @@
             }
         }
     });
+
+    var timeout;
+
+    $(window).bind('keyup', function (event) {
+        // Clear the timeout if it has already been set.
+        // This will prevent the previous task from executing
+        // if it has been less than <MILLISECONDS>
+        clearTimeout(timeout);
+
+        // Make a new timeout set to go off in 1000ms (1 second)
+        timeout = setTimeout(function () {
+            if (getAutoSave()) {
+                $("#frmSave").submit();
+            }
+        }, 1500);
+    });
 </script>
 
 <script src="/lib/monaco-editor/min/vs/loader.js"></script>

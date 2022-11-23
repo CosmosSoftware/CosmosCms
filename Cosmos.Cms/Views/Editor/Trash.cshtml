@@ -1,5 +1,4 @@
-﻿@using NonFactors.Mvc.Grid
-@model List<ArticleListItem>
+﻿@model List<ArticleListItem>
 @{
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors") || User.IsInRole("Authors");
 

@@ -1,49 +1,116 @@
-﻿@using NonFactors.Mvc.Grid
-@using Cosmos.Cms.Data.Logic
-@model IQueryable<LayoutCatalogItem>
+﻿@using Cosmos.Cms.Data.Logic
+@model List<LayoutCatalogItem>
 @{
     ViewData["Title"] = "Import Open Source Layout";
+
+    var rowCount = (int)ViewData["RowCount"];
+    var sortOrder = (string)ViewData["sortOrder"];
+    var currentSort = (string)ViewData["currentSort"];
+    var pageNumber = (int)ViewData["pageNo"];
+    var pageSize = (int)ViewData["pageSize"];
+
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Layout/CommunityLayouts");
+
 }
-<div class="container mt-5 pt-2">
+<div class="container mt-3">
     <div class="row">
         <div class="col">
-            <h3>@ViewData["Title"]</h3>
-            <hr />
+            <h3 class="text-light">@ViewData["Title"]</h3>
             <p>
                 Below is a list of open source layouts pre-packaged for you to use in your Cosmos CMS website.  All are open source
                 and have documentation on how to use them.
             </p>
-            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Layouts <i class="fa-solid fa-circle-arrow-right"></i></a>
-            @(Html.Grid(Model)
-                .Build(col =>
-                {
-                    col.Add(m => m.Name).Titled("")
-                    .RenderedAs(m => $"<a class='btn btn-sm btn-secondary' title='Import community layout.' href='{@Url.Action("ImportCommunityLayout")}/{m.Id}'>Import</a>")
-                    .Encoded(false)
-                    .Width("60px").Filterable(false).Sortable(false);
-                    col.Add(m => m.Id).Titled("Preview")
-                    .RenderedAs(m => $"<a target='_blank' title='Open layout' href='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/layout.html'><img  height='120' src='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/preview.jpg' /></a>")
-                    .Filterable(false)
-                    .Sortable(false)
-                    .Encoded(false);
-                    col.Add(m => m.Name).Titled("Name");
-                    col.Add(m => m.License).Encoded(false).Titled("License")
-                    .Filterable(false)
-                    .Sortable(false)
-                    .Encoded(false);
-                    col.Add(m => m.Description).Encoded(false).Titled("Notes/Description")
-                    .Filterable(false)
-                    .Sortable(false);
-                })
-                .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
-                .Empty("No layouts found")
-                .Filterable()
-                .Sortable()
-                .Pageable()
-                )
-            <a title="Return to page list" class="mt-2" href="@Url.Action("Index")">Layouts <i class="fa-solid fa-circle-arrow-right"></i></a>
         </div>
     </div>
-</div>
+
+    <div class="row bg-dark">
+        <div class="col-md-6">
+            <div class="btn-group" role="group" aria-label="Page Actions">
+                <a class="btn btn-sm btn-secondary" href="@Url.Action("Index")">Layouts <i class="fa-solid fa-circle-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+
+                            </th>
+                            <th>
+                                Preview
+                            </th>
+                            <th>
+                                Name/License
+                            </th>
+                            <th>
+                                Notes/Description
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var row in Model)
+                        {
+                            <tr scope="row">
+                                <td scope="row" style="width:60px;">
+                                    <a class='btn btn-sm btn-secondary' title='Import community layout.' href='@Url.Action("ImportCommunityLayout", new { Id = row.Id })'>Import</a>
+                                </td>
+                                <td>
+                                    <a target='_blank' title='Open layout' href='https://cosmos-layouts.moonrise.net/Layouts/@row.Id/layout.html'><img height='120' src='https://cosmos-layouts.moonrise.net/Layouts/@row.Id/preview.jpg' /></a>
+                                </td>
+                                <td>
+                                    @row.Name <br />
+                                    <small class="d-block"><span class="badge badge-primary">@Html.Raw(row.License)</span></small>
+                                </td>
+                                <td>
+                                    @Html.Raw(row.Description)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bg-dark">
+        <div class="col-md-12 d-flex justify-content-center">
+            <partial name="~/Views/Shared/GridPager/_GridPager.cshtml" model="pagerModel"></partial>
+        </div>
+    </div>
 
 
+    @*@(Html.Grid(Model)
+    .Build(col =>
+    {
+    col.Add(m => m.Name).Titled("")
+    .RenderedAs(m => $"<a class='btn btn-sm btn-secondary' title='Import community layout.' href='{@Url.Action("ImportCommunityLayout")}/{m.Id}'>Import</a>")
+    .Encoded(false)
+    .Width("60px").Filterable(false).Sortable(false);
+    col.Add(m => m.Id).Titled("Preview")
+    .RenderedAs(m => $"<a target='_blank' title='Open layout' href='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/layout.html'><img  height='120' src='https://cosmos-layouts.moonrise.net/Layouts/{m.Id}/preview.jpg' /></a>")
+    .Filterable(false)
+    .Sortable(false)
+    .Encoded(false);
+    col.Add(m => m.Name).Titled("Name");
+    col.Add(m => m.License).Encoded(false).Titled("License")
+    .Filterable(false)
+    .Sortable(false)
+    .Encoded(false);
+    col.Add(m => m.Description).Encoded(false).Titled("Notes/Description")
+    .Filterable(false)
+    .Sortable(false);
+    })
+    .Using(NonFactors.Mvc.Grid.GridFilterMode.Header)
+    .Empty("No layouts found")
+    .Filterable()
+    .Sortable()
+    .Pageable()
+    )*@

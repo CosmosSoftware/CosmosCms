@@ -40,7 +40,7 @@
                             File
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
-                            <li>
+                            <li id="btnSaveChanges">
                                 <a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a>
                             </li>
                             <li id="btnSaveAsDraft">
@@ -70,19 +70,23 @@
                             </li>
                         </ul>
                     </li>
-                    <li>
-                        <div id="divAutoSave" class="form-check form-switch mt-2 ms-3">
+                    <li id ="divAutoSave">
+                        <div class="form-check form-switch mt-2 ms-3">
                             <input id="swAutoSave" class="form-check-input" type="checkbox" role="switch" checked="true">
                             <label id="lblAutoSave" class="form-check-label text-light" for="swAutoSave">Autosave (on)</label>
                         </div>
                     </li>
-                    <li>
+                    <li id="msgSaving">
                         <div class="btn btn-sm btn-secondary mt-1 ms-3">
                             <div id="spSaving" class="spinner-border spinner-border-sm text-light" role="status" style="display:none"></div>
                             <span id="btnSavingText">Saved</span>
                         </div>
                     </li>
+                    <li>
+                        <div id="msgSpecial"></div>
+                    </li>
                 </ul>
+                
                 <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
                 <div id="lblTitle" class="navbar-text">Title:</div>
                 <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />

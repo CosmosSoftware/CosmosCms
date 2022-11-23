@@ -1,5 +1,4 @@
-﻿@model IQueryable<ArticleLogJsonModel>
-@using NonFactors.Mvc.Grid
+﻿@model List<ArticleLogJsonModel>
 @{
     ViewData["Title"] = "Web Site Edit Logs";
 }
@@ -10,7 +9,7 @@
             <hr />
             <p>This is a list of actions taken on this website with regards to editing content.</p>
 
-            @(Html.Grid(Model)
+            @*@(Html.Grid(Model)
                 .Build(column =>
                 {
                     column.Add(b => b.DateTimeStamp).Filterable(GridFilterType.Double).Titled("Date/Time");
@@ -20,7 +19,7 @@
                 .Pageable()
                 .Sortable()
                 .Filterable()
-                )
+                )*@
         </div>
     </div>
 </div>

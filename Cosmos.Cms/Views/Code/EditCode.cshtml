@@ -1,8 +1,9 @@
-﻿@using Newtonsoft.Json
-@model EditCodePostModel
+﻿@model FileManagerEditCodeViewModel
+@using Newtonsoft.Json
+@using System.IO
 @{
     Layout = "_LayoutEditor";
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = Model.EditorTitle;
     var fields = Model.EditorFields.ToArray();
     var aclass = "active";
 }
@@ -37,14 +38,13 @@
         border-color: transparent;
     }
 
-    .code-tabs.nav-link.active {
-        background-color: var(--bs-gray-900);
-        color: white;
-        border-color: black;
-    }
+        .code-tabs.nav-link.active {
+            background-color: var(--bs-gray-900);
+            color: white;
+            border-color: black;
+        }
 
     /* Disable options */
-    #btnSaveChanges,
     #btnSaveAsDraft,
     #btnPreview,
     #btnFiles,
@@ -61,9 +61,9 @@
         @{
             foreach (var field in fields)
             {
-             <li class="nav-item">
-               <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-              </li>
+                    <li class="nav-item">
+                        <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                    </li>
                 aclass = "";
             }
         }
@@ -72,27 +72,23 @@
 
 <div id="editspace" class="m-editor-container"></div>
 
-<form id="frmSave" asp-action="EditCode">
+<form id="frmSave" asp-action="EditCode" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="SaveAsNewVersion" />
-    <input type="hidden" asp-for="ArticleNumber" />
     <input type="hidden" asp-for="EditingField" />
     <input type="hidden" asp-for="Content" />
-    <input type="hidden" asp-for="Title" />
-    <input type="hidden" asp-for="Published" />
-    <input type="hidden" asp-for="RoleList" />
-    <input type="hidden" asp-for="IsValid" />
-    <input type="hidden" asp-for="HeadJavaScript" />
-    <input type="hidden" asp-for="FooterJavaScript" />
+    <input type="hidden" asp-for="Path" />
+    <input type="hidden" asp-for="EditorMode" />
+    <input type="hidden" asp-for="EditingField" />
+    <input type="hidden" asp-for="EditorTitle" />
+    <input type="hidden" asp-for="EditorFields" />
     <input type="hidden" asp-for="EditorType" />
 </form>
-
 <script>
     var next;
 
     var editor;
     var fieldId;
-    var fieldName;
     var ccmsEditorIsLocked = false;
 
     $("#frmSave").submit(function (e) {
@@ -121,12 +117,15 @@
             $("#msgBox").html("Loading...");
             editor.dispose();
             editor = null;
-
         }
 
         fieldId = null;
 
         $("#EditingField").val(null);
+
+        // Disable title and publishing fields
+        $("#tbTitle").prop("disabled", true);
+        $("#tbPublished").prop("disabled", true);
 
         // Monaco AMD Editor  - https://microsoft.github.io/monaco-editor/
         require.config({ paths: { 'vs': '/lib/monaco-editor/min/vs' } });
@@ -134,8 +133,7 @@
         //require.config({ paths: { vs: '/lib/node_modules/monaco-editor/dist' } }); // Emmet Abbr.
         require(['vs/editor/editor.main'],
             function () {
-                fieldName = id;
-
+                fieldId = id;
                 var fieldInfo = editFields.find(o => o.FieldName === id);
                 fieldId = fieldInfo.FieldId;
 
@@ -150,6 +148,12 @@
                         break;
                     case 2:
                         mode = "css";
+                        break;
+                    case 3:
+                        mode = "xml";
+                        break;
+                    case 4:
+                        mode = "json";
                         break;
                     default:
                         mode = "html"
@@ -201,22 +205,6 @@
                     if (typeof (next) !== "undefined" && next !== null) {
                         next();
                     }
-
-                    $("#Id").val(response.Model.Id);
-                    $("#ArticleNumber").val(response.Model.ArticleNumber);
-                    //$("#EditingField").val(response.Model.EditingField); // Don't update
-                    $("#UrlPath").val(response.Model.UrlPath);
-                    $("#VersionNumber").val(response.Model.VersionNumber);
-                    $("#Content").val(response.Model.Content);
-                    $("#RoleList").val(response.Model.RoleList);
-                    $("#Title").val(response.Model.Title);
-                    $("#Published").val(response.Model.Published);
-                    $("#Published").val(response.Model.IsValid);
-                    $("#HeadJavaScript").val(response.Model.HeadJavaScript);
-                    $("#FooterJavaScript").val(response.Model.FooterJavaScript);
-
-                    //createAndLoadEditor(fieldName); // Reuse the existing set fieldId
-
                     toastMsg("Successfully saved.");
                 } else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
@@ -248,22 +236,21 @@
         switch (command) {
             case "Close":
                 next = function () {
-                    window.location.href = "@Url.Action("Versions", "Editor")/@Model.ArticleNumber";
+                    window.location.href = "/Code/Source?target=@(System.IO.Path.GetDirectoryName(Model.Path).Replace("\\", "/"))";
                 }
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
                 saveFirstModal.show();
                 break;
-            case "Preview":
-
-                var modelId = $("#Id").val();
-
-                next = function () {
-                    window.open("@Url.Action("Preview", "Home")/" + modelId);
-                }
-                $("#divSaveFirstDialog").html("Save page before opening preview?");
-                saveFirstModal.show();
-                break;
         }
+    }
+
+    function saveFirst() {
+        saveChanges(saveFirstModal, next);
+    }
+
+    function doNotSave() {
+        saveFirstModal.hide();
+        next();
     }
 
     function getLocalTimeZone() {
@@ -284,16 +271,24 @@
             }, 2000);
         }
 
+        $('#tbPublished').daterangepicker({
+            timePicker: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            locale: {
+                format: 'MM/DD/YYYY hh:mm A'
+            }
+        });
+
         $("[data-ccms-fieldname]").click(function (event) {
             var name = $(event.target).attr("data-ccms-fieldname");
             $("[data-ccms-fieldname]").removeClass("active");
             saveExistingLoadNewEditor(name);
             $(event.target).addClass("active");
+
+
         });
 
-        $("#liBtnVersions").show();
-
-        $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
     });
 
     $(window).bind('keydown', function (event) {
@@ -310,7 +305,7 @@
     var timeout;
 
     $(window).bind('keyup', function (event) {
-       // Clear the timeout if it has already been set.
+        // Clear the timeout if it has already been set.
         // This will prevent the previous task from executing
         // if it has been less than <MILLISECONDS>
         clearTimeout(timeout);
@@ -327,21 +322,3 @@
 
 <script src="/lib/monaco-editor/min/vs/loader.js"></script>
 <script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
-
-
-@if (Model != null)
-{
-    <div class="modal" id="versionList" tabindex="-2">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h5 class="modal-title">Article Versions</h5>
-            </div>
-            <div class="modal-body">
-               @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-}

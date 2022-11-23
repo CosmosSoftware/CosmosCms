@@ -9,6 +9,7 @@ using Cosmos.Cms.Models;
 using Google.Rpc;
 using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -38,6 +40,7 @@ namespace Cosmos.Cms.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<CodeController> _logger;
         private readonly FileStorageContext _storageContext;
+        private readonly IOptions<CosmosConfig> _options;
 
         /// <summary>
         /// Constructor
@@ -53,8 +56,9 @@ namespace Cosmos.Cms.Controllers
             _nodeJSService = nodeJSService;
             _cosmosConfig = cosmosConfig;
             _dbContext = dbContext;
-            _logger = (ILogger<CodeController>)logger;
+            _logger = logger;
             _storageContext = storageContext;
+            _options = cosmosConfig;
         }
 
         private static long DivideByAndRoundUp(long number, long divideBy)
@@ -903,12 +907,17 @@ namespace Cosmos.Cms.Controllers
         /// Script inventory
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Versions(Guid Id)
+        public async Task<IActionResult> Versions(Guid Id, string sortOrder = "desc", string currentSort = "Version", int pageNo = 0, int pageSize = 10, int? versionNumber = null)
         {
             ViewData["EndPoint"] = Id;
-            var data = await _dbContext.NodeScripts
+
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
+
+            var query = _dbContext.NodeScripts
                 .Where(w => w.Id == Id)
-                .OrderByDescending(o => o.Version)
                 .Select(s => new NodeScriptItemViewModel
                 {
                     Id = s.Id,
@@ -917,60 +926,321 @@ namespace Cosmos.Cms.Controllers
                     Updated = s.Updated,
                     Version = s.Version,
                     Expires = s.Expires
-                }).ToListAsync();
+                });
 
-            return View(data.AsQueryable());
+            ViewData["RowCount"] = await query.CountAsync();
+
+            if (sortOrder == "desc")
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Published":
+                            query = query.OrderByDescending(o => o.Published);
+                            break;
+                        case "Updated":
+                            query = query.OrderByDescending(o => o.Updated);
+                            break;
+                        case "Version":
+                            query = query.OrderByDescending(o => o.Version);
+                            break;
+                        case "Expires":
+                            query = query.OrderByDescending(o => o.Expires);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(currentSort))
+                {
+                    switch (currentSort)
+                    {
+                        case "Published":
+                            query = query.OrderBy(o => o.Published);
+                            break;
+                        case "Updated":
+                            query = query.OrderBy(o => o.Updated);
+                            break;
+                        case "Version":
+                            query = query.OrderBy(o => o.Version);
+                            break;
+                        case "Expires":
+                            query = query.OrderBy(o => o.Expires);
+                            break;
+                    }
+                }
+            }
+
+            return View(await query.ToListAsync());
         }
 
-        #region GRID DATA
+
+        #region CODE EDITOR METHODS
 
         /// <summary>
-        /// Sends an article (or page) to trash bin.
+        /// Edit code for a file
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> EditCode(string path)
+        {
+            try
+            {
+                var extension = Path.GetExtension(path.ToLower());
+
+                var filter = _options.Value.SiteSettings.AllowedFileTypes.Split(',');
+                var editorField = new EditorField
+                {
+                    FieldId = "Content",
+                    FieldName = Path.GetFileName(path)
+                };
+
+                if (!filter.Contains(extension)) return new UnsupportedMediaTypeResult();
+
+                switch (extension)
+                {
+                    case ".js":
+                        editorField.EditorMode = EditorMode.JavaScript;
+                        editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                        break;
+                    case ".html":
+                        editorField.EditorMode = EditorMode.Html;
+                        editorField.IconUrl = "/images/seti-ui/icons/html.svg";
+                        break;
+                    case ".css":
+                        editorField.EditorMode = EditorMode.Css;
+                        editorField.IconUrl = "/images/seti-ui/icons/css.svg";
+                        break;
+                    case ".xml":
+                        editorField.EditorMode = EditorMode.Xml;
+                        editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                        break;
+                    case ".json":
+                        editorField.EditorMode = EditorMode.Json;
+                        editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                        break;
+                    default:
+                        editorField.EditorMode = EditorMode.Html;
+                        editorField.IconUrl = "/images/seti-ui/icons/html.svg";
+                        break;
+                }
+
+                //
+                // Get the blob now, so we can determine the type, or use this client as-is
+                //
+                //var properties = blob.GetProperties();
+
+                // Open a stream
+                await using var memoryStream = new MemoryStream();
+
+                await using (var stream = await _storageContext.OpenBlobReadStreamAsync(path))
+                {
+                    // Load into memory and release the blob stream right away
+                    await stream.CopyToAsync(memoryStream);
+                }
+
+                var metaData = await _storageContext.GetFileAsync(path);
+
+
+                ViewData["PageTitle"] = metaData.Name;
+                ViewData[" Published"] = DateTimeOffset.FromFileTime(metaData.ModifiedUtc.Ticks);
+
+                return View(new FileManagerEditCodeViewModel
+                {
+                    Id = path,
+                    Path = path,
+                    EditorTitle = Path.GetFileName(Path.GetFileName(path)),
+                    EditorFields = new List<EditorField>
+                    {
+                        editorField
+                    },
+                    Content = Encoding.UTF8.GetString(memoryStream.ToArray()),
+                    EditingField = "Content",
+                    CustomButtons = new List<string>()
+                });
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Save the file
+        /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        //[HttpPost]
-        //public async Task<IActionResult> Trash_Script([DataSourceRequest] DataSourceRequest request,
-        //    ScriptCatalogEntry model)
-        //{
-        //    _dbContext.Entry(model).State = EntityState.Deleted;
-        //    var doomed = await _dbContext.NodeScripts
-        //        .Where(w => w.EndPoint == model.EndPoint).ToListAsync();
-        //    foreach (var d in doomed)
-        //    {
-        //        d.StatusCode = (int)StatusCodeEnum.Deleted;
-        //    }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditCode(FileManagerEditCodeViewModel model)
+        {
 
-        //    await _dbContext.SaveChangesAsync();
+            var extension = Path.GetExtension(model.Path.ToLower());
 
-        //    return Json(await new[] { model }.ToDataSourceResultAsync(request, ModelState));
-        //}
+            var filter = _options.Value.SiteSettings.AllowedFileTypes.Split(',');
+            var editorField = new EditorField
+            {
+                FieldId = "Content",
+                FieldName = Path.GetFileName(model.Path)
+            };
+
+            if (!filter.Contains(extension)) return new UnsupportedMediaTypeResult();
+
+            var contentType = string.Empty;
+
+            switch (extension)
+            {
+                case ".js":
+                    editorField.EditorMode = EditorMode.JavaScript;
+                    editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                    break;
+                case ".html":
+                    editorField.EditorMode = EditorMode.Html;
+                    editorField.IconUrl = "/images/seti-ui/icons/html.svg";
+                    break;
+                case ".css":
+                    editorField.EditorMode = EditorMode.Css;
+                    editorField.IconUrl = "/images/seti-ui/icons/css.svg";
+                    break;
+                case ".xml":
+                    editorField.EditorMode = EditorMode.Xml;
+                    editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                    break;
+                case ".json":
+                    editorField.EditorMode = EditorMode.Json;
+                    editorField.IconUrl = "/images/seti-ui/icons/javascript.svg";
+                    break;
+                default:
+                    editorField.EditorMode = EditorMode.Html;
+                    editorField.IconUrl = "/images/seti-ui/icons/html.svg";
+                    break;
+            }
+
+            // Save the blob now
+
+            var bytes = Encoding.Default.GetBytes(model.Content);
+
+            using var memoryStream = new MemoryStream(bytes, false);
+
+            var formFile = new FormFile(memoryStream, 0, memoryStream.Length, Path.GetFileNameWithoutExtension(model.Path), Path.GetFileName(model.Path));
+
+            var metaData = new FileUploadMetaData
+            {
+                ChunkIndex = 0,
+                ContentType = contentType,
+                FileName = Path.GetFileName(model.Path),
+                RelativePath = Path.GetFileName(model.Path),
+                TotalFileSize = memoryStream.Length,
+                UploadUid = Guid.NewGuid().ToString(),
+                TotalChunks = 1
+            };
+
+            var uploadPath = model.Path.TrimEnd(metaData.FileName.ToArray()).TrimEnd('/');
+
+            var result = (JsonResult)await Upload(new IFormFile[] { formFile }, JsonConvert.SerializeObject(metaData), uploadPath);
+
+            var resultMode = (FileUploadResult)result.Value;
+
+            var jsonModel = new SaveCodeResultJsonModel
+            {
+                ErrorCount = ModelState.ErrorCount,
+                IsValid = ModelState.IsValid
+            };
+
+            if (!resultMode.uploaded)
+            {
+                ModelState.AddModelError("", $"Error saving {Path.GetFileName(model.Path)}");
+            }
+
+            jsonModel.Errors.AddRange(ModelState.Values
+                .Where(w => w.ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+                .ToList());
+            jsonModel.ValidationState = ModelState.ValidationState;
+
+            return Json(jsonModel);
+        }
+
 
         /// <summary>
-        /// Get all the versions of a script
+        ///     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="Id"></param>
+        /// <param name="files"></param>
+        /// <param name="metaData"></param>
+        /// <param name="path"></param>
         /// <returns></returns>
-        //public async Task<IActionResult> Read_Versions([DataSourceRequest] DataSourceRequest request, string Id)
-        //{
-        //    var data = await _dbContext.NodeScripts
-        //        .WithPartitionKey(Id)
-        //        .OrderByDescending(o => o.Version)
-        //        .Select(s => new NodeScriptItemViewModel
-        //        {
-        //            Id = s.Id,
-        //            Published = s.Published,
-        //            EndPoint = s.EndPoint,
-        //            Updated = s.Updated,
-        //            Version = s.Version,
-        //            Expires = s.Expires
-        //        }).ToDataSourceResultAsync(request);
+        [HttpPost]
+        [RequestSizeLimit(
+            6291456)] // AWS S3 multi part upload requires 5 MB parts--no more, no less so pad the upload size by a MB just in case
+        public async Task<ActionResult> Upload(IEnumerable<IFormFile> files,
+            string metaData, string path)
+        {
+            
+            try
+            {
+                if (files == null || files.Any() == false)
+                    return Json("");
 
-        //    return Json(data);
-        //}
+                if (string.IsNullOrEmpty(path) || path.Trim('/') == "") return Unauthorized("Cannot upload here. Please select the 'pub' folder first, or sub-folder below that, then try again.");
+
+                //
+                // Get information about the chunk we are on.
+                //
+                var ms = new MemoryStream(Encoding.UTF8.GetBytes(metaData));
+
+                var serializer = new JsonSerializer();
+                FileUploadMetaData fileMetaData;
+                using (var streamReader = new StreamReader(ms))
+                {
+                    fileMetaData =
+                        (FileUploadMetaData)serializer.Deserialize(streamReader, typeof(FileUploadMetaData));
+                }
+
+                if (fileMetaData == null) throw new Exception("Could not read the file's metadata");
+
+                var file = files.FirstOrDefault();
+
+                if (file == null) throw new Exception("No file found to upload.");
+
+                var blobName = UrlEncode(fileMetaData.FileName);
+
+                fileMetaData.FileName = blobName;
+                fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath);
+
+                // Make sure full folder path exists
+                var parts = fileMetaData.RelativePath.Trim('/').Split('/');
+                var part = "";
+                for (int i = 0; i < parts.Length - 1; i++)
+                {
+                    part = $"{part}/{parts[i]}";
+                    var folder = part.Trim('/');
+                    await _storageContext.CreateFolder(folder);
+                }
+
+                using var memoryStream = new MemoryStream();
+                await file.CopyToAsync(memoryStream);
+
+                await _storageContext.DeleteFileAsync(fileMetaData.RelativePath);
+
+                await _storageContext.AppendBlob(memoryStream, fileMetaData);
+
+                var fileBlob = new FileUploadResult
+                {
+                    uploaded = fileMetaData.TotalChunks - 1 <= fileMetaData.ChunkIndex,
+                    fileUid = fileMetaData.UploadUid
+                };
+                return Json(fileBlob);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                throw ex;
+            }
+        }
 
         #endregion
+
     }
 }

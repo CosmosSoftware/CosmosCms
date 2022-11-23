@@ -1,5 +1,4 @@
 @using Cosmos.Cms.Services
-@using NonFactors.Mvc.Grid
 @model List<ArticleListItem>
 @{
     ViewData["Title"] = "Web Page Inventory";
@@ -28,7 +27,6 @@
             {
                 <a class="btn btn-sm btn-primary" title="Create website home page" href="/Editor/Create">Create Home Page <i class="fa-solid fa-circle-arrow-right"></i></a>
             }
-            <hr />
         </div>
     </div>
 
@@ -36,7 +34,7 @@
         <div class="col-md-6">
             @if (!isReviewer)
             {
-                <div class="btn-group" role="group" aria-label="Page Actions">
+                <div class="btn-group" role="group" aria-label="Actions">
                     <a class="btn btn-sm btn-primary" title="Create a new web page" asp-action="Create">New Page</a>
                     <a class="btn btn-sm btn-secondary" title="Create a new web page" asp-action="Index" asp-controller="Templates">Templates</a>
                     <a title="Manage Redirects" class="btn btn-sm btn-secondary" asp-action="Redirects">Redirects</a>
