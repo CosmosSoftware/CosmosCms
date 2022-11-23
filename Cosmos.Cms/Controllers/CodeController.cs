@@ -907,7 +907,7 @@ namespace Cosmos.Cms.Controllers
         /// Script inventory
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> Versions(Guid Id, string sortOrder = "desc", string currentSort = "Version", int pageNo = 0, int pageSize = 10, int? versionNumber = null)
+        public async Task<IActionResult> Versions(string Id, string sortOrder = "desc", string currentSort = "Version", int pageNo = 0, int pageSize = 10, int? versionNumber = null)
         {
             ViewData["EndPoint"] = Id;
 
@@ -917,7 +917,7 @@ namespace Cosmos.Cms.Controllers
             ViewData["pageSize"] = pageSize;
 
             var query = _dbContext.NodeScripts
-                .Where(w => w.Id == Id)
+                .Where(w => w.EndPoint == Id)
                 .Select(s => new NodeScriptItemViewModel
                 {
                     Id = s.Id,

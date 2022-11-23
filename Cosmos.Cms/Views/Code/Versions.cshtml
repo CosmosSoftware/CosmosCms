@@ -51,6 +51,15 @@
                         <tr scope="col">
                             Edit Tool
                         </tr>
+                        <tr scope="col">
+                            Updated
+                        </tr>
+                        <tr scope="col">
+                            Published
+                        </tr>
+                        <tr scope="col">
+                            Promote
+                        </tr>
                     </thead>
                     <tbody>
                         @foreach (var row in Model)
@@ -60,13 +69,7 @@
                                     v.@row.Version
                                 </td>
                                 <td>
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Code", new { Id = row.Id })" title="Edit code using Monaco code editor."><i class='fa-solid fa-code'></i></a>
-                                </td>
-                                <td>
-                                    @if (isReviewer == false && row.Published.HasValue == false)
-                                    {
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Duplicate", "Code", new { Id = row.Id })" title="Create a new web page based on this version."><span class="fa fa-external-link"></span></a> <a class="btn btn-sm btn-secondary" href="@Url.Action(" ExportPage", "Code", new { Id = row.Id })" title="Export page."><span class="fa-solid fa-cloud-arrow-down"></span></a>
-                                    }
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Action("Edit", "Code", new { Id = row.Id })" title="Edit code using Monaco code editor."><i class='fa-solid fa-code'></i></a>
                                 </td>
                                 <td scope="row">
                                     <div class='toLocalTimeZone'>@row.Updated</div>
