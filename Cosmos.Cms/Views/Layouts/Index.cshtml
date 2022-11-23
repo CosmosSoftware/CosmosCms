@@ -32,7 +32,7 @@
         <div class="col-md-6">
             <div class="btn-group" role="group" aria-label="Page Actions">
                 <a class="btn btn-sm btn-primary" href="@Url.Action("Create")">New Layout</a>
-                <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")/-1">Export Blank</a>
+                <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Blank</a>
                 <a class="btn btn-sm btn-secondary" title="Export the default layout." href="@Url.Action("ExportLayout")">Export Default</a>
                 <a class="btn btn-sm btn-secondary" title="Import one of the community layouts." href="@Url.Action("CommunityLayouts")">Community Layouts</a>
                 <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index", "Editor")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>
@@ -72,10 +72,10 @@
                                 </td>
                                 <td scope="row">
                                     <div class="btn-group" role="group" aria-label="Layer actions">
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts", new { Id = row.Id})}" title="Preview"><span class="fa fa-binoculars"></span></a>
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts", new { Id = row.Id})}" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts", new { Id = row.Id})}" title="Edit Code"><span class="fa fa-edit"></span></a>
-                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts", new { Id = row.Id})}" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("Preview", "Layouts", new { Id = row.Id})" title="Preview"><span class="fa fa-binoculars"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditNotes", "Layouts", new { Id = row.Id})" title="Edit Notes"><span class="fa fa-clipboard"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("EditCode", "Layouts", new { Id = row.Id})" title="Edit Code"><span class="fa fa-edit"></span></a>
+                                        <a class="btn btn-sm btn-secondary" href="@Url.Action("ExportLayout", "Layouts", new { Id = row.Id})" title="Export layout"><span class="fa-solid fa-cloud-arrow-down"></span></a>
                                     </div>
                                 </td>
                                 <td style="min-width:30%;">
