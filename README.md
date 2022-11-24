@@ -1,4 +1,4 @@
-# Cosmos
+# Cosmos WPS Core
 
 Cosmos is an open-source NoSQL, decoupled CMS that uses Cosmos DB, Azure Storage.  NodeJS and .Net are used for server-side application processing.
 
