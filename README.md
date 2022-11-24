@@ -1,6 +1,6 @@
 # Cosmos WPS Core
 
-Cosmos is an open-source NoSQL, decoupled CMS that uses Cosmos DB, Azure Storage.  NodeJS and .Net are used for server-side application processing.
+Cosmos web publishing system is an open-source NoSQL, decoupled CMS that uses Cosmos DB, Azure Storage.  NodeJS and .Net are used for server-side application processing.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FCosmosSoftware%2FCosmosCms%2Fmain%2FAutomation%2FAzure%2Fazuredeploy.json)
 
