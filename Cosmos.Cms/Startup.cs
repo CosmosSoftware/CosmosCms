@@ -231,23 +231,25 @@ namespace Cosmos.Cms
             // See: https://github.com/IntelliTect/IntelliTect.AspNetCore.SignalR.SqlServer
             services.AddSignalR();
 
-            // Add Node Services
-            // https://github.com/JeringTech/Javascript.NodeJS#configuring
-            services.AddNodeJS();
             // Options for the NodeJS process, here we enable debugging
             var projectPath = Configuration.GetValue<string>("CosmosNodeProjectPath");
 
             services.Configure<NodeJSProcessOptions>(options =>
             {
-                options.ProjectPath = String.IsNullOrEmpty(projectPath) ? "/ccmssrc" : projectPath;
+                options.ProjectPath = projectPath;
             });
 
             services.Configure<OutOfProcessNodeJSServiceOptions>(options =>
             {
-                // options.WatchFileNamePatterns = new[] { "*index.js" }; // Defaults are OK
+                options.WatchFileNamePatterns = new[] { "*index.js" }; // Defaults are OK
                 options.EnableFileWatching = true;
                 options.WatchSubdirectories = true;
+                options.WatchPath = projectPath;
             });
+
+            // Add Node Services
+            // https://github.com/JeringTech/Javascript.NodeJS#configuring
+            services.AddNodeJS();
 
         }
 

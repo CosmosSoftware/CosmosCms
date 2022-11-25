@@ -691,6 +691,7 @@ namespace Cosmos.Cms.Controllers
                 Id = Id
             };
 
+            string result;
             try
             {
                 var script = await _dbContext.NodeScripts.FirstOrDefaultAsync(f => f.Id == Id);
@@ -700,18 +701,18 @@ namespace Cosmos.Cms.Controllers
                 // Send the module string to NodeJS where it's compiled, invoked and cached.
                 if (string.IsNullOrEmpty(script.Code))
                 {
-                    await _nodeJSService.InvokeFromFileAsync($"{script.EndPoint}", args: values.Select(s => s.Value).ToArray());
+                    result = await _nodeJSService.InvokeFromFileAsync<string>($"{script.EndPoint}", args: values.Select(s => s.Value).ToArray());
 
                 }
                 else
                 {
-                    await _nodeJSService.InvokeFromStringAsync(script.Code, args: values);
+                    result = await _nodeJSService.InvokeFromStringAsync<string>(script.Code, args: values);
                 }
 
 
                 debugResult.ApiResult = new ApiResult("Done!")
                 {
-                    IsSuccess = true
+                    IsSuccess = true, ReturnData = result
                 };
             }
             catch (Exception e)

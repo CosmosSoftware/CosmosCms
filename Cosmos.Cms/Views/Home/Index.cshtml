@@ -31,6 +31,8 @@
         window.addEventListener("load", () => {
             if (window.location === window.parent.location) {
                 location.href = "/Home/CcmsContentIndex?target=@Model.UrlPath";
+            } else {
+                window.parent.setupIframe();
             }
         });
     </script>

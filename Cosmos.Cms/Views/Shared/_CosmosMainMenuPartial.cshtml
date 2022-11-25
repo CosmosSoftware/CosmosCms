@@ -15,7 +15,7 @@
         isAdministrator = true;
     }
 }
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark" style="z-index: 20000000;">
+<nav id="ccmsNavMenu" class="navbar navbar-expand-sm navbar-dark bg-dark" style="z-index: 20000000;">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
             <img height="28" src="~/images/logos/cosmos-logo.png" /> Cosmos
@@ -86,6 +86,8 @@
     function loadDdEditMenu() {
         const ddMenu = $("#ddEditMenu");
 
+        ddMenu.html("Loading...");
+
         //var urlPath = $("#navbarEditDropdown").attr("data-ccms-urlpath");
 
         const iframe = document.getElementById("iFrameWebPage");
@@ -97,6 +99,8 @@
 
         if (loadList) {
             $.get("/Home/EditList?target=" + urlPath, function (data) {
+
+                ddMenu.html("");
                 $.each(data, function (index, element) {
                     var div = "<li>";
                     div += "<div class='dropdown-item'>";
