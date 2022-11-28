@@ -570,7 +570,7 @@ namespace Cosmos.Cms.Data.Logic
         ///     <para>
         ///         If the article number is '0', a new article is inserted.  If a version number is '0', then
         ///         a new version is created. Recreates <see cref="ArticleViewModel" /> using method
-        ///         <see cref="ArticleLogic.BuildArticleViewModel" />.
+        ///         <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" />.
         ///     </para>
         ///     <list type="bullet">
         ///         <item>
@@ -585,7 +585,7 @@ namespace Cosmos.Cms.Data.Logic
         ///         </item>
         ///         <item>
         ///             The <see cref="ArticleViewModel" /> that is returned, is rebuilt using
-        ///             <see cref="ArticleLogic.BuildArticleViewModel" />.
+        ///             <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" />.
         ///         </item>
         ///         <item>
         ///            <see cref="Article.Updated"/> property is automatically updated with current UTC date and time.
@@ -1113,7 +1113,7 @@ namespace Cosmos.Cms.Data.Logic
         /// <remarks>
         ///     <para>
         ///         Returns <see cref="ArticleViewModel" />. For more details on what is returned, see
-        ///         <see cref="ArticleLogic.BuildArticleViewModel" />
+        ///         <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" />
         ///     </para>
         ///     <para>NOTE: Cannot access articles that have been deleted.</para>
         /// </remarks>
@@ -1141,12 +1141,12 @@ namespace Cosmos.Cms.Data.Logic
         /// <remarks>
         ///     <para>
         ///         For new articles, uses <see cref="Create" /> and the method
-        ///         <see cref="ArticleLogic.BuildArticleViewModel" /> to
+        ///         <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" /> to
         ///         generate the <see cref="ArticleViewModel" /> .
         ///     </para>
         ///     <para>
         ///         Retrieves <see cref="Article" /> and builds an <see cref="ArticleViewModel" /> using the method
-        ///         <see cref="ArticleLogic.BuildArticleViewModel" />,
+        ///         <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" />,
         ///         or in the case of a template, uses method <see cref="BuildTemplateViewModel" />.
         ///     </para>
         /// </remarks>
@@ -1155,7 +1155,7 @@ namespace Cosmos.Cms.Data.Logic
         /// <remarks>
         ///     <para>
         ///         Returns <see cref="ArticleViewModel" />. For more details on what is returned, see
-        ///         <see cref="ArticleLogic.BuildArticleViewModel" /> or <see cref="BuildTemplateViewModel" />.
+        ///         <see cref="ArticleLogic.BuildArticleViewModel(Article, string)" /> or <see cref="BuildTemplateViewModel" />.
         ///     </para>
         ///     <para>NOTE: Cannot access articles that have been deleted.</para>
         /// </remarks>
@@ -1269,7 +1269,7 @@ namespace Cosmos.Cms.Data.Logic
         /// Get a list of article redirects
         /// </summary>
         /// <returns></returns>
-        public async Task<IQueryable<RedirectItemViewModel>> GetArticleRedirects()
+        public IQueryable<RedirectItemViewModel> GetArticleRedirects()
         {
             var redirectCode = (int)StatusCodeEnum.Redirect;
             var query = DbContext.Articles.Where(w => w.StatusCode == redirectCode);

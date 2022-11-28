@@ -212,7 +212,6 @@ namespace Cosmos.Cms.Controllers
         /// Moves items to a new folder.
         /// </summary>
         /// <param name="model"></param>
-        /// <param name="container"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Move(MoveFilesViewModel model)

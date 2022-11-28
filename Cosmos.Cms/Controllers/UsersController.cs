@@ -124,7 +124,7 @@ namespace Cosmos.Cms.Controllers
 
 
             query = query.Skip(pageNo * pageSize).Take(pageSize);
-            
+
             var data = await query.ToListAsync();
 
             var users = data.Select(s => new UserIndexViewModel()
@@ -140,10 +140,10 @@ namespace Cosmos.Cms.Controllers
 
             // Now get the role for these people
             var roles = await _dbContext.Roles.ToListAsync();
-            var userIds = await query.Select(s => s. Id).ToListAsync();
+            var userIds = await query.Select(s => s.Id).ToListAsync();
             var links = await _dbContext.UserRoles.Where(ur => userIds.Contains(ur.UserId)).ToListAsync();
 
-            foreach(var user in users)
+            foreach (var user in users)
             {
                 var roleIds = links.Where(w => w.UserId == user.UserId).Select(s => s.RoleId).ToList();
                 user.RoleMembership = roles.Where(w => roleIds.Contains(w.Id)).Select(s => s.Name).ToList();
@@ -172,35 +172,42 @@ namespace Cosmos.Cms.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserCreateViewModel model)
         {
-
-            if (string.IsNullOrEmpty(model.Password) && model.GenerateRandomPassword == false)
+            try
             {
-                ModelState.AddModelError("GenerateRandomPassword", "Must generate password if one not given.");
-            }
+                if (string.IsNullOrEmpty(model.Password) && model.GenerateRandomPassword == false)
+                {
+                    ModelState.AddModelError("GenerateRandomPassword", "Must generate password if one not given.");
+                }
 
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
+                    return View(model);
+
+                var result = await CreateAccount(model);
+
+                if (result.IdentityResult.Succeeded)
+                {
+                    if (result.UserCreateViewModel == null)
+                    {
+                        return View("UserCreated", null);
+                    }
+                    else
+                    {
+                        return View("UserCreated", new UserCreatedViewModel(result.UserCreateViewModel, _emailSender.Response));
+                    }
+                }
+
+                foreach (var error in result.IdentityResult.Errors)
+                {
+                    ModelState.AddModelError("", $"Code: {error.Code} Description: {error.Description}");
+                }
+
                 return View(model);
-
-            var result = await CreateAccount(model);
-
-            if (result.IdentityResult.Succeeded)
-            {
-                if (result.UserCreateViewModel == null)
-                {
-                    return View("UserCreated", null);
-                }
-                else
-                {
-                    return View("UserCreated", new UserCreatedViewModel(result.UserCreateViewModel, _emailSender.Response));
-                }
             }
-
-            foreach (var error in result.IdentityResult.Errors)
+            catch (Exception e)
             {
-                ModelState.AddModelError("", $"Code: {error.Code} Description: {error.Description}");
+                _logger.LogError(e.Message, e);
+                throw;
             }
-
-            return View(model);
         }
 
         #endregion
@@ -601,12 +608,19 @@ namespace Cosmos.Cms.Controllers
 
             return View(await GetRoleAssignmentsForUser(model.Id));
         }
-
+        /// <summary>
+        /// Privacy page
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Privacy()
         {
             return View();
         }
 
+        /// <summary>
+        /// Error page
+        /// </summary>
+        /// <returns></returns>
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
