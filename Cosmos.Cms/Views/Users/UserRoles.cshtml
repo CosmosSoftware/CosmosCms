@@ -16,7 +16,6 @@
         <div class="col bg-dark text-light">
             <form id="registerForm" method="post">
                 <a class="btn btn-sm btn-secondary" asp-action="Index">Back to users <i class="fas fa-angle-double-right"></i></a>
-                <hr />
                 <div asp-validation-summary="All" class="text-danger"></div>
                 @Html.HiddenFor(m => m.Id)
                 @Html.AntiForgeryToken()

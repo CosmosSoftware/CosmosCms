@@ -27,7 +27,7 @@
             <div class="btn-group" role="group" aria-label="Page Actions">
                 @if (!isReviewer)
                 {
-                    <a id="btnNewVersion" class="btn btn-sm btn-secondary" title="New version created from the lastest." asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">New</a>
+                    <a id="btnNewVersion" class="btn btn-sm btn-primary" title="New version created from the lastest." asp-action="CreateVersion" asp-route-id="@ViewData["ArticleId"]">New</a>
                     <button id="btnCompare" class="btn btn-sm btn-secondary" title="Compare two versions." type="button" disabled>Compare</button>
                     <button id="btnClear" class="btn btn-sm btn-secondary" title="Clear selection." type="button" disabled>Clear</button>
                     <a title="Return to page list" class="btn btn-sm btn-secondary" href="@Url.Action("Index")">Page list <i class="fa-solid fa-circle-arrow-right"></i></a>

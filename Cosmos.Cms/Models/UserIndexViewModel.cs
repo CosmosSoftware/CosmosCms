@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Cosmos.Cms.Models
 {
@@ -37,10 +38,21 @@ namespace Cosmos.Cms.Models
         [Display(Name = "Phone Confirmed")]
         public bool PhoneNumberConfirmed { get; set; }
 
+        /// <summary>
+        /// User has two factor authentication enabled
+        /// </summary>
         [Display(Name = "2FA Enabled")]
         public bool TwoFactorEnabled { get; set; }
 
+        /// <summary>
+        /// Account is locked out
+        /// </summary>
         [Display(Name = "LockedOut?")]
         public bool IsLockedOut { get; set; }
+
+        /// <summary>
+        /// Role memebership
+        /// </summary>
+        public List<string> RoleMembership { get; set; } = new List<string>();
     }
 }

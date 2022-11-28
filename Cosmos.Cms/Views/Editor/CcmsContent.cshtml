@@ -35,17 +35,17 @@
     <script>
 
         // Create editors
-        var editors = [];
-        var editorIds = [];
-        var editibleAreas = [];
+        var ccms_editors = [];
+        var ccms_editorIds = [];
+        var ccms_editibleAreas = [];
         var unmoutCkBox;
         const HTTP_SERVER_LAG = 1500;
 
         document.addEventListener("DOMContentLoaded", function (event) {
-            createEditors();
+            ccms_createEditors();
         });
 
-        function createEditors() {
+        function ccms_createEditors() {
 
             const inlineInjectElements = document.querySelectorAll('[data-ccms-ceid]');
 
@@ -56,7 +56,7 @@
                     licenseKey: '',
                     autosave: {
                         save(editor) {
-                            return saveEditorChanges(editor);
+                            return ccms_saveEditorChanges(editor);
                         }
                     },
                     simpleUpload: {
@@ -117,7 +117,7 @@
                     .create(inlineElement, config)
                     .then(editor => {
                         window.editor = editor;
-                        editors.push(editor);
+                        ccms_editors.push(editor);
                     })
                     .catch(error => {
                         console.error('Oops, something went wrong!');
@@ -130,10 +130,10 @@
 
         }// End createEditors
 
-        function saveEditorChanges(editor) {
+        function ccms_saveEditorChanges(editor) {
             parent.saving();
             return new Promise(resolve => {
-                const promise = updateArea(editor);
+                const promise = ccms_updateArea(editor);
                 promise.then((value) => {
                     parent.doneSaving();
                 });
@@ -141,28 +141,28 @@
             });
         }
 
-        function updateArea(editor) {
+        function ccms_updateArea(editor) {
             return new Promise(resolve => {
                 const sourceElement = editor.sourceElement;
                 const id = sourceElement.getAttribute("data-ccms-ceid");
 
                 const item = { Id: id, Html: editor.getData() };
 
-                if (editibleAreas.length === 0) {
+                if (ccms_editibleAreas.length === 0) {
                     // First entry in the array
-                    editibleAreas.push(item);
+                    ccms_editibleAreas.push(item);
                 } else {
                     // Append or update the array
-                    const i = editibleAreas.findIndex((ed => ed.Id == id));
+                    const i = ccms_editibleAreas.findIndex((ed => ed.Id == id));
 
                     if (i === -1) {
                         // Append
                         const item = { Id: id, Html: editor.getData() };
-                        editibleAreas.push(item);
+                        ccms_editibleAreas.push(item);
 
                     } else {
                         // Update
-                        editibleAreas[i].Html = editor.getData();
+                        ccms_editibleAreas[i].Html = editor.getData();
                     }
                 }
 

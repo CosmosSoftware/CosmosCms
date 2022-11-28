@@ -23,7 +23,6 @@
     <div class="row">
         <div class="col">
             <h3 class="text-light">@ViewData["Title"]</h3>
-            <hr />
             <div asp-validation-summary="All" class="text-danger"></div>
         </div>
     </div>
@@ -51,13 +50,16 @@
                                 Select
                             </th>
                             <th scope="col">
-                                Roles
+                                
                             </th>
                             <th scope="col">
                                 
                             </th>
                             <th scope="col">
                                 Email Address
+                            </th>
+                            <th scope="col">
+                                Role membership
                             </th>
                             <th scope="col">
                                 Phone Number
@@ -81,12 +83,14 @@
                                     <button title='Resend verification email.' type='button' onclick="resendEmail('@row.UserId')" class='btn btn-sm'><i class='fas fa-envelope'></i></button>
                                 </td>
                                 <td>
-                                    @row.EmailAddress
+                                    <span class="text-light">@row.EmailAddress</span>
                                     @if (row.EmailConfirmed)
                                     {
-                                        <br />
                                         <small class="d-block"><span class="badge badge-primary"> (confirmed) </span></small>
                                     }
+                                </td>
+                                <td>
+                                    <span>@(string.Join(", ", row.RoleMembership))</span>
                                 </td>
                                 <td>
                                     @row.PhoneNumber

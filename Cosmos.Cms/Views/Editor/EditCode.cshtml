@@ -43,15 +43,14 @@
         border-color: black;
     }
 
-    /* Disable options */
-    #btnSaveChanges,
-    #btnSaveAsDraft,
-    #btnPreview,
-    #btnFiles,
-    #btnSourceCode,
+    /* Set menu options */
+    
     #btnCcmsCodeEditor,
     #liBtnVersions {
         display: none !important;
+    }
+    #btnCcmsHtmlEditor {
+        display: block !important;
     }
 
 </style>
@@ -261,6 +260,13 @@
                     window.open("@Url.Action("Preview", "Home")/" + modelId);
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
+                saveFirstModal.show();
+                break;
+            case "Html":
+                next = function () {
+                    window.location.href = "@Url.Action("Edit", "Editor")/@Model.Id";
+                }
+                $("#divSaveFirstDialog").html("Save page before opening HTML editor?");
                 saveFirstModal.show();
                 break;
         }

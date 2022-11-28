@@ -15,17 +15,18 @@
 
 </head>
 <body style="margin:0px;padding:0px;background-color:#4d4d4d;">
-<partial name="_CosmosMainMenuPartial" model="Model" />
-<iframe id="iFrameWebPage" src="/@Model.UrlPath" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;"></iframe>
+    <partial name="_CosmosMainMenuPartial" model="Model" />
+    <iframe id="iFrameWebPage" src="/@Model.UrlPath" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;"></iframe>
     <script>
         // The following is used to wireup the menu links to this page.
         function setupIframe() {
             const iframe = document.getElementById("iFrameWebPage");
             const iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
             if (iframeWin.document.body) {
-                iframe.height = window.innerHeight - 60;
+                iframe.height = window.innerHeight - document.getElementById("ccmsNavMenu").clientHeight;
             }
         };
+        window.addEventListener('resize', function (event) { setupIframe(); }, true);
     </script>
 </body>
 </html>

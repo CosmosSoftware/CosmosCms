@@ -2,7 +2,7 @@
 @{
     var canEdit = User.IsInRole("Administrators") || User.IsInRole("Editors") || User.IsInRole("Authors");
 
-    ViewData["Title"] = "Trashed Article";
+    ViewData["Title"] = "Trash";
     var rowCount = (int)ViewData["RowCount"];
     var sortOrder = (string)ViewData["sortOrder"];
     var currentSort = (string)ViewData["currentSort"];
@@ -17,7 +17,6 @@
         <div class="col">
             <h3 class="text-light">@ViewData["Title"]</h3>
         </div>
-        <hr />
         <div class="col-md-6 d-flex justify-content-end">
         </div>
     </div>

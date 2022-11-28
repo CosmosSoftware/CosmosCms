@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.Services.SendGrid;
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +29,7 @@ namespace Cosmos.Cms.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SendGridEmailSender _emailSender;
+        private readonly ApplicationDbContext _dbContext;
 
         /// <summary>
         /// Constructor
@@ -36,16 +38,19 @@ namespace Cosmos.Cms.Controllers
         /// <param name="userManager"></param>
         /// <param name="roleManager"></param>
         /// <param name="emailSender"></param>
+        /// <param name="dbContext"></param>
         public UsersController(
             ILogger<UsersController> logger,
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ApplicationDbContext dbContext)
         {
             _logger = logger;
             _userManager = userManager;
             _roleManager = roleManager;
             _emailSender = (SendGridEmailSender)emailSender;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -59,21 +64,50 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index(string Id = "", string sortOrder = "asc", string currentSort = "EmailAddress", int pageNo = 0, int pageSize = 10)
         {
-            var users = new List<UserIndexViewModel>();
 
             ViewData["sortOrder"] = sortOrder;
             ViewData["currentSort"] = currentSort;
             ViewData["pageNo"] = pageNo;
             ViewData["pageSize"] = pageSize;
 
-            IQueryable<UserIndexViewModel> query = _userManager.Users.Select(s => new UserIndexViewModel
+            var query = _dbContext.Users.AsQueryable();
+
+            if (sortOrder.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
             {
-                UserId = s.Id,
-                EmailAddress = s.Email,
-                EmailConfirmed = s.EmailConfirmed,
-                PhoneNumber = s.PhoneNumber,
-                IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false
-            });
+                switch (currentSort)
+                {
+                    case "EmailConfirmed":
+                        query = query.OrderByDescending(o => o.EmailConfirmed);
+                        break;
+                    case "EmailAddress":
+                        query = query.OrderByDescending(o => o.Email);
+                        break;
+                    case "PhoneNumber":
+                        query.OrderByDescending(o => o.PhoneNumber);
+                        break;
+                    case "TwoFactorEnabled":
+                        query = query.OrderByDescending(o => o.TwoFactorEnabled);
+                        break;
+                }
+            }
+            else
+            {
+                switch (currentSort)
+                {
+                    case "EmailConfirmed":
+                        query = query.OrderBy(o => o.EmailConfirmed);
+                        break;
+                    case "EmailAddress":
+                        query = query.OrderBy(o => o.Email);
+                        break;
+                    case "PhoneNumber":
+                        query = query.OrderBy(o => o.PhoneNumber);
+                        break;
+                    case "TwoFactorEnabled":
+                        query = query.OrderBy(o => o.TwoFactorEnabled);
+                        break;
+                }
+            }
 
             if (!string.IsNullOrEmpty(Id))
             {
@@ -81,14 +115,39 @@ namespace Cosmos.Cms.Controllers
 
                 var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
 
-                var userIds = usersInRole.Select(s => s.Id).ToArray();
-                query = query.Where(w => userIds.Contains(w.UserId));
+                var ids = usersInRole.Select(s => s.Id).ToArray();
+                query = query.Where(w => ids.Contains(w.Id));
             }
 
-            ViewData["RowCount"] = await query.CountAsync();
+            query = query.Skip(pageNo * pageSize).Take(pageSize);
+            
+            var data = await query.ToListAsync();
 
+            var users = data.Select(s => new UserIndexViewModel()
+            {
+                UserId = s.Id,
+                EmailAddress = s.Email,
+                EmailConfirmed = s.EmailConfirmed,
+                PhoneNumber = s.PhoneNumber,
+                IsLockedOut = s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow : false,
+                TwoFactorEnabled = s.TwoFactorEnabled
+            }).ToList();
 
-            return View(await query.ToListAsync());
+            // Get count
+            ViewData["RowCount"] = users.Count();
+
+            // Now get the role for these people
+            var roles = await _dbContext.Roles.ToListAsync();
+            var userIds = await query.Select(s => s. Id).ToListAsync();
+            var links = await _dbContext.UserRoles.Where(ur => userIds.Contains(ur.UserId)).ToListAsync();
+
+            foreach(var user in users)
+            {
+                var roleIds = links.Where(w => w.UserId == user.UserId).Select(s => s.RoleId).ToList();
+                user.RoleMembership = roles.Where(w => roleIds.Contains(w.Id)).Select(s => s.Name).ToList();
+            }
+            //s.LockoutEnd.HasValue ? s.LockoutEnd < DateTimeOffset.UtcNow 
+            return View(users);
         }
 
         /// <summary>

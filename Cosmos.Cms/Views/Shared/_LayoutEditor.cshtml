@@ -25,7 +25,7 @@
 </head>
 <body style="margin:0px;padding:0px;background-color:#4d4d4d;">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav id="ccmsNavMenu" class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
                 <img height="28" src="~/images/logos/cosmos-logo.png" /> Cosmos
@@ -41,13 +41,13 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark">
                             <li id="btnSaveChanges">
-                                <a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Update Page</a>
+                                <a class="dropdown-item" title="Update existing page." onclick="bgEditClick('Save')" href="#">Save</a>
                             </li>
                             <li id="btnSaveAsDraft">
-                                <a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">New Draft</a>
+                                <a class="dropdown-item" title="Save as a new unpublished draft." onclick="bgEditClick('Draft')" href="#">Save new draft</a>
                             </li>
                             <li id="btnSaveAndPublish" style="display:none;">
-                                <a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Publish Now</a>
+                                <a class="dropdown-item" title="Save and publish now." onclick="bgEditClick('Publish')" href="#">Save an publish</a>
                             </li>
                             <li>
                                 <a class="dropdown-item" onclick="bgEditClick('Close')">Close</a>
@@ -57,23 +57,26 @@
                                 <a class="dropdown-item" onclick="bgEditClick('Preview')">Preview</a>
                             </li>
                             <li id="btnFiles">
-                                <a class="dropdown-item" onclick=" bgEditClick('Files')">File Manager</a>
+                                <a class="dropdown-item" onclick=" bgEditClick('Files')">File manager</a>
                             </li>
                             <li id="btnSourceCode" style="display:none">
-                                <a class="dropdown-item" href="/Code/Source" target="_blank">Source Code</a>
+                                <a class="dropdown-item" href="/Code/Source" target="_blank">Source code</a>
                             </li>
                             <li id="btnCcmsCodeEditor" style="display:none">
-                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code</a>
+                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code editor</a>
+                            </li>
+                            <li id="btnCcmsHtmlEditor" style="display:none">
+                                <a class="dropdown-item" onclick="bgEditClick('Html')">Html editor</a>
                             </li>
                             <li id="liBtnVersions" style="display:none">
-                                <a id="btnVersions" class="dropdown-item" target="_blank">Page Versions</a>
+                                <a id="btnVersions" class="dropdown-item" target="_blank">Page versions</a>
                             </li>
                         </ul>
                     </li>
-                    <li id ="divAutoSave">
+                    <li id="divAutoSave">
                         <div class="form-check form-switch mt-2 ms-3">
                             <input id="swAutoSave" class="form-check-input" type="checkbox" role="switch" checked="true">
-                            <label id="lblAutoSave" class="form-check-label text-light" for="swAutoSave">Autosave (on)</label>
+                            <label id="lblAutoSave" style="font-size:0.8rem" class="form-check-label text-light" for="swAutoSave">Autosave (on)</label>
                         </div>
                     </li>
                     <li id="msgSaving">
@@ -83,16 +86,23 @@
                         </div>
                     </li>
                     <li>
+                        <span id="timeZone" style="font-size:0.8rem" class="ms-3 me-3 fs-6"></span>
+                    </li>
+                    <li>
                         <div id="msgSpecial"></div>
                     </li>
                 </ul>
-                
-                <span id="timeZone" class="navbar-text ms-3 me-3 fs-6"></span>
-                <div id="lblTitle" class="navbar-text">Title:</div>
-                <input class="form-control ms-2 me-2" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
-                <div id="lblPublished" class="navbar-text">Published:</div>
-                <input class="form-control ms-2 me-2" name="tbPublished" id="tbPublished" style="max-width:200px;" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData["Published"])" />
 
+            </div>
+            <div class="d-flex">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text" id="lblTitle">Title:</span>
+                    <input aria-describedby="lblTitle" class="form-control" style="max-width:260px;" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
+                </div>
+                <div class="input-group input-group-sm">
+                    <div id="lblPublished" class="input-group-text">Published:</div>
+                    <input class="form-control" name="tbPublished" id="tbPublished" placeholder="DRAFT" value="@((DateTimeOffset?)ViewData["Published"])" />
+                </div>
             </div>
         </div>
     </nav>
@@ -103,7 +113,7 @@
         var selectedFile = "";
         var saveFirstModal = null;
         var lastPublished = "@(((DateTimeOffset?)ViewData["LastPubDateTime"]))";
-        
+
         function getAutoSave() {
             return $("#swAutoSave").is(":checked");
         }

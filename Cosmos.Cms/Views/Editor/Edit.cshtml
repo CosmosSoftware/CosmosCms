@@ -75,7 +75,8 @@
         var iframe = document.getElementById("ccmsContFrame");
         var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
         if (iframeWin.document.body) {
-            iframe.height = iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight;
+
+            iframe.height = window.innerHeight - document.getElementById("ccmsNavMenu").clientHeight;
 
             // disable all links
             var contents = $("#ccmsContFrame").contents();
@@ -141,10 +142,10 @@
 
             const iframe = document.getElementById("ccmsContFrame");
 
-            const editibleAreas = iframe.contentWindow.editibleAreas;
+            const ccms_editibleAreas = iframe.contentWindow.ccms_editibleAreas;
 
-            if (editibleAreas.length > 0) {
-                postRegions(editibleAreas);
+            if (ccms_editibleAreas.length > 0) {
+                postRegions(ccm_editibleAreas);
             }
 
             if (typeof (myModel) !== "undefined" && myModel !== null) {
@@ -158,13 +159,13 @@
 
             const updates = [];
 
-            iframe.contentWindow.editors.forEach(function (e, index) {
-                const id = iframe.contentWindow.editorIds[index];
+            iframe.contentWindow.ccms_editors.forEach(function (e, index) {
+                const id = iframe.contentWindow.ccms_editorIds[index];
                 updates.push(e.getData());
                 //e.destroy();
             });
 
-            iframe.contentWindow.editorIds.forEach(function (id, index) {
+            iframe.contentWindow.ccms_editorIds.forEach(function (id, index) {
                 const elements = contents.find("[data-ccms-ceid='" + id + "']");
                 const el = elements[0];
                 const html = updates[index];
@@ -195,7 +196,8 @@
                     // Renable editors
                     $(editorContainers).css("border", "dashed 1px #dadada");
 
-                    iframe.contentWindow.createEditors();
+                    // Below not needed
+                    //iframe.contentWindow.ccms_createEditors();
 
                     if (response.IsValid) {
                         if (typeof (next) !== "undefined" && next !== null) {
@@ -245,6 +247,8 @@
             }
         }
     });
+    window.addEventListener('resize', function (event) { setupIframe(); }, true);
+
 </script>
 
 <iframe id="ccmsContFrame" src="/Editor/CcmsContent/@Model.Id" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;" onload="setupFrame()" frameBorder="0" scrolling="no"></iframe>
