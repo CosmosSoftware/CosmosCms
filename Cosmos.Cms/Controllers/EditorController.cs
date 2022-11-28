@@ -1426,8 +1426,7 @@ namespace Cosmos.Cms.Controllers
             ViewData["pageNo"] = pageNo;
             ViewData["pageSize"] = pageSize;
 
-            var data = await _articleLogic.GetArticleRedirects();
-            var query = data.AsQueryable();
+            var query = await _articleLogic.GetArticleRedirects();
 
             ViewData["RowCount"] = await query.CountAsync();
 
@@ -1443,7 +1442,7 @@ namespace Cosmos.Cms.Controllers
                         case "Title":
                             query = query.OrderByDescending(o => o.Id);
                             break;
-                        case "LastPublished":
+                        case "ToUrl":
                             query = query.OrderByDescending(o => o.ToUrl);
                             break;
                     }
@@ -1468,7 +1467,9 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            return View(query.ToList());
+            var model = await query.Skip(pageNo * pageSize).Take(pageSize).ToListAsync();
+
+            return View(model);
         }
 
         /// <summary>

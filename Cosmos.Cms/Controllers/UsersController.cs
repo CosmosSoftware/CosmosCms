@@ -72,6 +72,19 @@ namespace Cosmos.Cms.Controllers
 
             var query = _dbContext.Users.AsQueryable();
 
+            if (!string.IsNullOrEmpty(Id))
+            {
+                var identityRole = await _roleManager.FindByIdAsync(Id);
+
+                var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
+
+                var ids = usersInRole.Select(s => s.Id).ToArray();
+                query = query.Where(w => ids.Contains(w.Id));
+            }
+
+            // Get count
+            ViewData["RowCount"] = await query.CountAsync();
+
             if (sortOrder.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
             {
                 switch (currentSort)
@@ -109,15 +122,6 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(Id))
-            {
-                var identityRole = await _roleManager.FindByIdAsync(Id);
-
-                var usersInRole = await _userManager.GetUsersInRoleAsync(identityRole.Name);
-
-                var ids = usersInRole.Select(s => s.Id).ToArray();
-                query = query.Where(w => ids.Contains(w.Id));
-            }
 
             query = query.Skip(pageNo * pageSize).Take(pageSize);
             
@@ -133,8 +137,6 @@ namespace Cosmos.Cms.Controllers
                 TwoFactorEnabled = s.TwoFactorEnabled
             }).ToList();
 
-            // Get count
-            ViewData["RowCount"] = users.Count();
 
             // Now get the role for these people
             var roles = await _dbContext.Roles.ToListAsync();
