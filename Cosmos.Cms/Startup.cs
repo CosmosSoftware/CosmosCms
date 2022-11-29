@@ -134,8 +134,8 @@ namespace Cosmos.Cms
             var fileStorageCon = Configuration.GetValue<string>("AzureFileStorageConnectionString");
             if (string.IsNullOrEmpty(fileStorageCon))
             {
-                var azureStorage = option.Value.StorageConfig.AzureConfigs.FirstOrDefault();
-                fileStorageCon = azureStorage.AzureBlobStorageConnectionString;
+                // Connect using the blob storage connection string
+                fileStorageCon = Configuration.GetValue<string>("AzureBlobStorageConnectionString");
             }
 
             var fileShare = Configuration.GetValue<string>("AzureFileShare");
