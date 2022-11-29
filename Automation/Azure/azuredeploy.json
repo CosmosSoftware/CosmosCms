@@ -93,6 +93,14 @@
             ]
         },
         {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2021-04-01",
+            "name": "[format('{0}/default/{1}', variables('storageAccountName'), 'ccmsshare')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ]
+        },
+        {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2020-12-01",
             "name": "[variables('appServicePlanName')]",
@@ -292,7 +300,15 @@
                 "healthCheckPath": "/Identity/Account/Login",
                 "functionsRuntimeScaleMonitoringEnabled": false,
                 "minimumElasticInstanceCount": 1,
-                "azureStorageAccounts": {}
+                "azureStorageAccounts": {
+                   "ccmssrc": {
+                        "type": "AzureFiles",
+                        "accountName": "[variables('storageAccountName')]",
+                        "shareName": "ccmsshare",
+                        "mountPath": "/ccmssrc",
+                        "accessKey": "[listKeys(variables('storageAccountName'), '2019-06-01').keys[0].value]"
+                    }
+                }
             }
         },
         {

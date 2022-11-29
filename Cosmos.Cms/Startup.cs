@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cosmos.Cms
@@ -131,7 +132,17 @@ namespace Cosmos.Cms
 
             // Add file share storage context
             var fileStorageCon = Configuration.GetValue<string>("AzureFileStorageConnectionString");
+            if (string.IsNullOrEmpty(fileStorageCon))
+            {
+                var azureStorage = option.Value.StorageConfig.AzureConfigs.FirstOrDefault();
+                fileStorageCon = azureStorage.AzureBlobStorageConnectionString;
+            }
+
             var fileShare = Configuration.GetValue<string>("AzureFileShare");
+            if (string.IsNullOrEmpty(fileShare))
+            {
+                fileShare = "ccmsshare";
+            }
             services.AddSingleton(new FileStorageContext(fileStorageCon, fileShare));
 
             services.AddTransient<TranslationServices>();
