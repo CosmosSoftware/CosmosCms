@@ -331,7 +331,15 @@ namespace Cosmos.Cms.Data.Logic
             DateTimeOffset? published = (await DbContext.Articles.CosmosAnyAsync()) ? null : DateTimeOffset.UtcNow.AddMinutes(-5);
 
             // Max returns the incorrect result.
-            var max = await DbContext.ArticleNumbers.MaxAsync(m => m.LastNumber);
+            int max;
+            if ((await DbContext.ArticleNumbers.CosmosAnyAsync()) == false)
+            {
+                max = 0;
+            }
+            else
+            {
+                max = await DbContext.ArticleNumbers.MaxAsync(m => m.LastNumber);
+            }
            
             // Increment
             max++;
