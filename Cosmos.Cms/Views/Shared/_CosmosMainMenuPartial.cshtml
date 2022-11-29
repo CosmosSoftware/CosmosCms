@@ -1,5 +1,8 @@
 ﻿@model ArticleViewModel
+@inject IOptions<CosmosConfig> options
 @using System.Reflection
+@using Cosmos.Cms.Common.Services.Configurations;
+@using Microsoft.Extensions.Options;
 @{
     var assemblyName = Assembly.GetExecutingAssembly().GetName();
     var isEditor = false;
@@ -48,8 +51,12 @@
                         <li>
                             <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Files</a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" title="Open public (publisher) website" href="@options.Value.SiteSettings.PublisherUrl" target="_blank">Public Website</a>
+                        </li>
                         @if (isAdministrator || isEditor)
                         {
+                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" title="Manage API end point." href="/Code/Index">API Endpoints</a>
                             </li>
@@ -67,6 +74,8 @@
                         </li>
                         @if (isAdministrator)
                         {
+
+                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" title="Manage user accounts." href="/Users/Index">Users</a>
                             </li>

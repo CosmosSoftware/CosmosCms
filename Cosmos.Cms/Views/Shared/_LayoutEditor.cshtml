@@ -1,4 +1,7 @@
 ﻿@using System.Reflection
+@using Cosmos.Cms.Common.Services.Configurations;
+@using Microsoft.Extensions.Options;
+@inject IOptions<CosmosConfig> options
 @{
     var assemblyName = Assembly.GetExecutingAssembly().GetName();
 }
@@ -70,6 +73,9 @@
                             </li>
                             <li id="liBtnVersions" style="display:none">
                                 <a id="btnVersions" class="dropdown-item" target="_blank">Page versions</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" title="Open public (publisher) website" href="@options.Value.SiteSettings.PublisherUrl" target="_blank">Public Website</a>
                             </li>
                         </ul>
                     </li>
