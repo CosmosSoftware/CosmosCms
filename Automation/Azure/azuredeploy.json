@@ -16,13 +16,6 @@
             "metadata": {
                 "description": "SendGrid account API Key for this application."
             }
-        },
-        "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Location for the Cosmos DB account."
-            }
         }
     },
     "functions": [],
@@ -40,7 +33,7 @@
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "apiVersion": "2022-05-15",
             "name": "[toLower(variables('accountName'))]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "properties": {
                 "enableFreeTier": true,
                 "databaseAccountOfferType": "Standard",
@@ -49,7 +42,7 @@
                 },
                 "locations": [
                     {
-                        "locationName": "[parameters('location')]"
+                        "locationName": "[variables('location')]"
                     }
                 ]
             }
