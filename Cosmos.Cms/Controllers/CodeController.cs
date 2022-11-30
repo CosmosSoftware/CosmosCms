@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeTypes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -502,7 +503,9 @@ namespace Cosmos.Cms.Controllers
         {
             var parsed = JsonConvert.DeserializeObject<FilePondMetadata>(files);
 
-            var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}";
+            var mime = MimeTypeMap.GetMimeType(Path.GetExtension(parsed.FileName));
+
+            var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}|{mime}";
 
             return Ok(uid);
         }
@@ -520,7 +523,8 @@ namespace Cosmos.Cms.Controllers
             {
                 var patchArray = patch.Split('|');
 
-                var contentType = Request.Headers["Content-Type"];
+                // Mime type
+                var contentType = patchArray[3];
 
                 // 0 based index
                 var uploadOffset = long.Parse(Request.Headers["Upload-Offset"]);

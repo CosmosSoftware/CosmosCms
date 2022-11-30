@@ -269,6 +269,7 @@ namespace Cosmos.Cms.Controllers
             {
                 var patchArray = patch.Split('|');
 
+                // Mime type
                 var contentType = patchArray[3];
 
                 // 0 based index
