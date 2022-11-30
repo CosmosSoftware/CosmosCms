@@ -269,7 +269,7 @@ namespace Cosmos.Cms.Controllers
             {
                 var patchArray = patch.Split('|');
 
-                var contentType = Request.Headers["Content-Type"];
+                var contentType = patchArray[3];
 
                 // 0 based index
                 var uploadOffset = long.Parse(Request.Headers["Upload-Offset"]);
