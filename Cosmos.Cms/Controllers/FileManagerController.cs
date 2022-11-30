@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using MimeTypes;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -246,8 +247,10 @@ namespace Cosmos.Cms.Controllers
         public ActionResult Process([FromForm] string files, [FromQuery] string container = "$web")
         {
             var parsed = JsonConvert.DeserializeObject<FilePondMetadata>(files);
+            
+            var mime = MimeTypeMap.GetMimeType(Path.GetExtension(parsed.FileName));
 
-            var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}";
+            var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}|{mime}";
 
             return Ok(uid);
         }
