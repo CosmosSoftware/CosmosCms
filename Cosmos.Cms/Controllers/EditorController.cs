@@ -255,7 +255,7 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            var article = await _dbContext.Pages.Where(a => a.ArticleNumber == id.Value)
+            var article = await _dbContext.Articles.Where(a => a.ArticleNumber == id.Value)
                 .Select(s => new { s.Title, s.VersionNumber }).FirstOrDefaultAsync();
 
             ViewData["ArticleTitle"] = article.Title;
