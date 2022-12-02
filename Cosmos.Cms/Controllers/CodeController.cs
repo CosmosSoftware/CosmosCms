@@ -134,6 +134,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10)
         {
+
             ViewData["sortOrder"] = sortOrder;
             ViewData["currentSort"] = currentSort;
             ViewData["pageNo"] = pageNo;
@@ -340,7 +341,8 @@ namespace Cosmos.Cms.Controllers
         /// </summary>
         /// <param name="model">Item to delete using relative path</param>
         /// <returns></returns>
-        public async Task<ActionResult> DeleteItems(DeleteBlobItemsViewModel model)
+        [HttpPost]
+        public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
         { 
             foreach (var item in model.Paths)
             {
@@ -411,16 +413,24 @@ namespace Cosmos.Cms.Controllers
             ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
             ViewData["DirectoryOnly"] = directoryOnly;
             ViewData["Container"] = null;
+            ViewData["Title"] = "Source Code File Manager";
+            ViewData["TopDirectory"] = "/";
+            ViewData["Controller"] = "Code";
+            ViewData["Action"] = "Source";
+
+            //
+            // Grid pagination
+            // 
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
 
             //
             // GET FULL OR ABSOLUTE PATH
             //
             var model = await _storageContext.GetFolderContents(target);
 
-            ViewData["sortOrder"] = sortOrder;
-            ViewData["currentSort"] = currentSort;
-            ViewData["pageNo"] = pageNo;
-            ViewData["pageSize"] = pageSize;
 
             var query = model.AsQueryable();
 
@@ -491,7 +501,7 @@ namespace Cosmos.Cms.Controllers
                 return View(model.Where(w => w.IsDirectory == true).ToList());
             }
 
-            return View(model.ToList());
+            return View("~/Views/Shared/FileExplorer/Index.cshtml", model.ToList());
         }
 
         /// <summary>

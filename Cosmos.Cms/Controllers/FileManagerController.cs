@@ -113,16 +113,23 @@ namespace Cosmos.Cms.Controllers
             ViewData["PathPrefix"] = target.StartsWith('/') ? target : "/" + target;
             ViewData["DirectoryOnly"] = directoryOnly;
             ViewData["Container"] = container;
+            ViewData["Title"] = "Website File Manager";
+            ViewData["TopDirectory"] = "/pub";
+            ViewData["Controller"] = "FileManager";
+            ViewData["Action"] = "Index";
+
+            //
+            // Grid pagination
+            // 
+            ViewData["sortOrder"] = sortOrder;
+            ViewData["currentSort"] = currentSort;
+            ViewData["pageNo"] = pageNo;
+            ViewData["pageSize"] = pageSize;
 
             //
             // GET FULL OR ABSOLUTE PATH
             //
             var model = await _storageContext.GetFolderContents(target);
-
-            ViewData["sortOrder"] = sortOrder;
-            ViewData["currentSort"] = currentSort;
-            ViewData["pageNo"] = pageNo;
-            ViewData["pageSize"] = pageSize;
 
             var query = model.AsQueryable();
 
@@ -193,7 +200,7 @@ namespace Cosmos.Cms.Controllers
                 return View(model.Where(w => w.IsDirectory == true).ToList());
             }
 
-            return View(model.ToList());
+            return View("~/Views/Shared/FileExplorer/Index.cshtml", model.ToList());
         }
 
         /// <summary>
@@ -946,6 +953,7 @@ namespace Cosmos.Cms.Controllers
         /// <param name="model">Item to delete using relative path</param>
         /// <param name="container"></param>
         /// <returns></returns>
+        [HttpPost]
         public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model, string container = "$web")
         {
             _storageContext.SetContainerName(container);

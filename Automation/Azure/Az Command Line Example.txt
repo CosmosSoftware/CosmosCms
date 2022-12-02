@@ -1,9 +1,12 @@
 az login
 
-az group create --name DemoInstallGroup --location "Central US"
+az group create --name DemoInstallGroup --location "West US"
 
 az deployment group create --name blanktemplate --resource-group DemoInstallGroup --template-file "azuredeploy.json"
+
+az deployment group create --name blanktemplate --resource-group DemoInstallGroup --template-file "azuredeploydetailed.json"
 
 az deployment group create --name blanktemplate --resource-group DemoInstallGroup --template-file "FreeTierAzureCosmosDbAccount.json"
 
 az deployment group create --name blanktemplate --resource-group DemoInstallGroup --template-file "azuredeployfileshare.json"
+
