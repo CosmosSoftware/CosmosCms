@@ -144,8 +144,8 @@
 
             const ccms_editibleAreas = iframe.contentWindow.ccms_editibleAreas;
 
-            if (ccms_editibleAreas.length > 0) {
-                postRegions(ccm_editibleAreas);
+            if (typeof (ccms_editibleAreas) !== "undefined" && ccms_editibleAreas.length > 0) {
+                postRegions(ccms_editibleAreas);
             }
 
             if (typeof (myModel) !== "undefined" && myModel !== null) {
