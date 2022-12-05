@@ -3,8 +3,17 @@ using System;
 
 namespace Cosmos.Cms.Services
 {
+    /// <summary>
+    /// Image resize utility
+    /// </summary>
     public class ImageResizer
     {
+        /// <summary>
+        /// Calculate image resize
+        /// </summary>
+        /// <param name="originalSize"></param>
+        /// <param name="targetSize"></param>
+        /// <returns></returns>
         public ImageSizeModel Resize(ImageSizeModel originalSize, ImageSizeModel targetSize)
         {
             var aspectRatio = originalSize.Width / (float)originalSize.Height;

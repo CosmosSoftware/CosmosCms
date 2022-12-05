@@ -45,44 +45,44 @@
                         Manage
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark" id="ddEditMenu">
+                        <li class="dropdown-header">Website Content</li>
                         <li>
-                            <a class="dropdown-item" title="List of pages on this website." href="/Editor/Index">Pages</a>
+                            <a class="dropdown-item" title="List of pages on this website." href="/Editor/Index">Web Pages</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Files</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" title="Open public (publisher) website" href="@options.Value.SiteSettings.PublisherUrl" target="_blank">Public Website</a>
+                            <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Website Files</a>
                         </li>
                         @if (isAdministrator || isEditor)
                         {
-                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" title="Manage API end point." href="/Code/Index">Applications</a>
+                                <a class="dropdown-item" title="Manage page templates" href="/Templates/Index">Page Templates</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" title="Manage NodeJS API source code." href="/Code/Source">Source Code</a>
+                                <a class="dropdown-item" title="Manage layouts" href="/Layouts/Index">Website Layouts</a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" title="Manage layouts" href="/Layouts/Index">Layouts</a>
-                            </li>
-
                         }
-
                         <li>
-                            <a class="dropdown-item" title="Manage page templates" href="/Templates/Index">Templates</a>
+                            <a id="btnPublicWebsite" class="dropdown-item" title="Open public (publisher) website" href="" target="_blank">Open Public Website</a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header">NodeJS</li>
+                        <li>
+                            <a class="dropdown-item" title="Manage API end point." href="/Code/Index">API Endpoints</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" title="Manage NodeJS API source code." href="/Code/Source">Source Code files</a>
                         </li>
                         @if (isAdministrator)
                         {
-
                             <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header">System Admin</li>
                             <li>
                                 <a class="dropdown-item" title="Manage user accounts." href="/Users/Index">Users</a>
                             </li>
                         }
                     </ul>
                 </li>
-                
+
             </ul>
 
             <div class="d-flex">
@@ -92,6 +92,7 @@
     </div>
 </nav>
 <script>
+
     function loadDdEditMenu() {
         const ddMenu = $("#ddEditMenu");
 
@@ -160,4 +161,28 @@
         }
     }
 
+    $(document).ready(function () {
+        $("#btnPublicWebsite").click(function () {
+            let publicBaseUrl = "@options.Value.SiteSettings.PublisherUrl.TrimEnd('/')";
+
+            const iframe = document.getElementById("iFrameWebPage");
+
+            if (typeof iframe !== "undefined" || iframe !== null) {
+                const iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+                var urlPath = iframeWin.ccmsUrlPath;
+
+                urlPath = urlPath.trimStart().replace(/^\//g, '');
+
+                if (urlPath === "root") {
+                    urlPath = "";
+                }
+
+                const url = publicBaseUrl + "/" + urlPath;
+                window.open(url, '_blank');
+            }
+            else {
+                window.open(publicBaseUrl, '_blank');
+            }
+        });
+    });
 </script>
