@@ -398,13 +398,6 @@ namespace Cosmos.Cms.Controllers
                     },
                     new()
                     {
-                        FieldId = "BodyHtmlAttributes",
-                        FieldName = "Body Attributes",
-                        EditorMode = EditorMode.Html,
-                        ToolTip = "Body tag attributes such as class or styles."
-                    },
-                    new()
-                    {
                         FieldId = "FooterHtmlContent",
                         FieldName = "Footer Content",
                         EditorMode = EditorMode.Html,
