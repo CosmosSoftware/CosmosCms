@@ -404,7 +404,17 @@ namespace Cosmos.Cms.Controllers
             //var extension = Path.GetExtension(file.FileName);
             var blobEndPoint = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/');
 
-            string relativePath = UrlEncode(directory + file.FileName);
+            var fileName = Path.GetFileNameWithoutExtension(file.FileName);
+            var ext = Path.GetExtension(file.FileName); // Includes dot prefix
+
+            if (fileName.Equals("image", StringComparison.InvariantCultureIgnoreCase))
+            {
+                fileName += Guid.NewGuid().ToString().ToLower();
+            }
+
+            fileName += ext;
+
+            string relativePath = UrlEncode(directory + fileName + ext);
 
             //string jsonData = "";
 
@@ -414,7 +424,7 @@ namespace Cosmos.Cms.Controllers
                 {
                     ChunkIndex = 0,
                     ContentType = file.ContentType,
-                    FileName = file.FileName,
+                    FileName = fileName,
                     RelativePath = relativePath,
                     TotalChunks = 1,
                     TotalFileSize = file.Length,
