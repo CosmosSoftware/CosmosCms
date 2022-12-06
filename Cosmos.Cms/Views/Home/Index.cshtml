@@ -1,8 +1,19 @@
-﻿@model Cosmos.Cms.Common.Models.ArticleViewModel
+﻿@using Microsoft.AspNetCore.Antiforgery;
+@model Cosmos.Cms.Common.Models.ArticleViewModel
+@inject IAntiforgery antiForgery
 @{
     Layout = null;
     ViewData["Title"] = Model.Title;
+    @functions {
+        public string TokenHeaderValue()
+        {
+            var tokens = antiForgery.GetTokens(Context);
+            return tokens.CookieToken + ":" + tokens.RequestToken;
+            // return cookieToken + ":" + formToken;
+        }
+    }
 }
+
 <!DOCTYPE HTML>
 <html lang="@Model.LanguageCode">
 <head>
@@ -23,10 +34,8 @@
     @Html.Raw(Model.Layout.FooterHtmlContent)
     @Html.Raw(Model.FooterJavaScript)
 
-    <form id="frm__ccmsxsr">
-        @Html.AntiForgeryToken()
-    </form>
     <script>
+        var ccmsXrefToken = "@TokenHeaderValue()";
         var ccmsUrlPath = "@Model.UrlPath";
         window.addEventListener("load", () => {
             if (window.location === window.parent.location) {

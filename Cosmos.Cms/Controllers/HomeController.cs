@@ -106,7 +106,7 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Get edit list
         /// </summary>
-        /// <param name="Id"></param>
+        /// <param name="target"></param>
         /// <returns></returns>
         public async Task<IActionResult> EditList(string target)
         {
@@ -128,7 +128,6 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Index page
         /// </summary>
-        /// <param name="id"></param>
         /// <returns></returns>
         [ResponseCache(NoStore = true)]
         public async Task<IActionResult> Index()

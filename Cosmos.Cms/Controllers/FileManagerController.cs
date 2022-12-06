@@ -792,23 +792,6 @@ namespace Cosmos.Cms.Controllers
             return nodes;
         }
 
-        /// <summary>
-        /// Opens the file manager without the tool bar.
-        /// </summary>
-        /// <param name="id">option id</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This is suitable for opening the file manager as a popup.
-        /// </remarks>
-        //public IActionResult Popup(string id)
-        //{
-        //    _storageContext.CreateFolder("/pub");
-        //    ViewData["BlobEndpointUrl"] = GetBlobRootUrl();
-        //    ViewData["Popup"] = true;
-        //    ViewData["option"] = id;
-        //    return View("index");
-        //}
-
         #region PRIVATE FIELDS AND METHODS
 
         private readonly ILogger<FileManagerController> _logger;
@@ -819,18 +802,7 @@ namespace Cosmos.Cms.Controllers
         #endregion
 
         #region HELPER METHODS
-
-        /// <summary>
-        ///     Makes sure all root folders exist.
-        /// </summary>
-        /// <returns></returns>
-        //public void EnsureRootFoldersExist()
-        //{
-        //    //await _storageContext.CreateFolderAsync("/");
-
-        //    _storageContext.CreateFolder("/pub");
-        //}
-
+        
         /// <summary>
         ///     Encodes a URL
         /// </summary>
@@ -1023,35 +995,6 @@ namespace Cosmos.Cms.Controllers
         #endregion
 
         #region UTILITY FUNCTIONS
-
-        /// <summary>
-        ///     Converts the full path from a blob, to a relative one useful for the file manager.
-        /// </summary>
-        /// <param name="relativePath"></param>
-        /// <returns></returns>
-        //public string GetRelativePath(params string[] relativePath)
-        //{
-        //    var rootPath = "";
-
-        //    var absolutePath = string.Join('/', ParsePath(relativePath));
-
-        //    if (absolutePath.ToLower().StartsWith(rootPath.ToLower()))
-        //    {
-        //        if (rootPath.Length == absolutePath.Length) return "";
-        //        return TrimPathPart(absolutePath.Substring(rootPath.Length));
-        //    }
-
-        //    return TrimPathPart(absolutePath);
-        //}
-
-        /// <summary>
-        ///     Gets the public URL of the blob.
-        /// </summary>
-        /// <returns></returns>
-        //public string GetBlobRootUrl()
-        //{
-        //    return $"{_options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')}/";
-        //}
 
         /// <summary>
         ///     Parses out a path into a string array.

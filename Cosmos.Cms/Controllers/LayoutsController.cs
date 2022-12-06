@@ -606,7 +606,7 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Sets a layout as the default layout
         /// </summary>
-        /// <param name="Id">Layout ID</param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> SetLayoutAsDefault(LayoutIndexViewModel model)

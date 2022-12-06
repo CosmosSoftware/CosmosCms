@@ -33,7 +33,7 @@ namespace Cosmos.Cms.Services
         /// Purge an array of absolute Uris
         /// </summary>
         /// <param name="hostName"></param>
-        /// <param name="abosoluteUri"></param>
+        /// <param name="paths"></param>
         /// <returns></returns>
         public string PurgeCdnByUrls(string hostName, string[] paths)
         {

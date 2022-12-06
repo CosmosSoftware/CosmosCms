@@ -178,7 +178,12 @@ namespace Cosmos.IdentityManagement.Website.Controllers
             return RedirectToAction("Index");
         }
 
-        public async Task<IActionResult> GetUsers(string text)
+        /// <summary>
+        /// Gets users for a given email query
+        /// </summary>
+        /// <param name="startsWith"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> GetUsers(string startsWith)
         {
             var query = _userManager.Users.OrderBy(o => o.Email)
                 .Select(
@@ -189,9 +194,9 @@ namespace Cosmos.IdentityManagement.Website.Controllers
                   }
                 ).AsQueryable();
 
-            if (!string.IsNullOrEmpty(text))
+            if (!string.IsNullOrEmpty(startsWith))
             {
-                query = query.Where(s => s.Email.ToLower().StartsWith(text.ToLower()));
+                query = query.Where(s => s.Email.ToLower().StartsWith(startsWith.ToLower()));
             }
 
             var users = await query.ToListAsync();
@@ -255,6 +260,7 @@ namespace Cosmos.IdentityManagement.Website.Controllers
         /// <summary>
         /// Removes users from a Role
         /// </summary>
+        /// <param name="roleId"></param>
         /// <param name="userIds"></param>
         /// <returns></returns>
         [HttpPost]

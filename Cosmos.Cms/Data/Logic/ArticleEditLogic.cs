@@ -203,12 +203,28 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             var count = 0;
-            var editables = new string [] { "div", "h1", "h2", "h3", "h4", "h5" };
+            var editables = new string[] { "div", "h1", "h2", "h3", "h4", "h5" };
 
             foreach (var element in elements)
             {
-                if (element.Name == "div")
+                if (editables.Contains(element.Name.ToLower()))
                 {
+
+                    // Remove all editable childred as this will mess up CKEditor creation
+                    var children = element.Descendants().Where(w => w.Attributes.Contains("data-ccms-ceid") || w.Attributes.Contains("contenteditable"));
+                    foreach (var c in children)
+                    {
+                        if (c.Attributes.Contains("data-ccms-ceid"))
+                        {
+                            c.Attributes.Remove("data-ccms-ceid");
+                        }
+
+                        if (c.Attributes.Contains("contenteditable"))
+                        {
+                            c.Attributes.Remove("contenteditable");
+                        }
+                    }
+
                     if (!element.Attributes.Contains("data-ccms-ceid"))
                     {
                         element.Attributes.Add("data-ccms-ceid", Guid.NewGuid().ToString());
@@ -341,10 +357,10 @@ namespace Cosmos.Cms.Data.Logic
             {
                 max = await DbContext.ArticleNumbers.MaxAsync(m => m.LastNumber);
             }
-           
+
             // Increment
             max++;
-    
+
             //
             // New article
             var article = new Article()
@@ -362,7 +378,7 @@ namespace Cosmos.Cms.Data.Logic
             DbContext.Articles.Add(article);
             DbContext.ArticleNumbers.Add(new ArticleNumber()
             {
-                 LastNumber = max
+                LastNumber = max
             });
 
             await DbContext.SaveChangesAsync();
@@ -559,7 +575,7 @@ namespace Cosmos.Cms.Data.Logic
             else
             {
                 entity = await Get(model.Id, EnumControllerName.Edit, userId);
-                
+
                 entity.Published = model.Published;
                 entity.Title = model.Title;
                 entity.RoleList = model.RoleList;
