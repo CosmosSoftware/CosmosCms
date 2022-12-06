@@ -203,6 +203,7 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             var count = 0;
+            var editables = new string [] { "div", "h1", "h2", "h3", "h4", "h5" };
 
             foreach (var element in elements)
             {
