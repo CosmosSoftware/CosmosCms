@@ -1179,7 +1179,7 @@ namespace Cosmos.Cms.Controllers
 
 
         /// <summary>
-        ///     Used to upload files, one chunk at a time, and normalizes the blob name to lower case.
+        ///     Used to upload files, one chunk at a time, sets the correct MIME type, and normalizes the blob name to lower case.
         /// </summary>
         /// <param name="files"></param>
         /// <param name="metaData"></param>
@@ -1220,6 +1220,7 @@ namespace Cosmos.Cms.Controllers
 
                 var blobName = UrlEncode(fileMetaData.FileName);
 
+                fileMetaData.ContentType = MimeTypeMap.GetMimeType(Path.GetExtension(fileMetaData.FileName));
                 fileMetaData.FileName = blobName;
                 fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath);
 

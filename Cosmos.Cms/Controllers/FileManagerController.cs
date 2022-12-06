@@ -369,21 +369,7 @@ namespace Cosmos.Cms.Controllers
 
             return Ok();
         }
-
-        //private async Task AppendToFile(MemoryStream memoryStream, FileUploadMetaData metadata)
-        //{
-        //    var root = _nodeOptions.Value.ProjectPath;
-
-        //    var fullPath = Path.Combine(root, metadata.RelativePath);
-
-        //    using (var stream = new FileStream(fullPath, FileMode.Append))
-        //    {
-        //        var bytes = memoryStream.ToArray();
-        //        await stream.WriteAsync(bytes, 0, bytes.Length);
-        //    }
-        //}
-
-
+         
         /// <summary>
         /// Simple file upload for CKEditor
         /// </summary>
@@ -401,7 +387,7 @@ namespace Cosmos.Cms.Controllers
 
             var directory = $"/pub/articles/{Id}/";
             //var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-            //var extension = Path.GetExtension(file.FileName);
+            //var extension = Path.GetExtension(file.FileName);c
             var blobEndPoint = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/');
 
             var fileName = Path.GetFileNameWithoutExtension(file.FileName);
@@ -414,16 +400,16 @@ namespace Cosmos.Cms.Controllers
 
             fileName += ext;
 
-            string relativePath = UrlEncode(directory + fileName + ext);
+            string relativePath = UrlEncode(directory + fileName);
 
-            //string jsonData = "";
+            var contentType = MimeTypeMap.GetMimeType(Path.GetExtension(fileName));
 
             try
             {
                 var metaData = new FileUploadMetaData()
                 {
                     ChunkIndex = 0,
-                    ContentType = file.ContentType,
+                    ContentType = contentType,
                     FileName = fileName,
                     RelativePath = relativePath,
                     TotalChunks = 1,
@@ -476,6 +462,7 @@ namespace Cosmos.Cms.Controllers
                     break;
             }
 
+            contentType = MimeTypeMap.GetMimeType(extension);
 
             var metadata = new FileUploadMetaData()
             {
@@ -1354,10 +1341,11 @@ namespace Cosmos.Cms.Controllers
                 if (file == null) throw new Exception("No file found to upload.");
 
                 var blobName = UrlEncode(fileMetaData.FileName);
+                fileMetaData.ContentType = MimeTypeMap.GetMimeType(Path.GetExtension(fileMetaData.FileName));
 
                 fileMetaData.FileName = blobName;
                 fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath);
-
+                
                 // Make sure full folder path exists
                 var parts = fileMetaData.RelativePath.Trim('/').Split('/');
                 var part = "";
