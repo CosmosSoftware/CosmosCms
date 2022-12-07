@@ -52,6 +52,7 @@ namespace Cosmos.Cms
         public void ConfigureServices(IServiceCollection services)
         {
             // The following line enables Application Insights telemetry collection.
+            // See: https://learn.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core?tabs=netcore6
             services.AddApplicationInsightsTelemetry();
 
             // The Cosmos connection string
