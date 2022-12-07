@@ -18,9 +18,12 @@
 
 <script>
     var next;
+    var editor;
     var fileMgrPopup;
     var saveFirstModal = null;
     var versionsModal = null;
+    var vsCodeModal = null;
+    var ckeditor = null;
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -28,14 +31,6 @@
     });
 
     function bgEditClickCustom(command) {
-
-        if (saveFirstModal === null) {
-            saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
-        }
-
-        if (versionsModal === null) {
-            versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
-        }
 
         var modelId = $("#Id").val();
 
@@ -96,12 +91,21 @@
 
     $(document).ready(function (e) {
 
+        saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
+        versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
+        vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
+
         $("#btnCcmsCodeEditor").show();
 
         $("#liBtnVersions").show();
 
         $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
 
+        $("#btnApply").click(function (e) {
+            var data = editor.getValue();
+            ckeditor.data.set(data);
+            saveChanges(null, null);
+        });
     });
 
     $(window).bind('keydown', function (event) {
@@ -247,9 +251,44 @@
             }
         }
     });
+
     window.addEventListener('resize', function (event) { setupIframe(); }, true);
 
+    function openVsCodeBlockEditor(ed) {
+        ckeditor = ed;
+
+        $("#editspace").html("");
+
+        vsCodeModal.show();
+
+        if (typeof ckeditor === "undefined" || ckeditor === null) {
+            alert("Error: Could not open HTML editor.");
+            return;
+        }
+
+        // Monaco AMD Editor  - https://microsoft.github.io/monaco-editor/
+        require.config({ paths: { 'vs': '/lib/monaco-editor/min/vs' } });
+
+        //require.config({ paths: { vs: '/lib/node_modules/monaco-editor/dist' } }); // Emmet Abbr.
+        require(['vs/editor/editor.main'],
+            function () {
+
+                var code = ckeditor.getData();
+                emmetMonaco.emmetHTML(monaco);
+                editor = monaco.editor.create(document.getElementById('editspace'),
+                    {
+                        language: "html",
+                        theme: "vs-dark",
+                        value: code
+                    });
+            });
+    }
+
+
 </script>
+
+<script src="/lib/monaco-editor/min/vs/loader.js"></script>
+<script src="/lib/emmet-monaco-es/dist/emmet-monaco.min.js"></script>
 
 <iframe id="ccmsContFrame" src="/Editor/CcmsContent/@Model.Id" style="position: absolute; top: 52px; width: 100%; margin:0px; padding:0px;z-index:1;" onload="setupFrame()" frameBorder="0" scrolling="yes"></iframe>
 
@@ -277,10 +316,29 @@
                 <h5 class="modal-title">Article Versions</h5>
             </div>
             <div class="modal-body">
-               @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
+                @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="modalVsCode" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <div class="navbar-brand text-light" href="#">
+                        <img src="/images/vscode.png" alt="Logo" height="22" class="d-inline-block align-text-top">
+                        Code Editor
+                    </div>
+                    <div class="d-flex">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button id="btnApply" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Apply</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div id="editspace" class="m-editor-container" style="height: 80vh;"></div>
+                </div>
             </div>
         </div>
     </div>

@@ -7,10 +7,10 @@
 		<EnableNETAnalyzers>false</EnableNETAnalyzers>
 		<RepositoryUrl>https://github.com/CosmosSoftware/Cosmos.Cms</RepositoryUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Version>7.3.4.21</Version>
+		<Version>7.3.4.22</Version>
 		<RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-		<AssemblyVersion>7.3.4.21</AssemblyVersion>
-		<FileVersion>7.3.4.21</FileVersion>
+		<AssemblyVersion>7.3.4.22</AssemblyVersion>
+		<FileVersion>7.3.4.22</FileVersion>
 		<Authors></Authors>
 		<ApplicationInsightsResourceId>/subscriptions/9bdb8e29-156f-4fc9-a1fe-1bb6a915a4f0/resourceGroups/CosmosCMS/providers/microsoft.insights/components/edit-cosmos-cms202107021426</ApplicationInsightsResourceId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -58,77 +58,77 @@
 	  <None Include="Views\Templates\EditCode.cshtml" />
 	  <None Include="Views\Templates\Index.cshtml" />
 	  <None Include="Views\Templates\Preview.cshtml" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\ckeditor.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\ckeditor.js.map" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\af.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ar.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ast.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\az.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\bg.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\bn.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\bs.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ca.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\cs.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\da.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\de-ch.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\de.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\el.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\en-au.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\en-gb.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\eo.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\es-co.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\es.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\et.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\eu.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\fa.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\fi.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\fr.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\gl.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\gu.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\he.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\hi.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\hr.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\hu.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\id.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\it.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ja.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\jv.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\kk.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\km.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\kn.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ko.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ku.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\lt.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\lv.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ms.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\nb.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ne.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\nl.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\no.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\oc.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\pl.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\pt-br.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\pt.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ro.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ru.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\si.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sk.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sl.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sq.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sr-latn.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sr.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\sv.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\th.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\tk.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\tr.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\tt.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ug.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\uk.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\ur.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\uz.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\vi.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\zh-cn.js" />
-	  <None Include="wwwroot\lib\ckeditor\build_20221205.02\translations\zh.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\ckeditor.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\ckeditor.js.map" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\af.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ar.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ast.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\az.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\bg.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\bn.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\bs.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ca.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\cs.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\da.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\de-ch.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\de.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\el.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\en-au.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\en-gb.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\eo.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\es-co.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\es.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\et.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\eu.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\fa.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\fi.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\fr.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\gl.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\gu.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\he.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\hi.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\hr.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\hu.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\id.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\it.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ja.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\jv.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\kk.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\km.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\kn.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ko.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ku.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\lt.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\lv.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ms.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\nb.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ne.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\nl.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\no.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\oc.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\pl.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\pt-br.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\pt.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ro.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ru.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\si.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sk.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sl.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sq.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sr-latn.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sr.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\sv.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\th.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\tk.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\tr.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\tt.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ug.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\uk.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\ur.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\uz.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\vi.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\zh-cn.js" />
+	  <None Include="wwwroot\lib\ckeditor\build_20221207.03\translations\zh.js" />
 	  <None Include="wwwroot\lib\mvc-grid\mvc-grid.js" />
 	</ItemGroup>
 

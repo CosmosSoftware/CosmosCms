@@ -31,7 +31,7 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <script src="/lib/ckeditor/build_20221205.02/ckeditor.js"></script>
+    <script src="/lib/ckeditor/build_20221207.03/ckeditor.js"></script>
     <script>
 
         // Create editors
@@ -177,6 +177,11 @@
                     resolve();
                 }
             });
+        }
+
+        // Opens the VS Code editor for the block
+        function ccmsOpenVsCode(editor) {
+            window.parent.openVsCodeBlockEditor(editor);
         }
     </script>
 </body>
