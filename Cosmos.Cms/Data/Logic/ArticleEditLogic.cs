@@ -830,8 +830,11 @@ namespace Cosmos.Cms.Data.Logic
             var itemsToPublish = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber && w.Published != null)
                 .OrderByDescending(o => o.Published).AsNoTracking().ToListAsync();
 
-            // Get everything that is going to be removed
+            // Get everything that is going to be removed or replaced
             var itemsToRemove = await DbContext.Pages.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+
+            // Mark these for deletion - do this first to remove any conflicts
+            DbContext.Pages.RemoveRange(itemsToRemove);
 
             // Now refresh the published pages
             foreach (var item in itemsToPublish)
@@ -853,9 +856,6 @@ namespace Cosmos.Cms.Data.Logic
                     VersionNumber = item.VersionNumber
                 });
             }
-
-            // Mark the items to remove
-            DbContext.Pages.RemoveRange(itemsToRemove);
 
             // Update the pages collection
             await DbContext.SaveChangesAsync();

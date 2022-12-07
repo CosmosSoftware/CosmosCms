@@ -289,7 +289,7 @@ namespace Cosmos.Cms
             app.UseForwardedHeaders();
             // END
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection(); // See: https://github.com/dotnet/aspnetcore/issues/18594
             app.UseStaticFiles();
             app.UseRouting();
 
