@@ -226,7 +226,7 @@
                             errorMsg = "<p>" + error.Key + "</p><ul>";
                             $.each(error.Errors,
                                 function (index, innerError) {
-                                    errorMsg = errorMsg + "<li>" + innerError.ErrorMessage + "</li>";
+                                    errorMsg = errorMsg + "<li>" + innerError.Exception.Message + "</li>";
                                 });
                             errorMsg = errorMsg + "</ul>";
                         });

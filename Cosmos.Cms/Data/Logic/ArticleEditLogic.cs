@@ -462,6 +462,7 @@ namespace Cosmos.Cms.Data.Logic
             foreach (var article in doomed) article.StatusCode = (int)StatusCodeEnum.Deleted;
 
             await DbContext.SaveChangesAsync();
+            await DeleteCatalogEntry(articleNumber);
 
         }
 
