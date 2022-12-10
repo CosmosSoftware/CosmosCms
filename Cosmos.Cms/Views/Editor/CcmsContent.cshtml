@@ -67,40 +67,45 @@
                     }
                 };
 
-                if (inlineElement.tagName.toLowerCase() == 'header') {
+                var htags = ["header", "h1", "h2", "h3", "h4", "h5", "h6"];
+
+                if (htags.indexOf(inlineElement.tagName.toLowerCase()) > -1) {
                     config.removePlugins = [
                         'Alignment',
-                        'Autoformat',
-                        'AutoImage',
-                        'AutoLink',
+                         //'Autoformat',
+                         //'AutoImage',
+                         //'AutoLink',
                         'BlockQuote',
                         'Bold',
                         'CloudServices',
                         'CodeBlock',
-                        'Essentials',
-                        'FindAndReplace',
+                        //'Essentials',
+                        //'FindAndReplace',
                         'FontColor',
                         'FontSize',
+                         //'Heading',
+                         //'HeadingEditing',
                         'Highlight',
                         'HorizontalLine',
-                        'Image',
-                        'ImageCaption',
-                        'ImageInsert',
-                        'ImageResize',
-                        'ImageStyle',
-                        'ImageToolbar',
-                        'ImageUpload',
+                        //'Image',
+                        //'ImageCaption',
+                        //'ImageInsert',
+                        //'ImageResize',
+                        //'ImageStyle',
+                        //'ImageToolbar',
+                        //'ImageUpload',
                         'Indent',
                         'IndentBlock',
                         'Italic',
-                        'LinkImage',
+                        //'Link',
+                        //'LinkImage',
                         'List',
                         'ListProperties',
                         'MediaEmbed',
                         'MediaEmbedToolbar',
-                        'Paragraph',
+                        //'Paragraph',
                         'PasteFromOffice',
-                        'SimpleUploadAdapter',
+                        //'SimpleUploadAdapter',
                         'Table',
                         'TableCaption',
                         'TableCellProperties',
@@ -108,9 +113,10 @@
                         'TableProperties',
                         'TableToolbar',
                         'TextTransformation',
+                        //'toolbar',
                         'Underline'
                     ];
-                    config.toolbar.items = ['heading', '|', 'link'];
+                    //config.toolbar.items = ['heading', '|', 'link'];
                 }
 
                 InlineEditor
@@ -120,9 +126,6 @@
                         ccms_editors.push(editor);
                     })
                     .catch(error => {
-                        console.error('Oops, something went wrong!');
-                        console.error('Please, report the following error on https://github.com/ckeditor/ckeditor5/issues with the build id and the error stack trace:');
-                        console.warn('Build id: dfs1odnc554f-b7xm83g7lami');
                         console.error(error);
                     });
 
