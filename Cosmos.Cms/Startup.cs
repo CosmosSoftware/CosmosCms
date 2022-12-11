@@ -65,11 +65,11 @@ namespace Cosmos.Cms
             // 1. Create the database if it does not already exist.
             // 2. Create the required containers if they do not already exist.
             // IMPORTANT: Remove this variable if after first run. It will improve startup performance.
-            var setupCosmosDb = Configuration.GetValue<string>("SetupCosmosDb");
+            var setupCosmosDb = Configuration.GetValue<bool?>("SetupCosmosDb");
 
             // If the following is set, it will create the Cosmos database and
             //  required containers.
-            if (bool.TryParse(setupCosmosDb, out var setup) && setup)
+            if (setupCosmosDb.HasValue && setupCosmosDb.Value)
             {
                 var builder1 = new DbContextOptionsBuilder<ApplicationDbContext>();
                 builder1.UseCosmos(connectionString, cosmosIdentityDbName);
