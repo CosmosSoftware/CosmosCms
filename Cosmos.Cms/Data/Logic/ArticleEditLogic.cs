@@ -446,6 +446,7 @@ namespace Cosmos.Cms.Data.Logic
         /// <returns></returns>
         /// <remarks>
         ///     <para>This method puts an article into trash. Use <see cref="RetrieveFromTrash" /> to restore an article. </para>
+        ///     <para>It also removes it from the page catalog and any published pages..</para>
         ///     <para>WARNING: Make sure the menu MenuController.Index does not reference deleted files.</para>
         /// </remarks>
         /// <exception cref="KeyNotFoundException"></exception>
@@ -459,7 +460,11 @@ namespace Cosmos.Cms.Data.Logic
             if (doomed.Any(a => a.UrlPath.ToLower() == "root"))
                 throw new NotSupportedException(
                     "Cannot trash the home page.  Replace home page with another, then send to trash.");
+
             foreach (var article in doomed) article.StatusCode = (int)StatusCodeEnum.Deleted;
+
+            var doomedPages = await DbContext.Pages.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+            DbContext.Pages.RemoveRange(doomedPages);
 
             await DbContext.SaveChangesAsync();
             await DeleteCatalogEntry(articleNumber);
@@ -504,6 +509,7 @@ namespace Cosmos.Cms.Data.Logic
         ///             <see cref="ArticleLogic.HandleUrlEncodeTitle" />.
         ///         </item>
         ///         <item>The article and all its versions are set to unpublished (<see cref="Article.Published" /> set to null).</item>
+        ///         <item>Article is added back to the article catalog.</item>
         ///     </list>
         /// </remarks>
         public async Task RetrieveFromTrash(int articleNumber, string userId)
@@ -538,10 +544,22 @@ namespace Cosmos.Cms.Data.Logic
                 }
             }
 
+            // Add back to the catalog
+            var sample = redeemed.FirstOrDefault();
+            DbContext.ArticleCatalog.Add(new CatalogEntry()
+            {
+                ArticleNumber = sample.ArticleNumber,
+                Published = null,
+                Status = "Active",
+                Title = sample.Title,
+                Updated = DateTimeOffset.Now,
+                UrlPath = sample.UrlPath
+            });
+
             await DbContext.SaveChangesAsync();
 
             // Update the log
-            await HandleLogEntry(redeemed.LastOrDefault(), "Recovered from trash.", userId);
+            await HandleLogEntry(redeemed.LastOrDefault(), $"Recovered '{sample.Title}' from trash.", userId);
 
         }
 
@@ -759,6 +777,10 @@ namespace Cosmos.Cms.Data.Logic
         /// <param name="userId"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
+        /// <remarks>
+        /// If article is published, it adds the correct versions to the public pages collection. If not, 
+        /// the article is removed from the public pages collection.
+        /// </remarks>
         private async Task HandlePublishing(Article article, string userId)
         {
             if (article.Published.HasValue)
@@ -810,7 +832,7 @@ namespace Cosmos.Cms.Data.Logic
                     await ResetVersionExpirations(article.ArticleNumber);
 
                     // Update the published pages collection
-                    await UpdatePagesCollection(article.ArticleNumber);
+                    await UpdatePublishedPages(article.ArticleNumber);
 
                 }
                 catch (Exception e)
@@ -825,7 +847,7 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="articleNumber"></param>
         /// <returns></returns>
-        private async Task UpdatePagesCollection(int articleNumber)
+        private async Task UpdatePublishedPages(int articleNumber)
         {
             // Now we are going to update the Pages table
             var itemsToPublish = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber && w.Published != null)
@@ -977,7 +999,7 @@ namespace Cosmos.Cms.Data.Logic
             // Now updated the published pages
             foreach (var num in articleNumbersToUpdate)
             {
-                await UpdatePagesCollection(num);
+                await UpdatePublishedPages(num);
             }
 
         }
