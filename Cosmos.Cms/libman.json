@@ -3,6 +3,10 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
+      "library": "jqwidgets@15.0.0",
+      "destination": "wwwroot/lib/jqwidgets"
+    },
+    {
       "provider": "unpkg",
       "library": "microsoft/signalr@6.0.9",
       "destination": "wwwroot/lib/signalr/"
@@ -30,7 +34,7 @@
       "destination": "wwwroot/lib/jquery/"
     },
     {
-      "library": "bootstrap@5.2.2",
+      "library": "bootstrap@5.2.3",
       "destination": "wwwroot/lib/bootstrap/"
     },
     {
@@ -38,12 +42,16 @@
       "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
     },
     {
+      "library": "jqueryui@1.13.2",
+      "destination": "wwwroot/lib/jquery-ui"
+    },
+    {
       "provider": "jsdelivr",
       "library": "jquery-validation@1.19.5",
       "destination": "wwwroot/lib/jquery-validation/"
     },
     {
-      "library": "mdb-ui-kit@6.0.0",
+      "library": "mdb-ui-kit@6.0.1",
       "destination": "wwwroot/lib/mdb-ui-kit/"
     },
     {

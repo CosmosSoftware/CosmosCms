@@ -29,7 +29,17 @@
             }
         </div>
     </div>
-
+    <div class="row">
+        <div class="col-auto">
+            <table>
+                <tr>
+                    <td><label for="jqxComboBox" class="text-light">Search: </label></td>
+                    <td><div id='jqxComboBox'></div></td>
+                    <td><button id="btnOpen" class="btn btn-sm btn-primary" style="display:none">Open <i class="fa-solid fa-circle-arrow-right"></i></button></td>
+                </tr>
+            </table>
+        </div>
+    </div>
     <div class="row bg-dark">
         <div class="col-md-6">
             @if (!isReviewer)
@@ -57,8 +67,8 @@
                             <th scope="col">
                                 Select
                                 @*<label class="control control--checkbox">
-                                    <input type="checkbox" class="js-check-all">
-                                    <span class="control__indicator"></span>
+                                <input type="checkbox" class="js-check-all">
+                                <span class="control__indicator"></span>
                                 </label>*@
                             </th>
                             <th scope="col"><i class="fa-solid fa-house"></i></th>
@@ -181,6 +191,96 @@
     $(document).ready(function () {
         $(".toLocalTimeZone").each(function (index, element) {
             $(element).html(getLocalTime($(element).html()));
+        });
+
+    });
+
+    /* COMBOBOX */
+    var source = {
+        datatype: "json",
+        datafields: [{
+            name: 'ArticleNumber'
+        }, {
+            name: 'IsDefault'
+        }, {
+            name: 'LastPublished'
+        }, {
+            name: 'Status'
+        }, {
+            name: 'Title'
+        }, {
+            name: 'Updated'
+        }, {
+            name: 'UrlPath'
+        }, {
+            name: 'VersionNumber'
+        }],
+        url: "@Url.Action("GetArticleList", "Editor")",
+        data: {
+            featureClass: "P",
+            style: "full",
+            maxRows: 10
+        }
+    };
+
+    var dataAdapter = new $.jqx.dataAdapter(source, {
+        formatData: function (data) {
+            const search =  $("#jqxComboBox").jqxComboBox('searchString');
+            if (search != undefined) {
+                data.name_startsWith = search;
+                return data;
+            }
+        }
+    });
+
+    $("#jqxComboBox").jqxComboBox({
+        width: 250,
+        height: 25,
+        source: dataAdapter,
+        remoteAutoComplete: true,
+        autoDropDownHeight: true,
+        minLength: 1,
+        displayMember: "Title",
+        placeHolder: "Type to search...",
+        valueMember: "ArticleNumber",
+        renderer: function (index, label, value) {
+            var item = dataAdapter.records[index];
+            if (item != null) {
+                var label = item.Title;
+                return label;
+            }
+            return "";
+        },
+        renderSelectedItem: function (index, item) {
+            var item = dataAdapter.records[index];
+            if (item != null) {
+                var label = item.Title;
+                return label;
+            }
+            return "";
+        },
+        search: function (searchString) {
+            dataAdapter.dataBind();
+        }
+    });
+
+    $('#jqxComboBox').on('select', function (event) {
+        var args = event.args;
+        var item = $('#jqxComboBox').jqxComboBox('getItem', args.index);
+        if (item.value !== null && item.value !== "") {
+            $("#btnOpen").show();
+            $("#btnOpen").click(function () {
+                window.location.href = "@Url.Action("Versions", "Editor")/" + item.value;
+            });
+        } else {
+            $("#btnOpen").hide();
+        }
+    });
+
+    $('#jqxComboBox').on('unselect', function (event) {
+        $("#btnOpen").hide();
+        $("#btnOpen").click(function () {
+            
         });
     });
 </script>

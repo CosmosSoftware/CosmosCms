@@ -36,7 +36,7 @@ namespace Cosmos.Cms.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly Uri _blobPublicAbsoluteUrl;
         private readonly IViewRenderService _viewRenderService;
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -99,7 +99,7 @@ namespace Cosmos.Cms.Controllers
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
             ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
-            
+
             ViewData["sortOrder"] = sortOrder;
             ViewData["currentSort"] = currentSort;
             ViewData["pageNo"] = pageNo;
@@ -336,7 +336,7 @@ namespace Cosmos.Cms.Controllers
                     }
                 }
             }
-            
+
             return View(query.ToList());
         }
         #endregion
@@ -349,7 +349,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Compare(Guid leftId, Guid rightId)
         {
-            
+
             var left = await _articleLogic.Get(leftId, EnumControllerName.Edit, await GetUserId());
             var right = await _articleLogic.Get(rightId, EnumControllerName.Edit, await GetUserId());
             @ViewData["PageTitle"] = left.Title;
@@ -683,7 +683,7 @@ namespace Cosmos.Cms.Controllers
         {
             return View();
         }
-                
+
         /// <summary>
         /// Open Cosmos CMS logs
         /// </summary>
@@ -827,7 +827,7 @@ namespace Cosmos.Cms.Controllers
 
             // Next pull the original.
             var original = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
-                        
+
             // Make sure model state is valid
             if (ModelState.IsValid)
             {
@@ -909,7 +909,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> PostRegions([FromBody]HtmlEditorPost model)
+        public async Task<IActionResult> PostRegions([FromBody] HtmlEditorPost model)
         {
             // Next pull the original.
             var article = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
@@ -1212,11 +1212,12 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Gets a list of articles (web pages)
         /// </summary>
+        /// <param name="name_startsWith">search text value (optional)</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetArticleList()
+        public async Task<IActionResult> GetArticleList(string name_startsWith = "")
         {
-            var model = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
+            var query = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
             {
                 ArticleNumber = s.ArticleNumber,
                 Title = s.Title,
@@ -1226,9 +1227,22 @@ namespace Cosmos.Cms.Controllers
                 Status = s.Status,
                 Updated = s.Updated
             }).OrderBy(o => o.Title);
-            return Json(await model.ToListAsync());
+
+            var data = new List<ArticleListItem>();
+            if (string.IsNullOrEmpty(name_startsWith))
+            {
+                data.AddRange(await query.Take(10).ToListAsync());
+            }
+            else
+            {
+                name_startsWith = name_startsWith.Trim().ToLower();
+                data.AddRange(await query.Where(w => w.Title.ToLower().Contains(name_startsWith)).Take(10).ToListAsync());
+            }
+
+            return Json(data);
+
         }
-                
+
         /// <summary>
         /// Gets a list of articles (pages) on this website.
         /// </summary>
