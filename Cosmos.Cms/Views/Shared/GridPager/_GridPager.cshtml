@@ -1,11 +1,11 @@
 ﻿@model GridPagerPartialViewModel
 <div class="btn-group" role="group" aria-label="Page Actions">
     <a class="btn btn-sm btn-secondary" title="First page" href="@Model.GetUrl?pageNo=0&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-backward-fast"></i></a>
-    <a class="btn btn-sm btn-secondary" title="Previous page" href="@Model.GetUrl?pageNo=@Model.PreviousPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-backward-step"></i></a>
+    <a class="btn btn-sm btn-secondary" title="Previous page" href="@Model.GetUrl?pageNo=@Model.PreviousPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-caret-left"></i></a>
     <div class="btn btn-sm btn-secondary">
         @(Model.PageNumber + 1)
     </div>
-    <a class="btn btn-sm btn-secondary" title="Next page" href="@Model.GetUrl?pageNo=@Model.NextPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-forward-step"></i></a>
+    <a class="btn btn-sm btn-secondary" title="Next page" href="@Model.GetUrl?pageNo=@Model.NextPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-caret-right"></i></a>
     <a class="btn btn-sm btn-secondary" title="Last page" href="@Model.GetUrl?pageNo=@Model.LastPage&sortOrder=@Model.SortOrder&currentSort=@Model.CurrentSort&pageSize=@Model.PageSize"><i class="fa-solid fa-forward-fast"></i></a>
     <button id="btnGroupDrop1" type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Page:

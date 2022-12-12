@@ -46,6 +46,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="wwwroot\css\Site.css" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Linux-x64_Single.pubxml" />
 		<_WebToolingArtifacts Remove="Properties\PublishProfiles\Win-x64_Single.pubxml" />
 	</ItemGroup>
