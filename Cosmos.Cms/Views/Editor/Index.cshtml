@@ -29,15 +29,12 @@
             }
         </div>
     </div>
-    <div class="row">
-        <div class="col-auto">
-            <table>
-                <tr>
-                    <td><label for="jqxComboBox" class="text-light">Search: </label></td>
-                    <td><div id='jqxComboBox'></div></td>
-                    <td><button id="btnOpen" class="btn btn-sm btn-primary" style="display:none">Open <i class="fa-solid fa-circle-arrow-right"></i></button></td>
-                </tr>
-            </table>
+    <div class="row bg-dark">
+        <div class="col-10">
+            <input id="combobox" placeholder="Search for a page ..." type="text" class="form-control bg-dark text-light custom-combobox" aria-label="Type to search for a page." style="height:26px">
+        </div>
+        <div class="col-2 text-right">
+            <button id="btnOpen" class="btn btn-sm btn-primary" disabled>Open <i class="fa-solid fa-circle-arrow-right"></i></button>
         </div>
     </div>
     <div class="row bg-dark">
@@ -192,96 +189,39 @@
         $(".toLocalTimeZone").each(function (index, element) {
             $(element).html(getLocalTime($(element).html()));
         });
-
     });
 
-    /* COMBOBOX */
-    var source = {
-        datatype: "json",
-        datafields: [{
-            name: 'ArticleNumber'
-        }, {
-            name: 'IsDefault'
-        }, {
-            name: 'LastPublished'
-        }, {
-            name: 'Status'
-        }, {
-            name: 'Title'
-        }, {
-            name: 'Updated'
-        }, {
-            name: 'UrlPath'
-        }, {
-            name: 'VersionNumber'
-        }],
-        url: "@Url.Action("GetArticleList", "Editor")",
-        data: {
-            featureClass: "P",
-            style: "full",
-            maxRows: 10
-        }
-    };
-
-    var dataAdapter = new $.jqx.dataAdapter(source, {
-        formatData: function (data) {
-            const search =  $("#jqxComboBox").jqxComboBox('searchString');
-            if (search != undefined) {
-                data.name_startsWith = search;
-                return data;
+    // COMBOBOX
+    $(function () {
+        $("#combobox").combobox({
+            source: function (request, response) {
+                $("#btnOpen").prop('disabled', true);
+               
+                $.ajax({
+                    url: "@Url.Action("GetArticleList","Editor")",
+                    dataType: "json",
+                    data: {
+                        term: request.term
+                    },
+                    success: function (data) {
+                        var results = [];
+                        $.each(data, function (index, entity) {
+                            var item = { label: entity.Title, value: entity.Title, url: entity.UrlPath, updated: entity.Updated, id: entity.ArticleNumber, published: entity.LastPublished };
+                            results.push(item);
+                        });
+                        response(results);
+                    }
+                });
+            },
+            select: function (event, ui) {
+                $("#btnOpen").click(function () {
+                    window.location.href = "@Url.Action("Versions", "Editor")/" + ui.item.id;
+                });
+                $("#btnOpen").prop('disabled', false);
             }
-        }
-    });
-
-    $("#jqxComboBox").jqxComboBox({
-        width: 250,
-        height: 25,
-        source: dataAdapter,
-        remoteAutoComplete: true,
-        autoDropDownHeight: true,
-        minLength: 1,
-        displayMember: "Title",
-        placeHolder: "Type to search...",
-        valueMember: "ArticleNumber",
-        renderer: function (index, label, value) {
-            var item = dataAdapter.records[index];
-            if (item != null) {
-                var label = item.Title;
-                return label;
-            }
-            return "";
-        },
-        renderSelectedItem: function (index, item) {
-            var item = dataAdapter.records[index];
-            if (item != null) {
-                var label = item.Title;
-                return label;
-            }
-            return "";
-        },
-        search: function (searchString) {
-            dataAdapter.dataBind();
-        }
-    });
-
-    $('#jqxComboBox').on('select', function (event) {
-        var args = event.args;
-        var item = $('#jqxComboBox').jqxComboBox('getItem', args.index);
-        if (item.value !== null && item.value !== "") {
-            $("#btnOpen").show();
-            $("#btnOpen").click(function () {
-                window.location.href = "@Url.Action("Versions", "Editor")/" + item.value;
-            });
-        } else {
-            $("#btnOpen").hide();
-        }
-    });
-
-    $('#jqxComboBox').on('unselect', function (event) {
-        $("#btnOpen").hide();
-        $("#btnOpen").click(function () {
-            
         });
+
     });
+
 </script>
 

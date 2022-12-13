@@ -1,14 +1,18 @@
-﻿.custom-combobox {
+﻿.ui-widget-content {
+    background: #333;
+    color: #dadada;
+    border: none;
+    font-size: 0.8rem;
+}
+
+.custom-combobox {
+    font-size: 0.8rem;
     position: relative;
     display: inline-block;
 }
 
-.custom-combobox-toggle {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin-left: -1px;
-    padding: 0;
+.combobox-toggle {
+    height: 26px;
 }
 
 .custom-combobox-input {

@@ -84,7 +84,9 @@
                     <table>
                         <tr>
                             <td><label for="jqxComboBox" class="text-light">Search: </label></td>
-                            <td><div id='jqxComboBox'></div></td>
+                            <td>
+                                <div id="combobox"></div>
+                            </td>
                         </tr>
                     </table>
                 </div>
@@ -191,6 +193,8 @@
             ckeditor.data.set(data);
             saveChanges(null, null);
         });
+
+
     });
 
     $(window).bind('keydown', function (event) {
@@ -343,7 +347,7 @@
         ckeditor = ed;
 
         $("#editspace").html("");
-        
+
         if (typeof ckeditor === "undefined" || ckeditor === null) {
             alert("Error: Could not open HTML editor.");
             return;
@@ -381,86 +385,5 @@
         pickPageModal.show();
     }
 
-    /* COMBOBOX */
-    var source = {
-        datatype: "json",
-        datafields: [{
-            name: 'ArticleNumber'
-        }, {
-            name: 'IsDefault'
-        }, {
-            name: 'LastPublished'
-        }, {
-            name: 'Status'
-        }, {
-            name: 'Title'
-        }, {
-            name: 'Updated'
-        }, {
-            name: 'UrlPath'
-        }, {
-            name: 'VersionNumber'
-        }],
-        url: "@Url.Action("GetArticleList", "Editor")",
-        data: {
-            featureClass: "P",
-            style: "full",
-            maxRows: 10
-        }
-    };
 
-    var dataAdapter = new $.jqx.dataAdapter(source, {
-        formatData: function (data) {
-            const search = $("#jqxComboBox").jqxComboBox('searchString');
-            if (search != undefined) {
-                data.name_startsWith = search;
-                return data;
-            }
-        }
-    });
-
-    $("#jqxComboBox").jqxComboBox({
-        width: 250,
-        height: 25,
-        source: dataAdapter,
-        remoteAutoComplete: true,
-        autoDropDownHeight: true,
-        minLength: 1,
-        displayMember: "Title",
-        placeHolder: "Type to search...",
-        valueMember: "UrlPath",
-        renderer: function (index, label, value) {
-            var item = dataAdapter.records[index];
-            if (item != null) {
-                var label = item.Title;
-                return label;
-            }
-            return "";
-        },
-        renderSelectedItem: function (index, item) {
-            var item = dataAdapter.records[index];
-            if (item != null) {
-                var label = item.Title;
-                return label;
-            }
-            return "";
-        },
-        search: function (searchString) {
-            dataAdapter.dataBind();
-        }
-    });
-
-    $('#jqxComboBox').on('select', function (event) {
-        var args = event.args;
-        var item = $('#jqxComboBox').jqxComboBox('getItem', args.index);
-        if (item.value !== null && item.value !== "") {
-            
-        } else {
-
-        }
-    });
-
-    $('#jqxComboBox').on('unselect', function (event) {
-
-    });
 </script>

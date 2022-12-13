@@ -1212,10 +1212,10 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Gets a list of articles (web pages)
         /// </summary>
-        /// <param name="name_startsWith">search text value (optional)</param>
+        /// <param name="term">search text value (optional)</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetArticleList(string name_startsWith = "")
+        public async Task<IActionResult> GetArticleList(string term = "")
         {
             var query = _dbContext.ArticleCatalog.Select(s => new ArticleListItem()
             {
@@ -1229,14 +1229,14 @@ namespace Cosmos.Cms.Controllers
             }).OrderBy(o => o.Title);
 
             var data = new List<ArticleListItem>();
-            if (string.IsNullOrEmpty(name_startsWith))
+            if (string.IsNullOrEmpty(term))
             {
                 data.AddRange(await query.Take(10).ToListAsync());
             }
             else
             {
-                name_startsWith = name_startsWith.Trim().ToLower();
-                data.AddRange(await query.Where(w => w.Title.ToLower().Contains(name_startsWith)).Take(10).ToListAsync());
+                term = term.Trim().ToLower();
+                data.AddRange(await query.Where(w => w.Title.ToLower().Contains(term)).Take(10).ToListAsync());
             }
 
             return Json(data);
