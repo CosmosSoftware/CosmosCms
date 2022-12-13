@@ -189,14 +189,12 @@
         $(".toLocalTimeZone").each(function (index, element) {
             $(element).html(getLocalTime($(element).html()));
         });
-    });
 
-    // COMBOBOX
-    $(function () {
+        // COMBOBOX
         $("#combobox").combobox({
             source: function (request, response) {
                 $("#btnOpen").prop('disabled', true);
-               
+
                 $.ajax({
                     url: "@Url.Action("GetArticleList","Editor")",
                     dataType: "json",
@@ -222,6 +220,7 @@
         });
 
     });
+
 
 </script>
 

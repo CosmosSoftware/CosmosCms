@@ -3,6 +3,7 @@
     color: #dadada;
     border: none;
     font-size: 0.8rem;
+    z-index: 2060;
 }
 
 .custom-combobox {
