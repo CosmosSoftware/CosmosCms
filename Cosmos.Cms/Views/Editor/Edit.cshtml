@@ -385,25 +385,9 @@
         // Change the model using the model writer.
         ckeditor.model.change(writer => {
 
-            var link = '<a href="/' + selectedAnchorData.url + '" ';
+            const viewFragment = ckeditor.data.processor.toView("<a target='_blank' href='/" + selectedAnchorData.url + "'>" + inputLinkText + "</a>");
 
-            if (switchNewWindow) {
-                link += 'target="_blank" ';
-            }
-
-            if (inputLinkCss !== "") {
-                link += 'class="' + inputLinkCss + '" ';
-            }
-
-            if (inputLinkStyle !== "") {
-                link += 'style="' + inputLinkStyle + '" ';
-            }
-
-            link += '>' + inputLinkText + '</a>';
-
-            const viewFragment = ckeditor.data.processor.toView(link);
             const anchor = ckeditor.data.toModel(viewFragment);
-
             ckeditor.model.insertContent(anchor);
 
         });
