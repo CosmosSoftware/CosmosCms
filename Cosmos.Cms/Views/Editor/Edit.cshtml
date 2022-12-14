@@ -370,13 +370,38 @@
 
     function insertPageLink() {
 
+        const inputLinkText = $("#inputLinkText").val();
+        const switchNewWindow = $("#switchNewWindow").prop('checked');
+        const inputLinkCss = $("#inputLinkCss").val();
+        const inputLinkStyle = $("#inputLinkStyle").val();
+
+        if (typeof (inputLinkText) === "undefined" || inputLinkText === null || inputLinkText === "") {
+            $("#inputLinkTextError").show();
+            return false;
+        }
+
         pickPageModal.hide();
+
         // Change the model using the model writer.
         ckeditor.model.change(writer => {
 
-            const titleArray = selectedAnchorData.label.split('/');
+            var link = '<a href="/' + selectedAnchorData.url + '" ';
 
-            const viewFragment = ckeditor.data.processor.toView('<a href="/' + selectedAnchorData.url + '">' + titleArray[titleArray.length - 1] + '</a>');
+            if (switchNewWindow) {
+                link += 'target="_blank" ';
+            }
+
+            if (inputLinkCss !== "") {
+                link += 'class="' + inputLinkCss + '" ';
+            }
+
+            if (inputLinkStyle !== "") {
+                link += 'style="' + inputLinkStyle + '" ';
+            }
+
+            link += '>' + inputLinkText + '</a>';
+
+            const viewFragment = ckeditor.data.processor.toView(link);
             const anchor = ckeditor.data.toModel(viewFragment);
 
             ckeditor.model.insertContent(anchor);

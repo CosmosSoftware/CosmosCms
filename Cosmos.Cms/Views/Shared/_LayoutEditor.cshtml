@@ -206,24 +206,25 @@
                         <div id="divLinkDetails" style="display:none">
                             <div class="row mb-3">
                                 <label for="inputLinkText" class="form-label">Link text:</label>
-                                <input type="text" class="form-control form-control-sm" id="inputLinkText">
+                                <input id="inputLinkText" type="text" class="form-control form-control-sm">
+                                <span id="inputLinkTextError" class="badge badge-danger" style="display:none">Link text is required.</span>
                             </div>
                             <div class="row mb-3">
                                 <h5>Options:</h5>
                             </div>
                             <div class="row mb-3">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="switchNewWindow">
+                                    <input id="switchNewWindow" class="form-check-input" type="checkbox" role="switch">
                                     <label class="form-check-label" for="switchNewWindow">Open in new window?</label>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <label for="inputLinkCss" class="form-label">Link CSS Class(es):</label>
-                                <input type="text" class="form-control form-control-sm" id="inputLinkCss">
+                                <input id="inputLinkCss" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="row mb-3">
                                 <label for="inputLinkStyle" class="form-label">Link CSS style values:</label>
-                                <input type="text" class="form-control form-control-sm" id="inputLinkStyle" placeholder="example: font-size:0.8rem; font-weight:bold;">
+                                <input id="inputLinkStyle" type="text" class="form-control form-control-sm" placeholder="example: font-size:0.8rem; font-weight:bold;">
                             </div>
                         </div>
                     </div>
@@ -461,6 +462,11 @@
                         const date = new Date(ui.item.published);
                         $("#pageStatus").html("Publihed: " + date.toUTCString());
                     }
+
+                    var titleArray = ui.item.label.split('/');
+
+                    $("#inputLinkText").val(titleArray[titleArray.length - 1]);
+
                     $("#pageStatus").show();
                     $("#divLinkDetails").show();
                     $("#btnOpenLink").attr("href", "@Url.Action("Versions", "Editor")/" + ui.item.id);
@@ -477,6 +483,11 @@
                     alert("insertPageLink() not found.");
                 }
             });
+
+            $("#inputLinkText").focus(function () {
+                $("#inputLinkTextError").hide();
+            });
+
         });
 
         // Displays a 3 second message in a bootstrap toast.
