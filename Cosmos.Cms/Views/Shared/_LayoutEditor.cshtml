@@ -85,24 +85,21 @@
                             </li>
                         </ul>
                     </li>
-                    <li id="divAutoSave">
+                    <li class="nav-item" id="divAutoSave">
                         <div class="form-check form-switch mt-2 ms-3">
-                            <input id="swAutoSave" class="form-check-input" type="checkbox" role="switch" checked="true">
+                            <input id="swAutoSave" class="form-check-input" type="checkbox" role="checkbox" checked="true">
                             <label id="lblAutoSave" style="font-size:0.8rem" class="form-check-label text-light" for="swAutoSave">Autosave (on)</label>
                         </div>
                     </li>
-                    <li id="msgSaving">
-                        <div class="btn btn-sm btn-secondary mt-1 ms-5">
+                    <li class="nav-item" id="msgSaving">
+                        &nbsp; <div id="btnSavingStatus" class="btn btn-sm btn-secondary mt-1 ms-3 me-3" style="display:none">
                             <div id="spSaving" class="spinner-border spinner-border-sm text-light" role="status" style="display:none"></div>
                             <span id="btnSavingText">Saved</span>
                         </div>
                     </li>
-                    <li>
-                        <span id="timeZone" style="font-size:0.8rem" class="ms-3 me-3 fs-6"></span>
-                    </li>
-                    <li>
-                        <div id="msgSpecial"></div>
-                        <div id="spinLoading" class="mt-1 ms-3">
+                    <li class="nav-item">
+                        <div id="msgSpecial" style="display:none"></div>
+                        &nbsp; <div id="spinLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
                             <div class="align-items-center text-light">
                                 <strong>Loading...</strong>
                                 <div class="spinner-border spinner-border-sm text-light" role="status"></div>
@@ -199,10 +196,34 @@
                         </div>
                         <div class="row mb-3" id="pageSelectResults">
                             <div class="col-9">
-                                <div id="pageStatus" class="fs-6 fw-light" style="display:none"></div>
+                                <div id="pageStatus" class="text-light" style="display:none;font-size:0.8rem;">
+                                </div>
                             </div>
                             <div class="col-3">
                                 <a id="btnOpenLink" target="_blank" class="btn btn-sm btn-secondary" style="display:none">Versions <i class="fa-solid fa-circle-arrow-right"></i></a>
+                            </div>
+                        </div>
+                        <div id="divLinkDetails" style="display:none">
+                            <div class="row mb-3">
+                                <label for="inputLinkText" class="form-label">Link text:</label>
+                                <input type="text" class="form-control form-control-sm" id="inputLinkText">
+                            </div>
+                            <div class="row mb-3">
+                                <h5>Options:</h5>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchNewWindow">
+                                    <label class="form-check-label" for="switchNewWindow">Open in new window?</label>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="inputLinkCss" class="form-label">Link CSS Class(es):</label>
+                                <input type="text" class="form-control form-control-sm" id="inputLinkCss">
+                            </div>
+                            <div class="row mb-3">
+                                <label for="inputLinkStyle" class="form-label">Link CSS style values:</label>
+                                <input type="text" class="form-control form-control-sm" id="inputLinkStyle" placeholder="example: font-size:0.8rem; font-weight:bold;">
                             </div>
                         </div>
                     </div>
@@ -212,7 +233,7 @@
                         <div class="row mb-3">
                             <div class="col-auto ms-5">
                                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button id="btnApplyLink" type="button" class="btn btn-sm btn-secondary" disabled>Apply</button>
+                                <button id="btnApplyLink" type="button" class="btn btn-sm btn-primary" disabled>Apply <i class="fa-solid fa-circle-arrow-right"></i></button>
                             </div>
                         </div>
                     </div>
@@ -294,9 +315,9 @@
         }
 
         function getLocalTimeZone() {
-            var datetime = new Date();
-            var dateTimeString = datetime.toString();
-            var timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
+            const datetime = new Date();
+            const dateTimeString = datetime.toString();
+            const timezone = dateTimeString.substring(dateTimeString.indexOf("(") - 1);
             return timezone;
         }
 
@@ -325,9 +346,10 @@
             return false;
         }
 
+        // Selected anchor data
+        var selectedAnchorData;
+
         $(document).ready(function () {
-            var timeZoneElement = $("#timeZone");
-            timeZoneElement.html(getLocalTimeZone());
 
             var startDate;
             if (lastPublished === "") {
@@ -409,8 +431,8 @@
             $("#combobox").combobox({
                 source: function (request, response) {
                     $("#btnOpen").prop('disabled', true);
-                    $("#btnOpenLink").hide();
                     $("#pageStatus").hide();
+                    $("#divLinkDetails").hide();
                     $.ajax({
                         url: "@Url.Action("GetArticleList","Editor")",
                         dataType: "json",
@@ -427,21 +449,34 @@
                         }
                     });
                 },
+                focus: function () {
+                    // prevent value inserted on focus
+                    return false;
+                },
                 select: function (event, ui) {
-                    if (ui.item.published === "") {
-                        $("#pageStatus").html(" - DRAFT - ");
+
+                    if (ui.item.published === null || ui.item.published === "") {
+                        $("#pageStatus").html("Status: - DRAFT - ");
                     } else {
                         const date = new Date(ui.item.published);
-                        $("#pageStatus").html("Published: " + date.toString());
+                        $("#pageStatus").html("Publihed: " + date.toUTCString());
                     }
-
                     $("#pageStatus").show();
+                    $("#divLinkDetails").show();
                     $("#btnOpenLink").attr("href", "@Url.Action("Versions", "Editor")/" + ui.item.id);
-                    $("#btnOpenLink").show();
-                    $("#btnOpen").prop('disabled', false);
+                    $("#btnApplyLink").prop('disabled', false);
+                    selectedAnchorData = ui.item; // Save this as the last selected item
+                    return true;
                 }
             });
 
+            $("#btnApplyLink").click(function () {
+                if (insertPageLink) {
+                    insertPageLink();
+                } else {
+                    alert("insertPageLink() not found.");
+                }
+            });
         });
 
         // Displays a 3 second message in a bootstrap toast.

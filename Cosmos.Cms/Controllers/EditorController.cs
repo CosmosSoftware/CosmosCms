@@ -162,6 +162,11 @@ namespace Cosmos.Cms.Controllers
                             break;
                     }
                 }
+                else
+                {
+                    // Default sort order
+                    query = query.OrderBy(o => o.Title);
+                }
             }
 
             var model = query.Select(s => new ArticleListItem()

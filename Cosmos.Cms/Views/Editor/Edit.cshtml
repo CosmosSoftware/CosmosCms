@@ -147,6 +147,10 @@
 
             $(editors).css("border", "dashed 1px #dadada");
         }
+
+        // Close loading spiner and display saved status
+        $("#spinLoading").hide();
+        $("#btnSavingStatus").show();
     };
 
     $(document).ready(function (e) {
@@ -348,6 +352,9 @@
             });
     }
 
+    var ckSelection;
+
+
     function openPickPageModal(ed) {
         ckeditor = ed;
 
@@ -356,8 +363,25 @@
             return;
         }
 
+        $("#combobox").val("");
+
         pickPageModal.show();
     }
 
+    function insertPageLink() {
+
+        pickPageModal.hide();
+        // Change the model using the model writer.
+        ckeditor.model.change(writer => {
+
+            const titleArray = selectedAnchorData.label.split('/');
+
+            const viewFragment = ckeditor.data.processor.toView('<a href="/' + selectedAnchorData.url + '">' + titleArray[titleArray.length - 1] + '</a>');
+            const anchor = ckeditor.data.toModel(viewFragment);
+
+            ckeditor.model.insertContent(anchor);
+
+        });
+    }
 
 </script>
