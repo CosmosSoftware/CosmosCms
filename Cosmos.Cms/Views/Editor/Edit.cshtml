@@ -354,7 +354,6 @@
 
     var ckSelection;
 
-
     function openPickPageModal(ed) {
         ckeditor = ed;
 
@@ -364,6 +363,10 @@
         }
 
         $("#combobox").val("");
+        const inputLinkText = $("#inputLinkText").val("");
+        const switchNewWindow = $("#switchNewWindow").prop('checked', false);
+        const inputLinkCss = $("#inputLinkCss").val("");
+        const inputLinkStyle = $("#inputLinkStyle").val("");
 
         pickPageModal.show();
     }

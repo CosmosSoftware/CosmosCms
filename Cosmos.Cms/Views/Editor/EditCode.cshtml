@@ -58,6 +58,7 @@
     var fieldId;
     var fieldName;
     var ccmsEditorIsLocked = false;
+    var pickPageModal = null;
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -132,6 +133,10 @@
                     });
 
                 $("#msgBox").html("");
+
+                // Close loading spiner and display saved status
+                $("#spinLoading").hide();
+                $("#btnSavingStatus").show();
             });
     }
 
@@ -244,7 +249,47 @@
         return timezone;
     }
 
+    function openPickPageModal() {
+
+        if (typeof editor === "undefined" || editor === null) {
+            alert("Error: Could not open code editor.");
+            return;
+        }
+
+        $("#combobox").val("");
+        const inputLinkText = $("#inputLinkText").val("");
+        const switchNewWindow = $("#switchNewWindow").prop('checked', false);
+        const inputLinkCss = $("#inputLinkCss").val("");
+        const inputLinkStyle = $("#inputLinkStyle").val("");
+
+        pickPageModal.show();
+    }
+
+
+    function insertPageLink() {
+
+        const inputLinkText = $("#inputLinkText").val();
+        const switchNewWindow = $("#switchNewWindow").prop('checked');
+        const inputLinkCss = $("#inputLinkCss").val();
+        const inputLinkStyle = $("#inputLinkStyle").val();
+
+        if (typeof (inputLinkText) === "undefined" || inputLinkText === null || inputLinkText === "") {
+            $("#inputLinkTextError").show();
+            return false;
+        }
+
+        pickPageModal.hide();
+
+        var link = "<a target='_blank' href='/" + selectedAnchorData.url + "'>" + inputLinkText + "</a>";
+
+        // insert text here
+        editor.trigger('keyboard', 'type', { text: link })
+    }
+
     $(document).ready(function () {
+
+        pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
+
         var fieldId = "@Model.EditingField";
         if (fieldId !== "") {
             var fieldInfo = editFields.find(o => o.FieldId === fieldId);
@@ -262,6 +307,7 @@
             $(event.target).addClass("active");
         });
 
+        $("#btnOpenLink").show();
         $("#liBtnVersions").show();
 
         $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
