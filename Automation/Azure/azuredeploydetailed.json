@@ -187,6 +187,7 @@
                     ],
                     "properties": {
                         "ApplicationDbContextConnection": {
+                            // Primary read-write connection
                             "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('existingCosmosDbAccoutName')), '2019-12-12').connectionStrings[0].connectionString]",
                             "type": "Custom"
                         }
@@ -364,7 +365,8 @@
                     ],
                     "properties": {
                          "ApplicationDbContextConnection": {
-                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('existingCosmosDbAccoutName')), '2019-12-12').connectionStrings[0].connectionString]",
+                            // Primary read-only connection
+                            "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('existingCosmosDbAccoutName')), '2019-12-12').connectionStrings[2].connectionString]",
                             "type": "Custom"
                         }
                     }
