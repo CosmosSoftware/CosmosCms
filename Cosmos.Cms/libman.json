@@ -3,6 +3,15 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
+      "library": "monaco-editor@0.34.1",
+      "destination": "wwwroot/lib/monaco-editor/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "emmet-monaco-es@5.1.2",
+      "destination": "wwwroot/lib/emmet-monaco-es"
+    },
+    {
       "provider": "unpkg",
       "library": "microsoft/signalr@6.0.9",
       "destination": "wwwroot/lib/signalr/"
