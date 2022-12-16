@@ -33,7 +33,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         /// <summary>
         /// Input model
         /// </summary>
-        [BindProperty] 
+        [BindProperty]
         public InputModel Input { get; set; }
 
         /// <summary>

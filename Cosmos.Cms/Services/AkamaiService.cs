@@ -1,15 +1,21 @@
 ﻿using CDT.Akamai.Cdn;
-using Cosmos.BlobService.Config;
 using Cosmos.Cms.Common.Services.Configurations;
 using Microsoft.Extensions.Options;
 
 namespace Cosmos.Cms.Services
 {
+    /// <summary>
+    /// Akamai CDN service
+    /// </summary>
     public class AkamaiService
     {
         private readonly AkamaiCdnClient _client;
         private readonly IOptions<CosmosConfig> _options;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="options"></param>
         public AkamaiService(IOptions<CosmosConfig> options)
         {
             _options = options;

@@ -1,5 +1,4 @@
-﻿using Cosmos.Cms.Common.Data;
-using Cosmos.Cms.Common.Services.Configurations;
+﻿using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -113,7 +112,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         private async Task<bool> Ensure_RolesAndAdmin_Exists(IdentityUser user)
         {
 
-            foreach(var role in RequiredIdentityRoles.Roles)
+            foreach (var role in RequiredIdentityRoles.Roles)
             {
                 if (!await _roleManager.RoleExistsAsync(role))
                 {

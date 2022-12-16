@@ -1,6 +1,4 @@
-﻿using Cosmos.Cms.Common.Models;
-
-namespace Cosmos.Cms.Models
+﻿namespace Cosmos.Cms.Models
 {
     /// <summary>
     ///     JSON model returned have HTML editor saves content

@@ -39,7 +39,9 @@ namespace Cosmos.Cms.Models
         /// </summary>
         [Display(Name = "Generate random password")]
         public bool GenerateRandomPassword { get; set; } = true;
-
+        /// <summary>
+        /// User password
+        /// </summary>
         [Display(Name = "Password (recommended to use random instead)")]
         [DataType(DataType.Password)]
         public string Password { get; set; }

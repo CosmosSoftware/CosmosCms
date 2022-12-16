@@ -1,12 +1,10 @@
 ﻿
 using Cosmos.BlobService;
-using Cosmos.BlobService.Config;
 using Cosmos.BlobService.Models;
 using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Models;
-using Google.Rpc;
 using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -343,7 +341,7 @@ namespace Cosmos.Cms.Controllers
         /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult> Delete(DeleteBlobItemsViewModel model)
-        { 
+        {
             foreach (var item in model.Paths)
             {
                 if (item.EndsWith('/'))
@@ -725,7 +723,8 @@ namespace Cosmos.Cms.Controllers
 
                 debugResult.ApiResult = new ApiResult("Done!")
                 {
-                    IsSuccess = true, ReturnData = result
+                    IsSuccess = true,
+                    ReturnData = result
                 };
             }
             catch (Exception e)
@@ -765,7 +764,7 @@ namespace Cosmos.Cms.Controllers
 
                     foreach (var item in inputVarDefs)
                     {
-                        var value = (string) request.Headers[item.Name];
+                        var value = (string)request.Headers[item.Name];
                         value = string.IsNullOrEmpty(value) ? "" : value.Substring(0, item.MaxLength);
 
                         values.Add(new ApiArgument() { Key = item.Name, Value = value });
@@ -1191,7 +1190,7 @@ namespace Cosmos.Cms.Controllers
         public async Task<ActionResult> Upload(IEnumerable<IFormFile> files,
             string metaData, string path)
         {
-            
+
             try
             {
                 if (files == null || files.Any() == false)

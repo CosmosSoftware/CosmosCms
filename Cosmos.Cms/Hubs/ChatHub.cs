@@ -125,7 +125,7 @@ namespace Cosmos.Cms.Hubs
         /// <returns></returns>
         private async Task<string> GetContent(string id, string editorType)
         {
-            switch(editorType)
+            switch (editorType)
             {
                 case "ScriptEditor":
                     {
@@ -206,7 +206,7 @@ namespace Cosmos.Cms.Hubs
             string message = JsonConvert.SerializeObject(model);
             await Clients.Group(id).SendAsync("ArticleLock", message);
         }
-                        
+
         /// <summary>
         /// Removes a lock on an article
         /// </summary>
@@ -293,12 +293,12 @@ namespace Cosmos.Cms.Hubs
                         await NotifyRoomOfLock(id.ToString(), item.EditorType);
                     }
                 }
-            } 
+            }
             catch (Exception ex)
             {
                 var t = ex; // for debugging
             }
-            
+
             await base.OnDisconnectedAsync(exception);
         }
 

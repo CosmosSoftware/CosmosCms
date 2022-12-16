@@ -13,9 +13,9 @@ namespace Cosmos.Cms.Services
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public bool IsAbsoluteUri (string url)
+        public bool IsAbsoluteUri(string url)
         {
-            if (string.IsNullOrEmpty (url) || (url == "/"))
+            if (string.IsNullOrEmpty(url) || (url == "/"))
             {
                 return false;
             }
@@ -46,7 +46,7 @@ namespace Cosmos.Cms.Services
             if (absoluteUrl == null)
                 return html;
             if (absoluteUrl.IsAbsoluteUri == false)
-                throw new ArgumentException($"{absoluteUrl.ToString() } is not an absolute Uri.");
+                throw new ArgumentException($"{absoluteUrl.ToString()} is not an absolute Uri.");
 
             var htmlDoc = new HtmlAgilityPack.HtmlDocument();
             htmlDoc.LoadHtml(html);

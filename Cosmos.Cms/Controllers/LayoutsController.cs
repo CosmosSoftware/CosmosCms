@@ -629,7 +629,7 @@ namespace Cosmos.Cms.Controllers
 
             return RedirectToAction("Index", "Layouts");
         }
-                 
+
         /// <summary>
         /// Gets a community layout
         /// </summary>

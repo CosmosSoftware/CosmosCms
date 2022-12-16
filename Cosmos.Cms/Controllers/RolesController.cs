@@ -1,12 +1,8 @@
-﻿using AspNetCore.Identity.Services.SendGrid;
-using Cosmos.Cms.Controllers;
-using Cosmos.Cms.Models;
+﻿using Cosmos.Cms.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,7 +85,7 @@ namespace Cosmos.IdentityManagement.Website.Controllers
                     }
                 }
             }
-            
+
             var model = query.Skip(pageNo * pageSize).Take(pageSize);
 
             return View(await model.ToListAsync());

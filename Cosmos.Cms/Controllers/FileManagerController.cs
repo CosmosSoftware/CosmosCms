@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MimeTypes;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using System;
@@ -23,7 +24,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using MimeTypes;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -254,7 +254,7 @@ namespace Cosmos.Cms.Controllers
         public ActionResult Process([FromForm] string files, [FromQuery] string container = "$web")
         {
             var parsed = JsonConvert.DeserializeObject<FilePondMetadata>(files);
-            
+
             var mime = MimeTypeMap.GetMimeType(Path.GetExtension(parsed.FileName));
 
             var uid = $"{parsed.Path.TrimEnd('/')}|{parsed.RelativePath.TrimStart('/')}|{Guid.NewGuid().ToString()}|{mime}";
@@ -369,7 +369,7 @@ namespace Cosmos.Cms.Controllers
 
             return Ok();
         }
-         
+
         /// <summary>
         /// Simple file upload for CKEditor
         /// </summary>
@@ -429,9 +429,9 @@ namespace Cosmos.Cms.Controllers
                 return Json(ReturnSimpleErrorMessage(e.Message));
             }
 
-            
 
-            
+
+
         }
 
         private async Task<FileUploadMetaData> SaveImage(Image image, string directory, string fileName, string extension, string contentType)
@@ -789,7 +789,7 @@ namespace Cosmos.Cms.Controllers
         #endregion
 
         #region HELPER METHODS
-        
+
         /// <summary>
         ///     Encodes a URL
         /// </summary>
@@ -1089,7 +1089,7 @@ namespace Cosmos.Cms.Controllers
                 }
 
                 var metaData = await _storageContext.GetFileAsync(path);
-                
+
 
                 ViewData["PageTitle"] = metaData.Name;
                 ViewData[" Published"] = DateTimeOffset.FromFileTime(metaData.ModifiedUtc.Ticks);
@@ -1345,7 +1345,7 @@ namespace Cosmos.Cms.Controllers
 
                 fileMetaData.FileName = blobName;
                 fileMetaData.RelativePath = (path.TrimEnd('/') + "/" + fileMetaData.RelativePath);
-                
+
                 // Make sure full folder path exists
                 var parts = fileMetaData.RelativePath.Trim('/').Split('/');
                 var part = "";

@@ -1,5 +1,4 @@
-﻿using Cosmos.BlobService.Config;
-using Cosmos.Cms.Common.Services.Configurations;
+﻿using Cosmos.Cms.Common.Services.Configurations;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 

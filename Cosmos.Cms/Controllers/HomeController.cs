@@ -1,5 +1,4 @@
-﻿using Cosmos.BlobService.Config;
-using Cosmos.Cms.Common.Data;
+﻿using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services;
 using Cosmos.Cms.Common.Services.Configurations;
@@ -348,7 +347,7 @@ namespace Cosmos.Cms.Controllers
             int? pageNo,
             int? pageSize)
         {
-            var result = await _articleLogic.GetTOC(page, pageNo??0, pageSize??10, orderByPub??false);
+            var result = await _articleLogic.GetTOC(page, pageNo ?? 0, pageSize ?? 10, orderByPub ?? false);
             return Json(result);
         }
 

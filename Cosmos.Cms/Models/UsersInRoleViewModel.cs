@@ -28,10 +28,18 @@ namespace Cosmos.Cms.Models
         public List<SelectedUserViewModel> Users { get; set; } = new List<SelectedUserViewModel>();
     }
 
+    /// <summary>
+    /// Selected user view model
+    /// </summary>
     public class SelectedUserViewModel
     {
+        /// <summary>
+        /// User Id
+        /// </summary>
         public string Id { get; set; }
-
+        /// <summary>
+        /// User email address
+        /// </summary>
         public string Email { get; set; }
     }
 }

@@ -225,7 +225,7 @@ namespace Cosmos.Cms.Data.Logic
             {
                 bodyFooter.Remove();
             }
-            
+
             // Save what remains in the body
             var body = contentHtmlDocument.DocumentNode.SelectSingleNode("//body");
 

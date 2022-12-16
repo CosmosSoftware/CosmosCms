@@ -5,24 +5,18 @@
     /// </summary>
     public class EditorViewModel
     {
+        /// <summary>
+        /// File name
+        /// </summary>
         public string FieldName { get; set; }
+        /// <summary>
+        /// HTML content
+        /// </summary>
         public string Html { get; set; }
+        /// <summary>
+        /// Edit mode
+        /// </summary>
         public bool EditModeOn { get; set; }
     }
 
-    /// <summary>
-    /// Editor view model builder
-    /// </summary>
-    public static class EditorViewModelBuilder
-    {
-        public static EditorViewModel Build(string fieldName, bool editModeOn, string html)
-        {
-            return new()
-            {
-                FieldName = fieldName,
-                Html = html,
-                EditModeOn = editModeOn
-            };
-        }
-    }
 }

@@ -1,6 +1,5 @@
 ﻿using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Models.Attributes;
-using Cosmos.Cms.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.ComponentModel.DataAnnotations;

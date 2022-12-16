@@ -34,7 +34,7 @@ namespace Cosmos.Cms.Models
         /// New page title
         /// </summary>
         [Display(Name = "New page title:")]
-        [Required(AllowEmptyStrings =false)]
+        [Required(AllowEmptyStrings = false)]
         public string Title { get; set; }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using AspNetCore.Identity.Services.SendGrid;
-using Cosmos.Cms.Common.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -61,7 +60,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required] [EmailAddress] public string Email { get; set; }
+            [Required][EmailAddress] public string Email { get; set; }
         }
     }
 }

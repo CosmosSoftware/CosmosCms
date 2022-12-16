@@ -8,7 +8,6 @@ using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using NuGet.Packaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
