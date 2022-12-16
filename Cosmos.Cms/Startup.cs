@@ -305,7 +305,6 @@ namespace Cosmos.Cms
                 // Point to the route that will return the SignalR Hub.
                 endpoints.MapHub<ChatHub>("/chat");
 
-
                 endpoints.MapControllerRoute(
                     "MsValidation",
                     ".well-known/microsoft-identity-association.json",
