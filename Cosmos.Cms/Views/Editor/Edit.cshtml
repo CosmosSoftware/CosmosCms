@@ -56,17 +56,19 @@
     <div class="modal" id="modalVsCode" tabindex="-1">
         <div class="modal-dialog modal-lg modal-fullscreen-md-down">
             <div class="modal-content bg-dark text-white">
-                <div class="modal-header">
-                    <div class="navbar-brand text-light" href="#">
-                        <img src="/images/vscode.png" alt="Logo" height="22" class="d-inline-block align-text-top">
-                        Code Editor
-                    </div>
-                    <div class="d-flex">
-                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button id="btnApply" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Apply</button>
-                    </div>
-                </div>
-                <div class="modal-body">
+                <div class="modal-body" style="height: 80vh;position:relative;">
+                    <div class="navbar">
+                        <div class="container-fluid">
+                            <div class="navbar-brand text-light">
+                                <img src="/images/vscode.png" alt="Logo" height="20" class="d-inline-block align-text-top">
+                                Code Editor
+                            </div>
+                            <div class="d-flex">
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button id="btnApply" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Apply</button>
+                            </div>
+                        </div>
+                    </div>                    
                     <div id="editspace" class="m-editor-container" style="height: 80vh;"></div>
                 </div>
             </div>
