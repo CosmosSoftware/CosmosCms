@@ -8,11 +8,18 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Generate recovery code page model
+    /// </summary>
     public class GenerateRecoveryCodesModel : PageModel
     {
         private readonly ILogger<GenerateRecoveryCodesModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Conostructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="logger"></param>
         public GenerateRecoveryCodesModel(
             UserManager<IdentityUser> userManager,
             ILogger<GenerateRecoveryCodesModel> logger)
@@ -20,11 +27,19 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Recovery codes
+        /// </summary>
         [TempData] public string[] RecoveryCodes { get; set; }
-
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// Get method handler
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -40,7 +55,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             return Page();
         }
-
+        /// <summary>
+        /// POST method handler
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);

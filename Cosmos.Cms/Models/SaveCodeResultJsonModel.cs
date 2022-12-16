@@ -22,11 +22,6 @@ namespace Cosmos.Cms.Models
         public bool IsValid { get; set; }
 
         /// <summary>
-        ///     If applicable, CDN purge result
-        /// </summary>
-        public CdnPurgeViewModel CdnResult { get; set; }
-
-        /// <summary>
         ///     Error count
         /// </summary>
         public int ErrorCount { get; set; }

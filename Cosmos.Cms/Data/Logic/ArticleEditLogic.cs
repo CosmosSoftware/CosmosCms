@@ -185,7 +185,7 @@ namespace Cosmos.Cms.Data.Logic
         /// like a map, chart, graph, etc. to be uneditable on a page while the text around it is.
         /// </para>
         /// </remarks>
-        private string Ensure_ContentEditable_IsMarked(string content)
+        public string Ensure_ContentEditable_IsMarked(string content)
         {
             if (string.IsNullOrEmpty(content) || string.IsNullOrWhiteSpace(content))
             {

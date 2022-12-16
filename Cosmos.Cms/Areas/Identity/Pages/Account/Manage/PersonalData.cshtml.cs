@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Personal data model
+    /// </summary>
     public class PersonalDataModel : PageModel
     {
         private readonly ILogger<PersonalDataModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="logger"></param>
         public PersonalDataModel(
             UserManager<IdentityUser> userManager,
             ILogger<PersonalDataModel> logger)
@@ -18,7 +25,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _logger = logger;
         }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);

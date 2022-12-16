@@ -24,7 +24,9 @@ namespace Cosmos.Cms.Models
         [Required(ErrorMessage = "Please select at least one.")]
         [Display(Name = "New Users for Role")]
         public string[] UserIds { get; set; }
-
+        /// <summary>
+        /// User list
+        /// </summary>
         public List<SelectedUserViewModel> Users { get; set; } = new List<SelectedUserViewModel>();
     }
 

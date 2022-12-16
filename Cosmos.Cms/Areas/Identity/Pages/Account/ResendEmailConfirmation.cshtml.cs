@@ -12,24 +12,38 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Resend email confirmation page model
+    /// </summary>
     [AllowAnonymous]
     public class ResendEmailConfirmationModel : PageModel
     {
         private readonly IEmailSender _emailSender;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="emailSender"></param>
         public ResendEmailConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _emailSender = emailSender;
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         [BindProperty] public InputModel Input { get; set; }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
         public void OnGet()
         {
         }
-
+        /// <summary>
+        /// POST method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid) return Page();
@@ -57,9 +71,14 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
             return Page();
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// Email address
+            /// </summary>
             [Required][EmailAddress] public string Email { get; set; }
         }
     }

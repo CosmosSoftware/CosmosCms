@@ -10,11 +10,18 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Download personal data page model
+    /// </summary>
     public class DownloadPersonalDataModel : PageModel
     {
         private readonly ILogger<DownloadPersonalDataModel> _logger;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="logger"></param>
         public DownloadPersonalDataModel(
             UserManager<IdentityUser> userManager,
             ILogger<DownloadPersonalDataModel> logger)
@@ -22,7 +29,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Handles post method
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);

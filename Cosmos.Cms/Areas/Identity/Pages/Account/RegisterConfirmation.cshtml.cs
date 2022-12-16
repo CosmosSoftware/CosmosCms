@@ -7,24 +7,42 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Registration confirmation page model
+    /// </summary>
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
         private readonly IEmailSender _sender;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="sender"></param>
         public RegisterConfirmationModel(UserManager<IdentityUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;
         }
-
+        /// <summary>
+        /// Email address
+        /// </summary>
         public string Email { get; set; }
-
+        /// <summary>
+        /// Should display confirmation account link
+        /// </summary>
         public bool DisplayConfirmAccountLink { get; set; }
-
+        /// <summary>
+        /// Email confirmation URL
+        /// </summary>
         public string EmailConfirmationUrl { get; set; }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
         {
             if (email == null) return RedirectToPage("/Index");

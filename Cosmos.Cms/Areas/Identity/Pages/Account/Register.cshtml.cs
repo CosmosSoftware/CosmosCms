@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Register page model
+    /// </summary>
     [AllowAnonymous]
     public class RegisterModel : PageModel
     {
@@ -29,7 +32,15 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="roleManager"></param>
+        /// <param name="signInManager"></param>
+        /// <param name="logger"></param>
+        /// <param name="emailSender"></param>
+        /// <param name="options"></param>
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -45,13 +56,23 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _options = options;
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         [BindProperty] public InputModel Input { get; set; }
-
+        /// <summary>
+        /// Return URL
+        /// </summary>
         public string ReturnUrl { get; set; }
-
+        /// <summary>
+        /// External logins
+        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
@@ -59,7 +80,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
 
             return Page();
         }
-
+        /// <summary>
+        /// POST method handler
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
@@ -175,18 +200,25 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// Email address
+            /// </summary>
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
-
+            /// <summary>
+            /// Password
+            /// </summary>
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.",
                 MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
-
+            /// <summary>
+            /// Password is confirmed
+            /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]

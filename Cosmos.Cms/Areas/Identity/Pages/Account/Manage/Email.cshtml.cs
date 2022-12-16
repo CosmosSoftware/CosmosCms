@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// User email page model
+    /// </summary>
     public class EmailModel : PageModel
     {
         private readonly IEmailSender _emailSender;
@@ -32,17 +35,31 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             //_signInManager = signInManager;
             _emailSender = emailSender;
         }
-
+        /// <summary>
+        /// User name
+        /// </summary>
         public string Username { get; set; }
-
+        /// <summary>
+        /// User email address
+        /// </summary>
         public string Email { get; set; }
-
+        /// <summary>
+        /// User's email is confirmed
+        /// </summary>
         public bool IsEmailConfirmed { get; set; }
-
+        /// <summary>
+        /// User account status
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// Input model
+        /// </summary>
         [BindProperty] public InputModel Input { get; set; }
-
+        /// <summary>
+        /// Load method
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         private async Task LoadAsync(IdentityUser user)
         {
             var email = await _userManager.GetEmailAsync(user);
@@ -55,7 +72,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
         }
-
+        /// <summary>
+        /// Get method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -64,7 +84,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             await LoadAsync(user);
             return Page();
         }
-
+        /// <summary>
+        /// Post method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostChangeEmailAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -98,7 +121,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             StatusMessage = "Your email is unchanged.";
             return RedirectToPage();
         }
-
+        /// <summary>
+        /// Handles post method that sends an email verification
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostSendVerificationEmailAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -127,9 +153,14 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// New email address
+            /// </summary>
             [Required]
             [EmailAddress]
             [Display(Name = "New email")]

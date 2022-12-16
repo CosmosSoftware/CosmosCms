@@ -1,4 +1,5 @@
 ﻿using Cosmos.Cms.Common.Data;
+using Cosmos.Cms.Common.Data.Logic;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
 using Cosmos.Cms.Controllers;
@@ -234,15 +235,33 @@ namespace CDT.Cosmos.Cms.Controllers
         {
             var entity = await _dbContext.Templates.FirstOrDefaultAsync(f => f.Id == Id);
 
-            var user = await _userManager.GetUserAsync(User);
-            var model = await _articleLogic.Create("Template Preview", user.Id);
-            model.Content = entity?.Content;
-            model.EditModeOn = false;
-            model.ReadWriteMode = true;
-            model.PreviewMode = true;
+            var guid = Guid.NewGuid();
+
+            //
+            // Template preview
+            //
+            ArticleViewModel model = new ArticleViewModel
+            {
+                ArticleNumber = 1,
+                LanguageCode = "",
+                LanguageName = "",
+                CacheDuration = 10,
+                Content = _articleLogic.Ensure_ContentEditable_IsMarked(entity.Content),
+                StatusCode = StatusCodeEnum.Active,
+                Id = entity.Id,
+                Published = DateTimeOffset.UtcNow,
+                Title = entity.Title,
+                UrlPath = guid.ToString(),
+                Updated = DateTimeOffset.UtcNow,
+                VersionNumber = 1,
+                HeadJavaScript = "",
+                FooterJavaScript = "",
+                Layout = await _articleLogic.GetDefaultLayout()
+            };
+
             ViewData["UseGoogleTranslate"] = false;
 
-            return View(model);
+            return View("~/Views/Home/Preview.cshtml", model);
         }
     }
 }

@@ -176,6 +176,7 @@ namespace Cosmos.Cms.Hubs
         /// Joins users to an editing "room".
         /// </summary>
         /// <param name="id">Article record number is the room name.</param>
+        /// <param name="editorType"></param>
         /// <returns></returns>
         public async Task JoinRoom(string id, string editorType)
         {

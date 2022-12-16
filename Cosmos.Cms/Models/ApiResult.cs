@@ -8,6 +8,10 @@ namespace Cosmos.Cms.Models
     /// </summary>
     public class ApiResult
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="returnData"></param>
         public ApiResult(string returnData)
         {
             ReturnData = returnData;

@@ -10,13 +10,21 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Enable authenticator page model
+    /// </summary>
     public class EnableAuthenticatorModel : PageModel
     {
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
         private readonly ILogger<EnableAuthenticatorModel> _logger;
         private readonly UrlEncoder _urlEncoder;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="logger"></param>
+        /// <param name="urlEncoder"></param>
         public EnableAuthenticatorModel(
             UserManager<IdentityUser> userManager,
             ILogger<EnableAuthenticatorModel> logger,
@@ -26,17 +34,30 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _logger = logger;
             _urlEncoder = urlEncoder;
         }
-
+        /// <summary>
+        /// Shared key
+        /// </summary>
         public string SharedKey { get; set; }
-
+        /// <summary>
+        /// Authenticator URI
+        /// </summary>
         public string AuthenticatorUri { get; set; }
-
+        /// <summary>
+        /// Recovery codes
+        /// </summary>
         [TempData] public string[] RecoveryCodes { get; set; }
-
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         [BindProperty] public InputModel Input { get; set; }
-
+        /// <summary>
+        /// Get method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -46,7 +67,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             return Page();
         }
-
+        /// <summary>
+        /// Post method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -86,7 +110,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             return RedirectToPage("./TwoFactorAuthentication");
         }
-
+        /// <summary>
+        /// Load shared key and QR code URI method
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         private async Task LoadSharedKeyAndQrCodeUriAsync(IdentityUser user)
         {
             // Load the authenticator key & QR code URI to display on the form
@@ -126,9 +154,14 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
                 _urlEncoder.Encode(email),
                 unformattedKey);
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// Code
+            /// </summary>
             [Required]
             [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.",
                 MinimumLength = 6)]

@@ -45,37 +45,37 @@
                         Manage
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark" id="ddEditMenu">
-                        <li class="dropdown-header">Website Content</li>
+                        <li class="dropdown-header bg-dark text-light">Website Content</li>
                         <li>
-                            <a class="dropdown-item" title="List of pages on this website." href="/Editor/Index">Web Pages</a>
+                            <a class="dropdown-item" title="List of pages on this website." href="/Editor/Index">Pages</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Website Files</a>
+                            <a class="dropdown-item" title="Open files stored on this website." href="/FileManager/Index">Files</a>
                         </li>
                         @if (isAdministrator || isEditor)
                         {
                             <li>
-                                <a class="dropdown-item" title="Manage page templates" href="/Templates/Index">Page Templates</a>
+                                <a class="dropdown-item" title="Manage page templates" href="/Templates/Index">Templates</a>
                             </li>
                             <li>
-                                <a class="dropdown-item" title="Manage layouts" href="/Layouts/Index">Website Layouts</a>
+                                <a class="dropdown-item" title="Manage layouts" href="/Layouts/Index">Layouts</a>
                             </li>
                         }
                         <li>
-                            <a id="btnPublicWebsite" class="dropdown-item" title="Open public (publisher) website" href="" target="_blank">Open Public Website</a>
+                            <a id="btnPublicWebsite" class="dropdown-item" title="Open public (publisher) website" href="" target="_blank">Public Website</a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li class="dropdown-header">NodeJS</li>
+                        <li class="dropdown-header bg-dark text-light">NodeJS</li>
                         <li>
                             <a class="dropdown-item" title="Manage API end point." href="/Code/Index">API Endpoints</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" title="Manage NodeJS API source code." href="/Code/Source">Source Code files</a>
+                            <a class="dropdown-item" title="Manage NodeJS API source code." href="/Code/Source">Source Code</a>
                         </li>
                         @if (isAdministrator)
                         {
                             <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-header">System Admin</li>
+                            <li class="dropdown-header bg-dark text-light">System Admin</li>
                             <li>
                                 <a class="dropdown-item" title="Manage user accounts." href="/Users/Index">Users</a>
                             </li>

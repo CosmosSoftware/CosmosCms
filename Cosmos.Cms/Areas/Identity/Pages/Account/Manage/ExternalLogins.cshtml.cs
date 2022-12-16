@@ -9,11 +9,18 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// External logins model
+    /// </summary>
     public class ExternalLoginsModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="signInManager"></param>
         public ExternalLoginsModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager)
@@ -21,15 +28,26 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _signInManager = signInManager;
         }
-
+        /// <summary>
+        /// User's current login list
+        /// </summary>
         public IList<UserLoginInfo> CurrentLogins { get; set; }
-
+        /// <summary>
+        /// Other login list
+        /// </summary>
         public IList<AuthenticationScheme> OtherLogins { get; set; }
-
+        /// <summary>
+        /// Show remove button
+        /// </summary>
         public bool ShowRemoveButton { get; set; }
-
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// Handles get method
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -42,7 +60,12 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             ShowRemoveButton = user.PasswordHash != null || CurrentLogins.Count > 1;
             return Page();
         }
-
+        /// <summary>
+        /// Handles post remove login method
+        /// </summary>
+        /// <param name="loginProvider"></param>
+        /// <param name="providerKey"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostRemoveLoginAsync(string loginProvider, string providerKey)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -59,7 +82,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             StatusMessage = "The external login was removed.";
             return RedirectToPage();
         }
-
+        /// <summary>
+        /// Handles post link login method
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostLinkLoginAsync(string provider)
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -72,7 +99,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
                     _userManager.GetUserId(User));
             return new ChallengeResult(provider, properties);
         }
-
+        /// <summary>
+        /// Handles get link login callback method
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<IActionResult> OnGetLinkLoginCallbackAsync()
         {
             var user = await _userManager.GetUserAsync(User);

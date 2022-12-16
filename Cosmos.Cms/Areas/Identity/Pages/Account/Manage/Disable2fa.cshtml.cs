@@ -49,7 +49,11 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             return Page();
         }
-
+        /// <summary>
+        /// Handles page post method
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);

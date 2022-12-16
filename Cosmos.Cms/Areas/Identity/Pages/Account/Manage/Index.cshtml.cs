@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Manage account index page model
+    /// </summary>
     public class IndexModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="signInManager"></param>
         public IndexModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager)
@@ -18,13 +25,23 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _signInManager = signInManager;
         }
-
+        /// <summary>
+        /// User name
+        /// </summary>
         public string Username { get; set; }
-
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         [BindProperty] public InputModel Input { get; set; }
-
+        /// <summary>
+        /// Load user method
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         private async Task LoadAsync(IdentityUser user)
         {
             var userName = await _userManager.GetUserNameAsync(user);
@@ -37,7 +54,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
                 PhoneNumber = phoneNumber
             };
         }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -46,7 +66,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             await LoadAsync(user);
             return Page();
         }
-
+        /// <summary>
+        /// POST method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -73,9 +96,14 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }
-
+        /// <summary>
+        /// Page input model
+        /// </summary>
         public class InputModel
         {
+            /// <summary>
+            /// Phone number
+            /// </summary>
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }

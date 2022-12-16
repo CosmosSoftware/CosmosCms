@@ -33,6 +33,7 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account
         /// <param name="logger"></param>
         /// <param name="userManager"></param>
         /// <param name="options"></param>
+        /// <param name="dbContext"></param>
         public LoginModel(SignInManager<IdentityUser> signInManager,
             ILogger<LoginModel> logger,
             UserManager<IdentityUser> userManager, IOptions<SiteSettings> options, ApplicationDbContext dbContext)

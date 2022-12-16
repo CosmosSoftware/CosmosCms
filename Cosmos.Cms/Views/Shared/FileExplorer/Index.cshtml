@@ -35,7 +35,7 @@
 
     var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, Url.Action(action, controller));
 }
-<link href="~/lib/filepond/filepond.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond@4/dist/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
 <div class="container mt-3">
     <div class="row bg-dark">
@@ -236,8 +236,8 @@
 </form>
 
 <!-- Before the end of the body tag -->
-<script src="~/lib/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.min.js"></script>
-<script src="~/lib/filepond/filepond.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.js"></script>
+<script src="https://unpkg.com/filepond@4/dist/filepond.js"></script>
 
 <div class="modal mt-5" id="checkFirstModal" tabindex="-1">
     <div class="modal-dialog">

@@ -110,17 +110,7 @@ namespace Cosmos.Cms.Controllers
 
             return View(model);
         }
-
-        /// <summary>
-        /// After a layout change, refresh everything!
-        /// </summary>
-        /// <returns></returns>
-        //private async Task MakeGlobalChange()
-        //{
-        //    //_ = await base.UpdateTimeStamps();
-        //    _ = await FlushCdn(_logger, new[] { "/*" });
-        //}
-
+                
         /// <summary>
         /// Gets a list of layouts
         /// </summary>

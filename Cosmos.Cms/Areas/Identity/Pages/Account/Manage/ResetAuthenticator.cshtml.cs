@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 
 namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 {
+    /// <summary>
+    /// Reset authenticator page model
+    /// </summary>
     public class ResetAuthenticatorModel : PageModel
     {
         private readonly ILogger<ResetAuthenticatorModel> _logger;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <param name="signInManager"></param>
+        /// <param name="logger"></param>
         public ResetAuthenticatorModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
@@ -21,9 +29,14 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
             _logger = logger;
         }
-
+        /// <summary>
+        /// Status message
+        /// </summary>
         [TempData] public string StatusMessage { get; set; }
-
+        /// <summary>
+        /// GET method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -31,7 +44,10 @@ namespace Cosmos.Cms.Areas.Identity.Pages.Account.Manage
 
             return Page();
         }
-
+        /// <summary>
+        /// POST method handler
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
