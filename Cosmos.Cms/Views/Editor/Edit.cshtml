@@ -81,11 +81,11 @@
     var next;
     var editor;
     var fileMgrPopup;
-    var saveFirstModal = null;
-    var versionsModal = null;
-    var vsCodeModal = null;
-    var pickPageModal = null;
     var ckeditor = null;
+    
+    let versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
+    let vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
+    let pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -158,11 +158,12 @@
     };
 
     $(document).ready(function (e) {
+                
+        $("#lblTitle").html("Page URL: ");
+        $("#modalChgTitleHeader").html("Change page URL: ");
+        $("#newTitle").html("New page URL: ");
+        $("#divUrlTitleExamples").show();
 
-        saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
-        versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
-        vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
-        pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
 
         $("#btnCcmsCodeEditor").show();
 

@@ -58,7 +58,7 @@
     var fieldId;
     var fieldName;
     var ccmsEditorIsLocked = false;
-    var pickPageModal = null;
+    let pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -175,7 +175,7 @@
                     $("#VersionNumber").val(response.Model.VersionNumber);
                     $("#Content").val(response.Model.Content);
                     $("#RoleList").val(response.Model.RoleList);
-                    $("#Title").val(response.Model.Title);
+                    $("#Title").val("/" + response.Model.Title);
                     $("#Published").val(response.Model.Published);
                     $("#Published").val(response.Model.IsValid);
                     $("#HeadJavaScript").val(response.Model.HeadJavaScript);
@@ -262,7 +262,6 @@
         pickPageModal.show();
     }
 
-
     function insertPageLink() {
 
         const inputLinkText = $("#inputLinkText").val();
@@ -285,7 +284,10 @@
 
     $(document).ready(function () {
 
-        pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
+        $("#lblTitle").html("Page URL: ");
+        $("#modalChgTitleHeader").html("Change page URL: ");
+        $("#newTitle").html("New page URL: ");
+        $("#divUrlTitleExamples").show();
 
         var fieldId = "@Model.EditingField";
         if (fieldId !== "") {

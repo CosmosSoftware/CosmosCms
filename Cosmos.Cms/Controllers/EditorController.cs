@@ -266,7 +266,7 @@ namespace Cosmos.Cms.Controllers
             ViewData["ArticleTitle"] = article.Title;
             ViewData["ArticleId"] = id.Value;
 
-            return View(await query.ToListAsync());
+            return View(await query.Skip(pageNo * pageSize).Take(pageSize).ToListAsync());
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            return View(query.ToList());
+            return View(query.Skip(pageNo * pageSize).Take(pageSize).ToList());
         }
         #endregion
 
@@ -412,7 +412,6 @@ namespace Cosmos.Cms.Controllers
 
             return Json(model);
         }
-
 
         /// <summary>
         ///     Creates a <see cref="CreatePageViewModel" /> used to create a new article.
@@ -717,34 +716,6 @@ namespace Cosmos.Cms.Controllers
             return View(model);
         }
 
-        ///// <summary>
-        ///// Read logs
-        ///// </summary>
-        ///// <param name="request"></param>
-        ///// <returns></returns>
-        //[Authorize(Roles = "Administrators, Editors")]
-        //public async Task<IActionResult> Read_Logs([DataSourceRequest] DataSourceRequest request)
-        //{
-        //    var data = await _dbContext.ArticleLogs
-        //        .OrderByDescending(o => o.DateTimeStamp)
-        //        .Select(s => new
-        //        {
-        //            s.Id,
-        //            s.ActivityNotes,
-        //            s.DateTimeStamp,
-        //            s.IdentityUserId
-        //        }).ToListAsync();
-
-        //    var result = await data.Select(s => new ArticleLogJsonModel
-        //    {
-        //        Id = s.Id,
-        //        ActivityNotes = s.ActivityNotes,
-        //        DateTimeStamp = s.DateTimeStamp.ToUniversalTime(),
-        //        IdentityUserId = s.IdentityUserId
-        //    }).ToDataSourceResultAsync(request);
-        //    return Json(result);
-        //}
-
         #region SAVING CONTENT METHODS
 
         #endregion
@@ -787,11 +758,12 @@ namespace Cosmos.Cms.Controllers
                     var model = await _articleLogic.Get(pageId, EnumControllerName.Edit, await GetUserId());
                     ViewData["LastPubDateTime"] = await GetLastPublishingDate(model.ArticleNumber);
 
-                    ViewData["PageTitle"] = model.Title;
+                    ViewData["PageTitle"] = model.UrlPath == "root" ? "root" : model.Title;
                     ViewData["Published"] = model.Published;
 
                     // Override defaults
                     model.EditModeOn = true;
+                    model.Title = model.UrlPath == "root" ? "root" : model.Title;
 
                     // Authors cannot edit published articles
                     if (model.Published.HasValue && User.IsInRole("Authors"))
@@ -828,7 +800,6 @@ namespace Cosmos.Cms.Controllers
             // Next two lines detect any HTML errors with each.
             // Errors are saved in ModelState.
             model.Title = BaseValidateHtml("Title", model.Title);
-            //model.Content = BaseValidateHtml("Content", model.Content);
 
             // Next pull the original.
             var original = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
@@ -843,6 +814,10 @@ namespace Cosmos.Cms.Controllers
                 //
                 // Now save the changes to the database here.
                 //
+                if (original.UrlPath == "root")
+                {
+                    model.Title = original.Title;
+                }
                 var result = await _articleLogic.UpdateOrInsert(model, userId, model.SaveAsNewVersion);
 
                 //
@@ -853,7 +828,7 @@ namespace Cosmos.Cms.Controllers
                 model.ArticleNumber = result.Model.ArticleNumber;
                 model.VersionNumber = result.Model.VersionNumber;
                 model.Id = result.Model.Id;
-                model.Title = result.Model.Title;
+                model.Title = model.UrlPath == "root" ? "root" : model.Title;
                 model.Published = result.Model.Published;
 
 
@@ -958,7 +933,7 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["Version"] = article.VersionNumber;
 
-            ViewData["PageTitle"] = article.Title;
+            ViewData["PageTitle"] = article.UrlPath == "root" ? "root" : article.Title;
             ViewData["Published"] = article.Published;
             ViewData["LastPubDateTime"] = await GetLastPublishingDate(article.ArticleNumber);
 
@@ -966,7 +941,7 @@ namespace Cosmos.Cms.Controllers
             {
                 Id = article.Id,
                 ArticleNumber = article.ArticleNumber,
-                Title = article.Title,
+                Title = article.UrlPath == "root" ? "root" : article.Title,
                 Published = article.Published,
                 RoleList = article.RoleList,
                 EditorTitle = article.Title,
@@ -1043,7 +1018,7 @@ namespace Cosmos.Cms.Controllers
                     Id = model.Id,
                     ArticleNumber = article.ArticleNumber,
                     Content = model.Content,
-                    Title = model.Title,
+                    Title = article.UrlPath == "root" ? article.Title : model.Title.Trim('/'),
                     RoleList = model.RoleList,
                     Published = model.Published,
                     Expires = article.Expires,
@@ -1070,7 +1045,7 @@ namespace Cosmos.Cms.Controllers
                     Id = result.Model.Id,
                     Published = result.Model.Published,
                     RoleList = result.Model.RoleList,
-                    Title = result.Model.Title
+                    Title = article.UrlPath == "root" ? "root" : model.Title.Trim('/')
                 };
 
             }

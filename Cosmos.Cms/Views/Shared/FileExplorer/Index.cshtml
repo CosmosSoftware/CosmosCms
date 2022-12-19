@@ -15,6 +15,7 @@
     var pageSize = (int)ViewData["pageSize"];
     var controller = (string)ViewData["Controller"];
     var action = (string)ViewData["Action"];
+    var target = Context.Request.Query["target"];
 
     if (directoryOnly)
     {
@@ -33,7 +34,7 @@
         pathParts.AddRange(pathPrefix.Trim('/').Split('/').Where(w => w != "/"));
     }
 
-    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, Url.Action(action, controller));
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, Url.Action(action, controller) + "?target=" + target);
 }
 <link href="https://unpkg.com/filepond@4/dist/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
@@ -93,7 +94,10 @@
     {
         <div class="row">
             <div class="col-md-12 justify-content-center text-light">
-                <div id="fpMesageSpace" class="alert alert-primary" role="alert" style="display:none"></div>
+                <button id="btnProgress" class="btn btn-sm  btn-primary" type="button" disabled style="display:none;">
+                    <span class="spinner-border spinner-border-sm text-light" role="status" aria-hidden="true"></span>
+                    <span role="status" id="fpMesageSpace"></span>
+                </button>
             </div>
         </div>
         <div class="row">
@@ -174,6 +178,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if (Model.Count == 0)
+                        {
+                            <tr scope="row">
+                                <td colspan="5">
+                                    <div class="d-flex justify-content-center">
+                                       <h4> ** EMPTY (no items to list) ** </h4>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                         @foreach (var row in Model)
                         {
                             <tr scope="row">
@@ -317,6 +331,8 @@
     let busyModal = new bootstrap.Modal(document.getElementById('busyModal'));
     let renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     let checkFirstModal = new bootstrap.Modal(document.getElementById('checkFirstModal'));
+    var totalFileCount = 0;
+    var loadedFileCount = 0;
 
     // shows a modal, closes all others.
     function showModal(name, message, title) {
@@ -388,24 +404,41 @@
             return;
         }
 
+        replaceCssClass($("#btnProgress"), "btn-success", "btn-primary");
+
         var relativePath = file.relativePath;
         file.setMetadata("relativePath", relativePath);
         file.setMetadata("fileName", file.filename);
-        filePondMessage("Adding files...");
+        // Add up the total count of files to be uploaded
+        totalFileCount++;
+        if (totalFileCount > 1) {
+            filePondMessage("Preparing to upload " + totalFileCount + " files...");
+        } else {
+            filePondMessage("Preparing to file...");
+        }
+
         console.log('File added', file);
     });
 
     pond.on('processfilestart', (e) => {
         const metadata = e.getMetadata();
-        filePondMessage("Uploading files...");
+    });
+
+    pond.on('processfile', (file) => {
+        
+        replaceCssClass($("#btnProgress"), "btn-primary", "btn-success");
+
+        loadedFileCount++;
+        const percent = Math.round((loadedFileCount / totalFileCount) * 100);
+        filePondMessage("Uploaded " + loadedFileCount + " of " + totalFileCount + " files (" + percent + "%).");
     });
 
     function filePondMessage(message) {
         $("#fpMesageSpace").html(message);
         if (message === "") {
-            $("#fpMesageSpace").hide();
+            $("#btnProgress").hide();
         } else {
-            $("#fpMesageSpace").show();
+            $("#btnProgress").show();
         }
     }
 
@@ -571,26 +604,51 @@
 
         if (arrayLength > 0) {
             $("#btnClear").prop('disabled', false);
+            replaceCssClass($("#btnClear"), "btn-secondary", "btn-primary");
+
             $("#btnDelete").prop('disabled', false);
             $("#btnDelete").prop('title', "Click to delete.");
+            replaceCssClass($("#btnDelete"), "btn-secondary", "btn-primary");
+
             $("#btnMove").prop('disabled', false);
             $("#btnMove").prop('title', "Click to move.");
+            replaceCssClass($("#btnMove"), "btn-secondary", "btn-primary");
+
             $("#btnRename").prop('title', "Select only one item.");
+            replaceCssClass($("#btnRename"), "btn-primary", "btn-secondary");
         } else {
             $("#btnClear").prop('disabled', true);
+            replaceCssClass($("#btnClear"), "btn-primary", "btn-secondary");
+
             $("#btnDelete").prop('disabled', true);
+            replaceCssClass($("#btnDelete"), "btn-primary", "btn-secondary");
+
             $("#btnMove").prop('disabled', true);
+            replaceCssClass($("#btnMove"), "btn-primary", "btn-secondary");
+
             $("#btnRename").prop('title', "Select one item.");
+            replaceCssClass($("#btnRename"), "btn-primary", "btn-secondary");
         }
 
         if (arrayLength === 1) {
             $("#btnMoveItems").prop('disabled', false);
+            replaceCssClass($("#btnMoveItems"), "btn-secondary", "btn-primary");
+
             $("#btnRename").prop('disabled', false);
             $("#btnRename").prop('title', "Click to rename.");
+            replaceCssClass($("#btnRename"), "btn-secondary", "btn-primary");
         } else {
             $("#btnRename").prop('disabled', true);
+            replaceCssClass($("#btnRename"), "btn-primary", "btn-secondary");
+
             $("#btnMoveItems").prop('disabled', true);
+            replaceCssClass($("#btnMoveItems"), "btn-primary", "btn-secondary");
         }
+    }
+
+    function replaceCssClass(element, oldClass, newClass) {
+        $(element).removeClass(oldClass);
+        $(element).addClass(newClass);
     }
 
     var next = null;
