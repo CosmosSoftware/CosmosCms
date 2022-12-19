@@ -29,7 +29,7 @@
 
 <form id="frmSave" asp-action="EditCode" asp-controller="Templates">
     <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="EditorTitle" />
+    <input type="hidden" asp-for="Title" />
     <input type="hidden" asp-for="Content" />
 </form>
 
@@ -138,9 +138,6 @@
         // Saving publish date with time zone information
         savePublishDateTime();
 
-        // Save title
-        $("#Title").val($("#tbTitle").val());
-
         var form = $('#frmSave');
 
         if (editor) {
@@ -223,8 +220,10 @@
 
         $('#tbPublished').prop("disabled", "true");
 
-        $("#lblTitle").hide();
-        $("#tbTitle").val("@Model.EditorTitle");
+
+        $("#divTitleGroup").show();
+        $("#divTitle").html("@Model.EditorTitle");
+        $("#Title").val("@Model.EditorTitle");
 
         $("[data-ccms-fieldname]").click(function (event) {
             var name = $(event.target).attr("data-ccms-fieldname");

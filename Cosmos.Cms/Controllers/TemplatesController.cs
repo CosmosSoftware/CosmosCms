@@ -121,11 +121,16 @@ namespace CDT.Cosmos.Cms.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Create()
         {
+
+            var defautLayout = await _dbContext.Layouts.FirstOrDefaultAsync(f => f.IsDefault);
+
             var entity = new Template
             {
                 Title = "New Template " + await _dbContext.Templates.CountAsync(),
                 Description = "<p>New template, please add descriptive and helpful information here.</p>",
-                Content = "<p>" + LoremIpsum.SubSection1 + "</p>"
+                Content = "<p>" + LoremIpsum.SubSection1 + "</p>",
+                LayoutId = defautLayout?.Id,
+                CommunityLayoutId = defautLayout?.CommunityLayoutId
             };
             _dbContext.Templates.Add(entity);
             await _dbContext.SaveChangesAsync();
@@ -144,7 +149,8 @@ namespace CDT.Cosmos.Cms.Controllers
             var model = new TemplateCodeEditorViewModel
             {
                 Id = entity.Id,
-                EditorTitle = entity.Title,
+                EditorTitle = "Template Editor",
+                Title = entity.Title,
                 EditorFields = new List<EditorField>
                 {
                     new()
@@ -179,7 +185,7 @@ namespace CDT.Cosmos.Cms.Controllers
 
                 var entity = await _dbContext.Templates.FirstOrDefaultAsync(f => f.Id == model.Id);
 
-                entity.Title = model.EditorTitle;
+                entity.Title = model.Title;
                 entity.Content = model.Content;
 
                 await _dbContext.SaveChangesAsync();
@@ -187,7 +193,8 @@ namespace CDT.Cosmos.Cms.Controllers
                 model = new TemplateCodeEditorViewModel
                 {
                     Id = entity.Id,
-                    EditorTitle = entity.Title,
+                    Title = entity.Title,
+                    EditorTitle = "Template Editor",
                     EditorFields = new List<EditorField>
                 {
                     new()

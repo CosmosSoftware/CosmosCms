@@ -30,10 +30,15 @@ namespace Cosmos.Cms.Models
         /// <summary>
         /// Editor title
         /// </summary>
-        /// 
         [Required]
         [MinLength(2)]
         public string EditorTitle { get; set; }
+        /// <summary>
+        /// Template title
+        /// </summary>
+        [Required]
+        [MinLength(2)]
+        public string Title { get; set; }
         /// <summary>
         /// List of editor fields
         /// </summary>

@@ -113,7 +113,6 @@
                 <div id="divTitleGroup" class="input-group input-group-sm" style="display:none">
                     <span class="input-group-text" id="lblTitle" style="height:31px;">Title:</span>
                     <div class="form-control" id="divTitle">@ViewData["PageTitle"]</div>
-                    <input type="hidden" name="tbTitle" id="tbTitle" value="@ViewData["PageTitle"]" />
                 </div>
                 <div id="divPublihedTitleGroup" class="input-group input-group-sm" style="display:none">
                     <div id="lblPublished" class="input-group-text" style="height:31px;">Published:</div>
@@ -381,8 +380,8 @@
             $("#divTitleGroup").click(function () {
                 $("#newTitleValidation").html();
                 $("#newTitle").val("");
-                $("#currentTitle").html($("#tbTitle").val());
-
+                $("#currentTitle").html($("#Title").val());
+                $("#newTitleValidation").hide();
                 modalChangeTitle.show();
             });
 
@@ -394,22 +393,33 @@
                     "articleNumber": articleNumber,
                     "title": title
                 };
-                $.post("@Url.Action("CheckTitle", "Editor")", data, function (result) {
-                    if (result === true) {
-                        let status = getAutoSave();
-                        if (status) {
-                            // Turn off auto save for the moment.
-                            $('#swAutoSave').prop('checked', false); // Unchecks it
+
+                let isArticle = @((Model != null && Model.GetType() == typeof(EditCodePostModel)).ToString().ToLower());
+
+                if (isArticle === true) {
+                    $.post("@Url.Action("CheckTitle", "Editor")", data, function (result) {
+                        if (result === true) {
+                            let status = getAutoSave();
+                            if (status) {
+                                // Turn off auto save for the moment.
+                                $('#swAutoSave').prop('checked', false); // Unchecks it
+                            }
+                            $("#newTitleValidation").html("");
+                            $("#divTitle").html(title);
+                            $("#Title").val(title);
+                            saveChanges(null, null);
+                            $('#swAutoSave').prop('checked', status); // Return to last status
+                        } else {
+                            $("#newTitleValidation").show();
+                            $("#newTitleValidation").html(result);
                         }
-                        $("#newTitleValidation").html("");
-                        $("#divTitle").html(title);
-                        $("#tbTitle").val(title);
-                        saveChanges(null, null);
-                        $('#swAutoSave').prop('checked', status); // Return to last status
-                    } else {
-                        $("#newTitleValidation").html(result);
-                    }
-                });
+                    });
+                } else {
+                    $("#newTitleValidation").html("");
+                    $("#divTitle").html(title);
+                    $("#Title").val(title);
+                    saveChanges(null, null);
+                }
 
             });
 
