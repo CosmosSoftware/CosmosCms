@@ -158,7 +158,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-secondary">Change and Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button id="btnCancelChgTitle" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -238,9 +238,10 @@
         // Modal definitions
         let modalChangeTitle = new bootstrap.Modal(document.getElementById('modalChangeTitle'));
         var saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
+        var autoSaveOn = true;
 
         function getAutoSave() {
-            return $("#swAutoSave").is(":checked");
+            return $("#swAutoSave").is(":checked") && autoSaveOn;
         }
 
         function showSaving() {
@@ -372,8 +373,10 @@
             $("#swAutoSave").click(function () {
                 if ($("#swAutoSave").is(":checked")) {
                     $("#lblAutoSave").html("Autosave (on)");
+                    autoSaveOn = true;
                 } else {
                     $("#lblAutoSave").html("Autosave (off)");
+                    autoSaveOn = false;
                 }
             });
 
@@ -382,7 +385,12 @@
                 $("#newTitle").val("");
                 $("#currentTitle").html($("#Title").val());
                 $("#newTitleValidation").hide();
+                autoSaveOn = false;
                 modalChangeTitle.show();
+            });
+
+            $("#btnCancelChgTitle").click(function (e) {
+                autoSaveOn = true;
             });
 
             $("#frmChangeTitle").submit(function (e) {
@@ -420,7 +428,7 @@
                     $("#Title").val(title);
                     saveChanges(null, null);
                 }
-
+                autoSaveOn = true;
             });
 
             // COMBOBOX
