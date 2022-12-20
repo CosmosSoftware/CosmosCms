@@ -154,7 +154,7 @@
 
     function submitUserIds(action) {
 
-        let data = localStorage.getItem("userIds");
+        let data = sessionStorage.getItem("userIds");
 
         $("#userIds").val(JSON.parse(data));
 
@@ -199,7 +199,7 @@
         if (userIds.indexOf(userId) == -1) {
             userIds.push(userId);
         }
-        localStorage.setItem("userIds", JSON.stringify(userIds));
+        sessionStorage.setItem("userIds", JSON.stringify(userIds));
     }
 
     function removeUserId(userId) {
@@ -207,11 +207,11 @@
             return value !== userId
         });
         userIds = tmp;
-        localStorage.setItem("userIds", JSON.stringify(userIds));
+        sessionStorage.setItem("userIds", JSON.stringify(userIds));
     }
 
     function reloadUserIds() {
-        let data = localStorage.getItem("userIds");
+        let data = sessionStorage.getItem("userIds");
         if (typeof (data) === "undefined" || data === null || data === "") {
             userIds = []
         } else {
@@ -221,7 +221,7 @@
 
     function clearUserIds() {
         userIds = [];
-        localStorage.removeItem("userIds");
+        sessionStorage.removeItem("userIds");
     }
 
     function getUserId(checkbox) {

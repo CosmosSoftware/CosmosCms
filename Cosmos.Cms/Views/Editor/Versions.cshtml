@@ -149,7 +149,7 @@
         if (ids.indexOf(id) == -1) {
             ids.push(id);
         }
-        localStorage.setItem("ids", JSON.stringify(ids));
+        sessionStorage.setItem("ids", JSON.stringify(ids));
     }
 
     function removeId(id) {
@@ -157,17 +157,17 @@
             return value !== id;
         });
         ids = tmp;
-        localStorage.setItem("ids", JSON.stringify(ids));
+        sessionStorage.setItem("ids", JSON.stringify(ids));
     }
 
     function clearIds() {
         ids = [];
-        localStorage.removeItem("ids");
+        sessionStorage.removeItem("ids");
     }
 
     // Reload selected ids from local storage
     function reloadIds() {
-        var data = localStorage.getItem("ids");
+        var data = sessionStorage.getItem("ids");
 
         if (typeof (data) === "undefined" || data === null || data === "") {
             ids = [];

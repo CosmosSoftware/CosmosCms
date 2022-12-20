@@ -422,7 +422,7 @@
         if (paths.indexOf(path) == -1) {
             paths.push(path);
         }
-        localStorage.setItem("paths", JSON.stringify(paths));
+        sessionStorage.setItem("paths", JSON.stringify(paths));
     }
 
     function removePath(path) {
@@ -430,12 +430,12 @@
             return value !== path;
         });
         paths = tmp;
-        localStorage.setItem("paths", JSON.stringify(paths));
+        sessionStorage.setItem("paths", JSON.stringify(paths));
     }
 
     // Reload selected paths from local storage
     function reloadPaths() {
-        var data = localStorage.getItem("paths");
+        var data = sessionStorage.getItem("paths");
 
         if (typeof (data) === "undefined" || data === null || data === "") {
             paths = []
@@ -446,11 +446,11 @@
 
     function clearPaths() {
         paths = [];
-        localStorage.removeItem("paths");
+        sessionStorage.removeItem("paths");
     }
 
     function getItemsToMove() {
-        var items = JSON.parse(localStorage.getItem("itemsToMove"));
+        var items = JSON.parse(sessionStorage.getItem("itemsToMove"));
         return items;
     }
 
@@ -670,7 +670,7 @@
 
                 next = function () {
                     showModal("busy", "Moving item(s)");
-                    localStorage.setItem("itemsToMove", localStorage.getItem("paths"));
+                    sessionStorage.setItem("itemsToMove", sessionStorage.getItem("paths"));
                     clearSelection();
                     window.location.href = '@Url.Action(action, controller)?target=@pathPrefix&directoryOnly=true&container=@container'
                 };
