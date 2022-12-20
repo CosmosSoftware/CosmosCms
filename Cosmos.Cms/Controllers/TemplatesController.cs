@@ -112,7 +112,7 @@ namespace CDT.Cosmos.Cms.Controllers
                 }
             }
 
-            return View(await query.ToListAsync());
+            return View(await query.Skip(pageNo * pageSize).Take(pageSize).ToListAsync());
         }
 
         /// <summary>

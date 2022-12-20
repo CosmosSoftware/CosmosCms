@@ -4,6 +4,11 @@
 @inject IOptions<CosmosConfig> options
 @{
     var assemblyName = Assembly.GetExecutingAssembly().GetName();
+    var title = (string)@ViewData["PageTitle"];
+    if (title == "root")
+    {
+        title = "";
+    }
 }
 <!DOCTYPE HTML>
 <html>
@@ -111,8 +116,8 @@
             </div>
             <div class="d-flex">
                 <div id="divTitleGroup" class="input-group input-group-sm" style="display:none">
-                    <span class="input-group-text" id="lblTitle" style="height:31px;">Title:</span>
-                    <div class="form-control" id="divTitle">@ViewData["PageTitle"]</div>
+                    <span class="input-group-text" id="lblTitle" style="height:31px;">Title: </span>
+                    <div class="form-control" id="divTitle">/@title</div>
                 </div>
                 <div id="divPublihedTitleGroup" class="input-group input-group-sm" style="display:none">
                     <div id="lblPublished" class="input-group-text" style="height:31px;">Published:</div>
@@ -140,21 +145,30 @@
     </div>
 
     <div class="modal" id="modalChangeTitle" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
-                    <h5 class="modal-title">Change Title</h5>
+                    <h5 id="modalChgTitleHeader" class="modal-title">Change Title</h5>
                 </div>
                 <div class="modal-body">
                     <form id="frmChangeTitle">
                         <div class="form-group">
-                            <label for="currentTitle" title="Showing current title" class="control-label">Current title:</label>
+                            <label id="lblCurrentTitle" for="currentTitle" title="Showing current title" class="control-label">Current title:</label>
                             <div class="form-control" id="currentTitle"></div>
                         </div>
                         <div class="form-group">
-                            <label for="newTitle" class="control-label">New title:</label>
+                            <label id="lblNewTitle" for="newTitle" class="control-label">New title:</label>
                             <input class="form-control" required id="newTitle" title="Enter new title" />
-                            <span id="newTitleValidation" class="btn btn-sm btn-danger"></span>
+                            <span id="newTitleValidation" class="btn btn-sm btn-danger" style="display:none"></span>
+                        </div>
+                        <div id="divUrlTitleExamples" style="display:none">
+                            <p>Example URLs:</p>
+                            <label id="lblCurrentTitle" for="currentTitle" title="Showing current title" class="control-label">Example 1:</label>
+                            <div class="form-control" id="currentTitle">My Work</div>
+                            <label id="lblCurrentTitle" for="currentTitle" title="Showing current title" class="control-label">Example 2:</label>
+                            <div class="form-control" id="currentTitle">My Work/Images</div>
+                            <label id="lblCurrentTitle" for="currentTitle" title="Showing current title" class="control-label">Example 2:</label>
+                            <div class="form-control" id="currentTitle">My Work/Images/Mountain Tops</div>
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-secondary">Change and Save</button>
@@ -237,8 +251,23 @@
         var autoSaveSwLastStatus;
         // Modal definitions
         let modalChangeTitle = new bootstrap.Modal(document.getElementById('modalChangeTitle'));
-        var saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
+        let saveFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
+        let toast = new bootstrap.Toast(document.getElementById('liveToast'));
+
+        // Sometimes auto save switch is on, but something is going on
+        // where auto save should not save. Example:right in the middle of
+        // changing the "title".
+        // When set to true, autosave works. False means it is temporarily overridden and off.
         var autoSaveOn = true;
+
+        // Is this an article model?
+        // If so check to see if title/url can change (not home page)
+        // and if the title needs to be checked prior to save.
+        let isArticle = @((Model != null && (Model.GetType() == typeof(EditCodePostModel) || Model.GetType() == typeof(HtmlEditorViewModel))).ToString().ToLower());
+
+
+        // Selected anchor data
+        var selectedAnchorData;
 
         function getAutoSave() {
             return $("#swAutoSave").is(":checked") && autoSaveOn;
@@ -332,9 +361,6 @@
             return false;
         }
 
-        // Selected anchor data
-        var selectedAnchorData;
-
         $(document).ready(function () {
 
             var startDate;
@@ -381,6 +407,10 @@
             });
 
             $("#divTitleGroup").click(function () {
+                if (isArticle && $("#Title").val() === "root") {
+                    alert("Cannot change URL of home page.");
+                    return;
+                }
                 $("#newTitleValidation").html();
                 $("#newTitle").val("");
                 $("#currentTitle").html($("#Title").val());
@@ -402,9 +432,8 @@
                     "title": title
                 };
 
-                let isArticle = @((Model != null && Model.GetType() == typeof(EditCodePostModel)).ToString().ToLower());
-
                 if (isArticle === true) {
+                    // For "Articles" only, validate that the title hasn't already been taken.
                     $.post("@Url.Action("CheckTitle", "Editor")", data, function (result) {
                         if (result === true) {
                             let status = getAutoSave();
@@ -429,6 +458,7 @@
                     saveChanges(null, null);
                 }
                 autoSaveOn = true;
+                modalChangeTitle.hide();
             });
 
             // COMBOBOX
@@ -504,7 +534,7 @@
 
         // Displays a 3 second message in a bootstrap toast.
         function toastMsg(message) {
-            var toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            
             $("#liveToastMsg").html(message);
             toast.show();
             setTimeout(function () {

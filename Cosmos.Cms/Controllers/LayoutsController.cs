@@ -168,7 +168,7 @@ namespace Cosmos.Cms.Controllers
                 Notes = s.Notes
             });
 
-            return View(await model.ToListAsync());
+            return View(await model.Skip(pageNo * pageSize).Take(pageSize).ToListAsync());
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace Cosmos.Cms.Controllers
             }
 
 
-            return View(query.ToList());
+            return View(query.Skip(pageNo * pageSize).Take(pageSize).ToList());
         }
 
         /// <summary>

@@ -499,7 +499,7 @@ namespace Cosmos.Cms.Controllers
                 return View(model.Where(w => w.IsDirectory == true).ToList());
             }
 
-            return View("~/Views/Shared/FileExplorer/Index.cshtml", model.ToList());
+            return View("~/Views/Shared/FileExplorer/Index.cshtml", model.Skip(pageNo * pageSize).Take(pageSize).ToList());
         }
 
         /// <summary>
@@ -986,7 +986,7 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
-            return View(await query.ToListAsync());
+            return View(await query.Skip(pageNo * pageSize).Take(pageSize).ToListAsync());
         }
 
 

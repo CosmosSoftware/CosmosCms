@@ -197,10 +197,10 @@ namespace Cosmos.Cms.Controllers
             }
             if (directoryOnly)
             {
-                return View(model.Where(w => w.IsDirectory == true).ToList());
+                return View(query.Where(w => w.IsDirectory == true).ToList());
             }
 
-            return View("~/Views/Shared/FileExplorer/Index.cshtml", model.ToList());
+            return View("~/Views/Shared/FileExplorer/Index.cshtml", query.Skip(pageNo * pageSize).Take(pageSize).ToList());
         }
 
         /// <summary>
