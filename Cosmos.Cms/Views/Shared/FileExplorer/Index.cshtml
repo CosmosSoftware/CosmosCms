@@ -124,10 +124,11 @@
                 }
                 else
                 {
-                    <button id="btnClear" type="button" class="btn btn-sm btn-secondary" title="Clear list of selected items" disabled>Clear</button>
                     <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
                     <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
                     <button id="btnMove" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('move')" disabled>Move</button>
+                    <button id="btnClear" type="button" class="btn btn-sm btn-primary" title="Clear list of selected items" style="display:none">Clear Selected</button>
+                    <button id="btnShowSelected" type="button" class="btn btn-sm btn-primary" title="Show list of selected items" style="display:none">Show Selected</button>
                 }
             </div>
         </div>
@@ -183,7 +184,7 @@
                             <tr scope="row">
                                 <td colspan="5">
                                     <div class="d-flex justify-content-center">
-                                       <h4> ** EMPTY (no items to list) ** </h4>
+                                        <h4> ** EMPTY (no items to list) ** </h4>
                                     </div>
                                 </td>
                             </tr>
@@ -252,6 +253,33 @@
 <!-- Before the end of the body tag -->
 <script src="https://unpkg.com/filepond-plugin-file-metadata/dist/filepond-plugin-file-metadata.js"></script>
 <script src="https://unpkg.com/filepond@4/dist/filepond.js"></script>
+
+<div class="modal mt-5" id="showSelectedModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 id="showSelectedTitle" class="modal-title">Selected Item(s)</h5>
+            </div>
+            <div class="modal-body">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody id="showSelectedtRows"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button id="btnShowSelModalClear" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Clear Selected</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal mt-5" id="checkFirstModal" tabindex="-1">
     <div class="modal-dialog">
@@ -331,6 +359,8 @@
     let busyModal = new bootstrap.Modal(document.getElementById('busyModal'));
     let renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     let checkFirstModal = new bootstrap.Modal(document.getElementById('checkFirstModal'));
+    let showSelectedModal = new bootstrap.Modal(document.getElementById('showSelectedModal'));
+
     var totalFileCount = 0;
     var loadedFileCount = 0;
 
@@ -425,7 +455,7 @@
     });
 
     pond.on('processfile', (file) => {
-        
+
         replaceCssClass($("#btnProgress"), "btn-primary", "btn-success");
 
         loadedFileCount++;
@@ -545,6 +575,18 @@
             clearSelection();
         });
 
+        $("#btnShowSelected").click(function () {
+
+            let data = sessionStorage.getItem("paths");
+            let items = JSON.parse(data);
+
+            showSelectedModal.show();
+        });
+
+        $("#btnShowSelModalClear").click(function () {
+            clearSelection();
+        });
+
         $("frmChangeName").submit(function (e) {
             clearPaths();
             return true;
@@ -603,8 +645,8 @@
         var arrayLength = paths.length;
 
         if (arrayLength > 0) {
-            $("#btnClear").prop('disabled', false);
-            replaceCssClass($("#btnClear"), "btn-secondary", "btn-primary");
+            $("#btnClear").show();
+            $("#btnShowSelected").show();
 
             $("#btnDelete").prop('disabled', false);
             $("#btnDelete").prop('title', "Click to delete.");
@@ -617,8 +659,8 @@
             $("#btnRename").prop('title', "Select only one item.");
             replaceCssClass($("#btnRename"), "btn-primary", "btn-secondary");
         } else {
-            $("#btnClear").prop('disabled', true);
-            replaceCssClass($("#btnClear"), "btn-primary", "btn-secondary");
+            $("#btnClear").hide();
+            $("#btnShowSelected").hide();
 
             $("#btnDelete").prop('disabled', true);
             replaceCssClass($("#btnDelete"), "btn-primary", "btn-secondary");
