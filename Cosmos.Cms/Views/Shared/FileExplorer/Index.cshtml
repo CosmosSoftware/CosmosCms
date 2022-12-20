@@ -261,17 +261,8 @@
                 <h5 id="showSelectedTitle" class="modal-title">Selected Item(s)</h5>
             </div>
             <div class="modal-body">
-                <table class="table custom-table">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Modified</th>
-                        </tr>
-                    </thead>
-                    <tbody id="showSelectedtRows"></tbody>
-                </table>
+                <div id="tblShowSelected" class="table-responsive">
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -391,7 +382,6 @@
     }
 
     //
-
     // CLIPBOARD
     let btns = document.querySelectorAll(".ccms-clip-board");
     let clipboard = new ClipboardJS(btns);
@@ -579,6 +569,28 @@
 
             let data = sessionStorage.getItem("paths");
             let items = JSON.parse(data);
+            var count = 0;
+            var table = '<table class="table custom-table">';
+            table += '<thead><tr><th style="width:10%;">#</th><th>Item</th></tr></thead>';
+            table += '<tbody>'
+            $.each(items, function (index, item) {
+
+                var path = "";
+                let lastIndex = item.replace(new RegExp("\/*$"), '').lastIndexOf('/');
+                if (lastIndex === -1) {
+                    path = item;
+                } else {
+                    path = item.substring(0, lastIndex + 1);
+                }
+
+                const target = '<a title="Click to reveal this item in its containing folder" href="@Url.Action(action, controller)?target=' + path + '& container=@container&directoryOnly=@directoryOnly">' + item + '</a>';
+
+                count++;
+                table += '<tr scope="row"><td>' + count + '</td><td>' + target + '</td></tr>';
+            });
+            table += '</tbody>'
+            table += '</table>'
+            $('#tblShowSelected').html(table);
 
             showSelectedModal.show();
         });
