@@ -619,7 +619,15 @@ namespace Cosmos.Cms.Controllers
                 {
                     var result = await _articleLogic.UpdateOrInsert(articleViewModel, userId, true);
 
-                    return RedirectToAction("Edit", new { result.Model.Id });
+                    // Open the HTML (CKEditor) if there are editable regions on the page.
+                    if (result.Model.Content.Contains("editable", StringComparison.InvariantCultureIgnoreCase) ||
+                        result.Model.Content.Contains("data-ccms-ceid", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return RedirectToAction("Edit", new { result.Model.Id });
+                    }
+
+                    // Otherwise, open in the Monaco code editor
+                    return RedirectToAction("EditCode", new { result.Model.Id });
                 }
                 catch (Exception e)
                 {
