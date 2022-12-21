@@ -758,12 +758,11 @@ namespace Cosmos.Cms.Controllers
                     var model = await _articleLogic.Get(pageId, EnumControllerName.Edit, await GetUserId());
                     ViewData["LastPubDateTime"] = await GetLastPublishingDate(model.ArticleNumber);
 
-                    ViewData["PageTitle"] = model.UrlPath == "root" ? "root" : model.Title;
+                    ViewData["PageTitle"] = model.Title;
                     ViewData["Published"] = model.Published;
 
                     // Override defaults
                     model.EditModeOn = true;
-                    model.Title = model.UrlPath == "root" ? "root" : model.Title;
 
                     // Authors cannot edit published articles
                     if (model.Published.HasValue && User.IsInRole("Authors"))
@@ -814,10 +813,6 @@ namespace Cosmos.Cms.Controllers
                 //
                 // Now save the changes to the database here.
                 //
-                if (original.UrlPath == "root")
-                {
-                    model.Title = original.Title;
-                }
                 var result = await _articleLogic.UpdateOrInsert(model, userId, model.SaveAsNewVersion);
 
                 //
@@ -828,18 +823,13 @@ namespace Cosmos.Cms.Controllers
                 model.ArticleNumber = result.Model.ArticleNumber;
                 model.VersionNumber = result.Model.VersionNumber;
                 model.Id = result.Model.Id;
-                model.Title = model.UrlPath == "root" ? "root" : model.Title;
+                model.Title = result.Model.Title;
                 model.Published = result.Model.Published;
 
 
 
                 //
                 // END  SAVE TO  DATABASE ********
-
-                // Re-enable editable sections.
-                //model.Content = model.Content.Replace("crx=", "contenteditable=",
-                //    StringComparison.CurrentCultureIgnoreCase);
-
                 //
                 // Flush Redis and CDN if required 
                 // New: Delay CDN 10 seconds to allow for local memory cache(s) to drain
@@ -933,7 +923,7 @@ namespace Cosmos.Cms.Controllers
 
             ViewData["Version"] = article.VersionNumber;
 
-            ViewData["PageTitle"] = article.UrlPath == "root" ? "root" : article.Title;
+            ViewData["PageTitle"] = article.Title;
             ViewData["Published"] = article.Published;
             ViewData["LastPubDateTime"] = await GetLastPublishingDate(article.ArticleNumber);
 
@@ -941,7 +931,7 @@ namespace Cosmos.Cms.Controllers
             {
                 Id = article.Id,
                 ArticleNumber = article.ArticleNumber,
-                Title = article.UrlPath == "root" ? "root" : article.Title,
+                Title = article.Title,
                 Published = article.Published,
                 RoleList = article.RoleList,
                 EditorTitle = article.Title,
@@ -1018,7 +1008,7 @@ namespace Cosmos.Cms.Controllers
                     Id = model.Id,
                     ArticleNumber = article.ArticleNumber,
                     Content = model.Content,
-                    Title = article.UrlPath == "root" ? article.Title : model.Title.Trim('/'),
+                    Title = model.Title,
                     RoleList = model.RoleList,
                     Published = model.Published,
                     Expires = article.Expires,
@@ -1045,7 +1035,7 @@ namespace Cosmos.Cms.Controllers
                     Id = result.Model.Id,
                     Published = result.Model.Published,
                     RoleList = result.Model.RoleList,
-                    Title = article.UrlPath == "root" ? "root" : model.Title.Trim('/')
+                    Title = result.Model.Title
                 };
 
             }

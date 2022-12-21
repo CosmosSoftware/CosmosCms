@@ -162,8 +162,10 @@
         $("#lblTitle").html("Page URL: ");
         $("#modalChgTitleHeader").html("Change page URL: ");
         $("#newTitle").html("New page URL: ");
-        $("#divUrlTitleExamples").show();
 
+        if ($("#UrlPath").val() != "root") {
+            $("#divUrlTitleExamples").show();
+        }
 
         $("#btnCcmsCodeEditor").show();
 
@@ -289,6 +291,7 @@
                         //$("#Content").val(response.Model.Content);
                         $("#RoleList").val(response.Model.RoleList);
                         $("#Title").val(response.Model.Title);
+                        $("#divTitle").html(response.Model.Title);
                         $("#Published").val(response.Model.Published);
 
                     }
