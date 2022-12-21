@@ -87,6 +87,11 @@ namespace Cosmos.Cms.Models
         public string EditorTitle { get; set; }
 
         /// <summary>
+        /// URL Path
+        /// </summary>
+        public string UrlPath { get; set; }
+
+        /// <summary>
         /// Array of editor fields
         /// </summary>
         public IEnumerable<EditorField> EditorFields { get; set; }

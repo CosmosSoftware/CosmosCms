@@ -935,6 +935,7 @@ namespace Cosmos.Cms.Controllers
                 Published = article.Published,
                 RoleList = article.RoleList,
                 EditorTitle = article.Title,
+                UrlPath = article.UrlPath,
                 EditorFields = new[]
                 {
                     new EditorField
@@ -1032,6 +1033,7 @@ namespace Cosmos.Cms.Controllers
                     EditorType = model.EditorType,
                     FooterJavaScript = result.Model.FooterJavaScript,
                     HeadJavaScript = result.Model.HeadJavaScript,
+                    UrlPath = result.Model.UrlPath,
                     Id = result.Model.Id,
                     Published = result.Model.Published,
                     RoleList = result.Model.RoleList,
