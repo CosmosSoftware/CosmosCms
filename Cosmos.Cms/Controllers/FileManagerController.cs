@@ -100,9 +100,11 @@ namespace Cosmos.Cms.Controllers
         /// <param name="pageSize"></param>
         /// <param name="directoryOnly"></param>
         /// <param name="container"></param>
+        /// <param name="selectOne"></param>
+        /// <param name="imagesOnly"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Index(string target, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10, bool directoryOnly = false, string container = "$web")
+        public async Task<IActionResult> Index(string target, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10, bool directoryOnly = false, string container = "$web", bool selectOne = false, bool imagesOnly = false)
         {
             _storageContext.SetContainerName(container);
 
@@ -117,6 +119,8 @@ namespace Cosmos.Cms.Controllers
             ViewData["TopDirectory"] = "/pub";
             ViewData["Controller"] = "FileManager";
             ViewData["Action"] = "Index";
+            ViewData["SelectOne"] = selectOne;
+            ViewData["ImagesOnly"] = imagesOnly;
 
             //
             // Grid pagination
@@ -132,6 +136,13 @@ namespace Cosmos.Cms.Controllers
             var model = await _storageContext.GetFolderContents(target);
 
             var query = model.AsQueryable();
+
+            if (imagesOnly)
+            {
+                var imageExtensions = new string[] { ".apng", ".avif", ".gif", ".jpg", ".jpeg", ".png", ".svg", ".webp" };
+
+                query = query.Where(w => w.IsDirectory || imageExtensions.Contains(w.Extension.ToLower()));
+            }
 
             ViewData["RowCount"] = query.Count();
 

@@ -15,7 +15,12 @@
     var pageSize = (int)ViewData["pageSize"];
     var controller = (string)ViewData["Controller"];
     var action = (string)ViewData["Action"];
+    var selectOne = (bool)ViewData["SelectOne"];
+    var imagesOnly = (bool)ViewData["ImagesOnly"];
+
     var target = Context.Request.Query["target"];
+
+    var baseUrl = "@Url.Action(action, controller)?container=@container&selectOne=@selectOne&imagesOnly=@imagesOnly&";
 
     if (directoryOnly)
     {
@@ -55,11 +60,11 @@
                 <h6 class="mb-3 mt-3 text-bg-dark">
                     @if (string.IsNullOrEmpty(container) || container.Equals("$web"))
                     {
-                        <a class="text-reset" href="@Url.Action(action, controller)?target=/&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a>
+                        <a class="text-reset" href="@(baseUrl)target=/><i class="fa-solid fa-house"></i></a>
                     }
                     else
                     {
-                        <a class="text-reset" href="@Url.Action(action, controller)?target=/&container=@container&directoryOnly=@directoryOnly"><i class="fa-solid fa-house"></i></a>
+                        <a class="text-reset" href="@(baseUrl)target=/"><i class="fa-solid fa-house"></i></a>
                     }
 
                     @{
@@ -70,19 +75,15 @@
                     {
                         counter++;
                         p += "/" + item;
-                        var href = $"?target={p}&directoryOnly={directoryOnly}";
+                        var href = $"target={p}";
 
-                        if (!string.IsNullOrEmpty(container) && !container.Equals("$web"))
-                        {
-                            href += $"&container={container}";
-                        }
                         if (counter == pathParts.Count)
                         {
-                            <span>/</span> <a class="text-reset font-weight-bold" href="@Url.Action(action, controller)@href.TrimStart('/')">@item</a>
+                            <span>/</span> <a class="text-reset font-weight-bold" href="@(baseUrl)@href.TrimStart('/')">@item</a>
                         }
                         else
                         {
-                            <span>/</span> <a class="text-reset" href="@Url.Action(action, controller)@href">@item.TrimStart('/')</a>
+                            <span>/</span> <a class="text-reset" href="@(baseUrl)@href">@item.TrimStart('/')</a>
                         }
                     }
                 </h6>
@@ -121,6 +122,10 @@
                 {
                     <button id="btnCancel" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('cancel')">Cancel</button>
                     <button id="btnMoveItems" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('moveItems')" title="Move selected items" disabled>Move</button>
+                }
+                else if (selectOne)
+                {
+                    <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnSelectFile('rename')" disabled>Select</button>
                 }
                 else
                 {
@@ -198,7 +203,7 @@
                                 <td style="width:30px;">
                                     @if (row.IsDirectory)
                                     {
-                                        <a href='@Url.Action(action, controller)?target=@row.Path&container=@container&directoryOnly=@directoryOnly'><i class='fa-solid fa-folder'></i></a>
+                                        <a href='@(baseUrl)target=@row.Path'><i class='fa-solid fa-folder'></i></a>
                                     }
                                     else
                                     {
@@ -220,7 +225,7 @@
                                 <td>
                                     @if (row.IsDirectory)
                                     {
-                                        <a href='@Url.Action(action, controller)?target=@row.Path&container=@container&directoryOnly=@directoryOnly'>@row.Name</a>
+                                        <a href='@(baseUrl)target=@row.Path'>@row.Name</a>
                                     }
                                     else
                                     {
