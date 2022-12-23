@@ -619,7 +619,15 @@ namespace Cosmos.Cms.Controllers
                 {
                     var result = await _articleLogic.UpdateOrInsert(articleViewModel, userId, true);
 
-                    return RedirectToAction("Edit", new { result.Model.Id });
+                    // Open the HTML (CKEditor) if there are editable regions on the page.
+                    if (result.Model.Content.Contains("editable", StringComparison.InvariantCultureIgnoreCase) ||
+                        result.Model.Content.Contains("data-ccms-ceid", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return RedirectToAction("Edit", new { result.Model.Id });
+                    }
+
+                    // Otherwise, open in the Monaco code editor
+                    return RedirectToAction("EditCode", new { result.Model.Id });
                 }
                 catch (Exception e)
                 {
@@ -935,6 +943,7 @@ namespace Cosmos.Cms.Controllers
                 Published = article.Published,
                 RoleList = article.RoleList,
                 EditorTitle = article.Title,
+                UrlPath = article.UrlPath,
                 EditorFields = new[]
                 {
                     new EditorField
@@ -1032,6 +1041,7 @@ namespace Cosmos.Cms.Controllers
                     EditorType = model.EditorType,
                     FooterJavaScript = result.Model.FooterJavaScript,
                     HeadJavaScript = result.Model.HeadJavaScript,
+                    UrlPath = result.Model.UrlPath,
                     Id = result.Model.Id,
                     Published = result.Model.Published,
                     RoleList = result.Model.RoleList,
