@@ -28,11 +28,11 @@
     }
     else if (imagesOnly)
     {
-        ViewData["Title"] = "Image Manager";
+        ViewData["Title"] = "Select an image";
     }
     else
     {
-        ViewData["Title"] = "File Manager";
+        ViewData["Title"] = "Select a file";
     }
 
     var isReviewer = User.IsInRole("Reviewers");
@@ -56,24 +56,20 @@
         <div class="col">
             @if (directoryOnly)
             {
-                <h3 class="text-light"><i class="fa-solid fa-folder"></i> @ViewData["Title"]</h3>
+                <h3 class="text-light">@ViewData["Title"]</h3>
             }
             else if (imagesOnly)
             {
-                <h3 class="text-light"><i class="fa-regular fa-image"></i> @ViewData["Title"]</h3>
+                <h3 class="text-light">@ViewData["Title"]</h3>
             }
             else
             {
-                <h3 class="text-light"><i class="fa-regular fa-file"></i> @ViewData["Title"]</h3>
+                <h3 class="text-light">@ViewData["Title"]</h3>
             }
 
             @if (directoryOnly)
             {
                 <h5 class="text-light">Select the folder where you want to place the file(s).</h5>
-            }
-            else if (imagesOnly)
-            {
-                <h5 class="text-light">Please select an image.</h5>
             }
         </div>
     </div>
