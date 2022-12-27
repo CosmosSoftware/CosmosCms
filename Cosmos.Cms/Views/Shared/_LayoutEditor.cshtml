@@ -98,7 +98,8 @@
                     </li>
                     <li class="nav-item">
                         <div id="msgSpecial" style="display:none"></div>
-                        &nbsp; <div id="spinLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
+                        &nbsp;
+                        <div id="spinLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
                             <div class="align-items-center text-light">
                                 <strong>Loading...</strong>
                                 <div class="spinner-border spinner-border-sm text-light" role="status"></div>
@@ -176,7 +177,7 @@
         </div>
     </div>
 
-    <div class="modal" id="modalSavingError" tabindex="-2">
+    <div class="modal" id="modalSavingError" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h5 class="modal-title">Save First?</h5>
@@ -191,7 +192,7 @@
     </div>
 
     <div class="modal" id="pickPageModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-header">
                     <h4 class="text-light">
@@ -237,6 +238,34 @@
         </div>
     </div>
 
+    <div class="modal" id="modalSelectFile" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-body" style="height: 80vh;position:relative;">
+                    <div class="navbar" style="height:80px;">
+                        <div class="container-fluid">
+                            <div class="navbar-brand text-light">
+                                <span id="modalSelectFileTitle">File Selection</span>
+                                &nbsp;
+                                <div id="spinFileMgrLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
+                                    <div class="align-items-center text-light">
+                                        <strong>Loading...</strong>
+                                        <div class="spinner-border spinner-border-sm text-light" role="status"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex">
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="iframeSelectFile" onload="fileMgrLoaded()" class="m-editor-container" style="height: 100%; width: 100%;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @RenderBody()
 
     <script>
@@ -246,6 +275,7 @@
         const modalChangeTitle = new bootstrap.Modal(document.getElementById('modalChangeTitle'));
         const checkFirstModal = new bootstrap.Modal(document.getElementById('checkSaveFirst'));
         const pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
+        const modalSelectFile = new bootstrap.Modal(document.getElementById('modalSelectFile'));
         const toast = new bootstrap.Toast(document.getElementById('liveToast'));
 
         // VARIABLES
@@ -266,6 +296,34 @@
         let isArticle = @((Model != null && (Model.GetType() == typeof(EditCodePostModel) || Model.GetType() == typeof(HtmlEditorViewModel))).ToString().ToLower());
         // Selected anchor data
         let selectedAnchorData;
+
+        function fileMgrLoaded() {
+            $("#spinFileMgrLoading").hide();
+        }
+
+        function openSelectFileModal(mode, saveFunction) {
+
+            next = saveFunction;
+            let id = $("#ArticleNumber").val();
+            let url = "@Url.Action("Index", "FileManager")";
+
+            if (typeof (id) !== "undefined" && id !== null & id !== "") {
+                url += "?target=pub/articles/" + id;
+            } else {
+                url += "?target=";
+            }
+
+            if (mode === "image") {
+                $('#iframeSelectFile').attr('src', url + '&selectOne=true&imagesOnly=true&');
+                $('#modalSelectFileTitle').html("Select Image");
+            } else {
+                $('#iframeSelectFile').attr('src', url + '&selectOne=true&');
+                $('#modalSelectFileTitle').html("Select File");
+            }
+
+            modalSelectFile.show();
+
+        }
 
         function getAutoSave() {
             return $("#swAutoSave").is(":checked") && autoSaveOn;
@@ -540,7 +598,7 @@
 
         // Displays a 3 second message in a bootstrap toast.
         function toastMsg(message) {
-            
+
             $("#liveToastMsg").html(message);
             toast.show();
             setTimeout(function () {
