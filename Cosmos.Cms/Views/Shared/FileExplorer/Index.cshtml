@@ -144,18 +144,10 @@
                 }
                 else if (selectOne)
                 {
-                    if (imagesOnly)
-                    {
-                        <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('selectFile')" disabled>Select Image</button>
-                    }
-                    else
-                    {
-                        <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('selectFile')" disabled>Select File</button>
-                    }
                     <button id="btnClear" type="button" class="btn btn-sm btn-primary" title="Clear list of selected items" style="display:none">Clear Selected</button>
                     <button id="btnShowSelected" type="button" class="btn btn-sm btn-primary" title="Show list of selected items" style="display:none">Show Selected</button>
                 }
-                else
+                else if (!selectOne)
                 {
                     <button id="btnRename" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('rename')" disabled>Rename</button>
                     <button id="btnDelete" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('delete')" disabled>Delete</button>
@@ -386,14 +378,23 @@
 
 <script>
 
+    // Gloabals
+    var paths = [];
+
     // MODALS
     let busyModal = new bootstrap.Modal(document.getElementById('busyModal'));
     let renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     let checkFirstModal = new bootstrap.Modal(document.getElementById('checkFirstModal'));
     let showSelectedModal = new bootstrap.Modal(document.getElementById('showSelectedModal'));
 
-    var totalFileCount = 0;
-    var loadedFileCount = 0;
+    // Select one mode?
+    const selectOneFile = @(selectOne.ToString().ToLower());
+    // Set mode
+    const directoryOnly = @(directoryOnly.ToString().ToLower());
+
+
+    let totalFileCount = 0;
+    let loadedFileCount = 0;
 
     // shows a modal, closes all others.
     function showModal(name, message, title) {
@@ -436,9 +437,6 @@
         console.info('Trigger:', e.trigger);
     });
     //
-
-    // Set mode
-    const directoryOnly = "@directoryOnly" === "True";
 
     // Get a reference to the file input element
     const inputElement = document.querySelector('input[type="file"]');
@@ -508,8 +506,6 @@
         window.location.href = "@Url.Action(action, controller)?target=@pathPrefix&container=@container";
     });
 
-    let paths = [];
-
     function savePath(path) {
         // Avoid duplicates
         if (paths.indexOf(path) == -1) {
@@ -576,7 +572,7 @@
 
         $(".gridCheckBox").each(function (index, element) {
 
-            var path = getPath(element);
+            let path = getPath(element);
 
             if (path === "pub" || path === "pub/") {
                 $(element).prop('checked', false);
@@ -588,7 +584,7 @@
             }
 
             $(element).on("change", function () {
-                if (directoryOnly) {
+                if (directoryOnly || selectOneFile) {
                     var isChecked = $(element).prop('checked');
                     $(".gridCheckBox").each(function (i, e) {
                         $(e).prop('checked', false);
@@ -694,7 +690,13 @@
         });
 
         // Get the array length
-        var arrayLength = paths.length;
+        let arrayLength = paths.length;
+
+        
+        if (selectOneFile) {
+            let btnSelectFileAndClose = parent.document.getElementById("btnSelectFileAndClose");
+            btnSelectFileAndClose.disabled = true;
+        }
 
         if (arrayLength > 0) {
             $("#btnClear").show();
@@ -725,6 +727,12 @@
         }
 
         if (arrayLength === 1) {
+
+            if (selectOneFile) {
+                let btnSelectFileAndClose = parent.document.getElementById("btnSelectFileAndClose");
+                btnSelectFileAndClose.disabled = false;
+                selectedFile = paths[0];
+            }
 
             $("#btnSelectFile").prop('disabled', false);
             replaceCssClass($("#btnSelectFile"), "btn-secondary", "btn-primary");

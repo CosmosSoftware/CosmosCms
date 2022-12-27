@@ -242,25 +242,17 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-body" style="height: 80vh;position:relative;">
-                    <div class="navbar" style="height:80px;">
-                        <div class="container-fluid">
-                            <div class="navbar-brand text-light">
-                                <span id="modalSelectFileTitle">File Selection</span>
-                                &nbsp;
-                                <div id="spinFileMgrLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
-                                    <div class="align-items-center text-light">
-                                        <strong>Loading...</strong>
-                                        <div class="spinner-border spinner-border-sm text-light" role="status"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex">
-                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div style="height:60px;width:100%;">
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Cancel</button>
+                        <button id="btnSelectFileAndClose" type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" disabled>Select and Close</button>
+                        <div id="spinFileMgrLoading" class="btn btn-sm btn-primary mt-1 ms-3 me-3">
+                            <div class="align-items-center text-light">
+                                <strong>Loading...</strong>
+                                <div class="spinner-border spinner-border-sm text-light" role="status"></div>
                             </div>
                         </div>
                     </div>
-                    <iframe id="iframeSelectFile" onload="fileMgrLoaded()" class="m-editor-container" style="height: 100%; width: 100%;"></iframe>
+                    <iframe id="iframeSelectFile" class="m-fileselector-container" style="height: 100%; width: 100%;"></iframe>
                 </div>
             </div>
         </div>
@@ -277,6 +269,7 @@
         const pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
         const modalSelectFile = new bootstrap.Modal(document.getElementById('modalSelectFile'));
         const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+        const fileBaseUrl = "@(options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/'))";
 
         // VARIABLES
         // Function to fire after modal action
@@ -297,10 +290,6 @@
         // Selected anchor data
         let selectedAnchorData;
 
-        function fileMgrLoaded() {
-            $("#spinFileMgrLoading").hide();
-        }
-
         function openSelectFileModal(mode, saveFunction) {
 
             next = saveFunction;
@@ -315,10 +304,8 @@
 
             if (mode === "image") {
                 $('#iframeSelectFile').attr('src', url + '&selectOne=true&imagesOnly=true&');
-                $('#modalSelectFileTitle').html("Select Image");
             } else {
                 $('#iframeSelectFile').attr('src', url + '&selectOne=true&');
-                $('#modalSelectFileTitle').html("Select File");
             }
 
             modalSelectFile.show();
@@ -594,6 +581,18 @@
                 $("#inputLinkTextError").hide();
             });
 
+            $("#iframeSelectFile").on("load", function () {
+                $("#spinFileMgrLoading").hide();
+            });
+
+            $("#btnSelectFileAndClose").click(function () {
+                // 'next' is the function that needs to be executed after close.
+                let iframe = document.getElementById("iframeSelectFile");
+                let iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+                let p = iframeWin.paths;
+                next(p[0]);
+                return true;
+            });
         });
 
         // Displays a 3 second message in a bootstrap toast.

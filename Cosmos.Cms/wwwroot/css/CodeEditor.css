@@ -6,6 +6,14 @@
     right: 1px;
 }
 
+.m-fileselector-container {
+    position: absolute;
+    top: 61px;
+    bottom: 1px;
+    left: 1px;
+    right: 1px;
+}
+
 .code-tabs.navbar {
     margin-top: 0px;
     margin-bottom: 0px;

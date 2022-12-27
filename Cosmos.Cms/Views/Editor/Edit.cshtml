@@ -385,7 +385,7 @@
             return;
         }
 
-        openSelectFileModal("file", null);
+        openSelectFileModal("file", insertFileLink);
     }
 
     function openInsertImageModel(ed) {
@@ -396,7 +396,7 @@
             return;
         }
 
-        openSelectFileModal("image", null);
+        openSelectFileModal("image", insertImage);
     }
 
     function insertPageLink() {
@@ -422,6 +422,34 @@
         ckeditor.model.change(writer => {
 
             const viewFragment = ckeditor.data.processor.toView("<a target='_blank' href='/" + selectedAnchorData.url + "'>" + inputLinkText + "</a>");
+
+            const anchor = ckeditor.data.toModel(viewFragment);
+            ckeditor.model.insertContent(anchor);
+            ckeditor.editing.view.focus();
+        });
+    }
+
+    function insertFileLink (path) {
+        // Change the model using the model writer.
+        ckeditor.model.change(writer => {
+
+            const url = fileBaseUrl + "/" + path;
+
+            const viewFragment = ckeditor.data.processor.toView("<a href='" + url + "'>" + path + "</a>");
+
+            const anchor = ckeditor.data.toModel(viewFragment);
+            ckeditor.model.insertContent(anchor);
+            ckeditor.editing.view.focus();
+        });
+    }
+    
+    function insertImage (path) {
+        // Change the model using the model writer.
+        ckeditor.model.change(writer => {
+            
+            const url = fileBaseUrl + "/" + path;
+
+            const viewFragment = ckeditor.data.processor.toView("<img src='" + url + "' />");
 
             const anchor = ckeditor.data.toModel(viewFragment);
             ckeditor.model.insertContent(anchor);
