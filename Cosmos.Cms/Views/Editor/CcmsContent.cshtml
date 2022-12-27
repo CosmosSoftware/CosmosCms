@@ -31,7 +31,7 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <script src="/lib/ckeditor/build_20221214.01/ckeditor.js"></script>
+    <script src="/lib/ckeditor/build_20221226.01/ckeditor.js"></script>
     <script>
 
         // Create editors
@@ -182,15 +182,6 @@
             });
         }
 
-        // Opens the VS Code editor for the block
-        function ccmsOpenVsCode(editor) {
-            window.parent.openVsCodeBlockEditor(editor);
-        }
-
-        // Opens the page selector
-        function openPickPageModal(editor) {
-            window.parent.openPickPageModal(editor);
-        }
     </script>
 </body>
 </html>

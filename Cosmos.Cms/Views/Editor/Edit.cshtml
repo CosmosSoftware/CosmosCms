@@ -54,7 +54,7 @@
         </div>
     </div>
     <div class="modal" id="modalVsCode" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-dark text-white">
                 <div class="modal-body" style="height: 80vh;position:relative;">
                     <div class="navbar">
@@ -74,18 +74,19 @@
             </div>
         </div>
     </div>
-
 }
 
 <script>
-    var next;
-    var editor;
-    var fileMgrPopup;
-    var ckeditor = null;
+
+    // Monaco Editor
+    let editor;
+    // CK Editor
+    let ckeditor = null;
     
-    let versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
-    let vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
-    let pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
+    // CONSTANTS
+    // Modals
+    const versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
+    const vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -98,25 +99,26 @@
 
         switch (command) {
             case "Close":
+                // Note: 'next' is defined in _LayoutEditor.cshtml.
                 next = function () {
                     window.location.href = "@Url.Action("Versions", "Editor")/@Model.ArticleNumber";
                 }
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
-                saveFirstModal.show();
+                checkFirstModal.show();
                 break;
             case "Code":
                 next = function () {
                     window.location.href = "@Url.Action("EditCode", "Editor")/" + modelId;
                 }
                 $("#divSaveFirstDialog").html("Save before opening code editor?");
-                saveFirstModal.show();
+                checkFirstModal.show();
                 break;
             case "Preview":
                 next = function () {
                     window.open("@Url.Action("Preview", "Home")/" + modelId);
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
-                saveFirstModal.show();
+                checkFirstModal.show();
                 break;
         }
     }
@@ -178,8 +180,6 @@
             ckeditor.data.set(data);
             saveChanges(null, null);
         });
-
-
     });
 
     $(window).bind('keydown', function (event) {
@@ -262,7 +262,7 @@
 
             const form = $('#frmSave');
 
-            var data = $("#frmSave").serialize();
+            let data = $("#frmSave").serialize();
 
             $.post("@Url.Action("Edit")",
                 data,
@@ -359,8 +359,6 @@
             });
     }
 
-    var ckSelection;
-
     function openPickPageModal(ed) {
         ckeditor = ed;
 
@@ -370,15 +368,40 @@
         }
 
         $("#combobox").val("");
-        const inputLinkText = $("#inputLinkText").val("");
-        const switchNewWindow = $("#switchNewWindow").prop('checked', false);
-        const inputLinkCss = $("#inputLinkCss").val("");
-        const inputLinkStyle = $("#inputLinkStyle").val("");
+        $("#inputLinkText").val("");
+        $("#switchNewWindow").prop('checked', false);
+        $("#inputLinkCss").val("");
+        $("#inputLinkStyle").val("");
 
         pickPageModal.show();
     }
 
+    function openInsertFileLinkModel(ed) {
+        ckeditor = ed;
+
+        if (typeof ckeditor === "undefined" || ckeditor === null) {
+            alert("Error: Could not open HTML editor.");
+            return;
+        }
+
+    }
+
+    function openInsertImageModel(ed) {
+        ckeditor = ed;
+
+        if (typeof ckeditor === "undefined" || ckeditor === null) {
+            alert("Error: Could not open HTML editor.");
+            return;
+        }
+
+    }
+
     function insertPageLink() {
+        
+        if (typeof ckeditor === "undefined" || ckeditor === null) {
+            alert("Error: Could not open HTML editor.");
+            return;
+        }
 
         const inputLinkText = $("#inputLinkText").val();
         const switchNewWindow = $("#switchNewWindow").prop('checked');
@@ -399,7 +422,7 @@
 
             const anchor = ckeditor.data.toModel(viewFragment);
             ckeditor.model.insertContent(anchor);
-
+            ckeditor.editing.view.focus();
         });
     }
 

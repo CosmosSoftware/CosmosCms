@@ -20,11 +20,19 @@
 
     var target = Context.Request.Query["target"];
 
-    var baseUrl = "@Url.Action(action, controller)?container=@container&selectOne=@selectOne&imagesOnly=@imagesOnly&";
+    var baseUrl = @Url.Action(action, controller) + "?container=" + container + "&selectOne=" + selectOne + "&imagesOnly=" + imagesOnly + "&pageSize=" + pageSize + "&";
 
     if (directoryOnly)
     {
-        ViewData["Title"] = ViewData["Title"] + " - Folders Only";
+        ViewData["Title"] = "File Manager" + " - Folder View";
+    }
+    else if (imagesOnly)
+    {
+        ViewData["Title"] = "Image Manager";
+    }
+    else
+    {
+        ViewData["Title"] = "File Manager";
     }
 
     var isReviewer = User.IsInRole("Reviewers");
@@ -39,17 +47,33 @@
         pathParts.AddRange(pathPrefix.Trim('/').Split('/').Where(w => w != "/"));
     }
 
-    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, Url.Action(action, controller) + "?target=" + target);
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, Url.Action(action, controller) + "?imagesOnly= " + imagesOnly + "&target=" + target);
 }
 <link href="https://unpkg.com/filepond@4/dist/filepond.css" rel="stylesheet" />
 <partial name="_ValidationScriptsPartial" />
 <div class="container mt-3">
     <div class="row bg-dark">
         <div class="col">
-            <h3 class="text-light">@ViewData["Title"]</h3>
             @if (directoryOnly)
             {
-                <h5>Select the folder where you want to place the file(s).</h5>
+                <h3 class="text-light"><i class="fa-solid fa-folder"></i> @ViewData["Title"]</h3>
+            }
+            else if (imagesOnly)
+            {
+                <h3 class="text-light"><i class="fa-regular fa-image"></i> @ViewData["Title"]</h3>
+            }
+            else
+            {
+                <h3 class="text-light"><i class="fa-regular fa-file"></i> @ViewData["Title"]</h3>
+            }
+
+            @if (directoryOnly)
+            {
+                <h5 class="text-light">Select the folder where you want to place the file(s).</h5>
+            }
+            else if (imagesOnly)
+            {
+                <h5 class="text-light">Please select an image.</h5>
             }
         </div>
     </div>
@@ -58,14 +82,7 @@
         <div class="col-md-12 text-truncate">
             <nav class="d-flex bg-dark">
                 <h6 class="mb-3 mt-3 text-bg-dark">
-                    @if (string.IsNullOrEmpty(container) || container.Equals("$web"))
-                    {
-                        <a class="text-reset" href="@(baseUrl)target=/><i class="fa-solid fa-house"></i></a>
-                    }
-                    else
-                    {
-                        <a class="text-reset" href="@(baseUrl)target=/"><i class="fa-solid fa-house"></i></a>
-                    }
+                    <a class="text-reset" href="@(baseUrl)target=/"><i class="fa-solid fa-house"></i></a>
 
                     @{
                         var p = "";
@@ -125,7 +142,16 @@
                 }
                 else if (selectOne)
                 {
-                    <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnSelectFile('rename')" disabled>Select</button>
+                    if (imagesOnly)
+                    {
+                        <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('selectFile')" disabled>Select Image</button>
+                    }
+                    else
+                    {
+                        <button id="btnSelectFile" type="button" class="btn btn-sm btn-secondary" onclick="btnClick('selectFile')" disabled>Select File</button>
+                    }
+                    <button id="btnClear" type="button" class="btn btn-sm btn-primary" title="Clear list of selected items" style="display:none">Clear Selected</button>
+                    <button id="btnShowSelected" type="button" class="btn btn-sm btn-primary" title="Show list of selected items" style="display:none">Show Selected</button>
                 }
                 else
                 {
@@ -198,7 +224,14 @@
                         {
                             <tr scope="row">
                                 <td scope="row" style="width:30px;">
-                                    <input type='checkbox' class='gridCheckBox' data-ccms-isdir='@row.IsDirectory' data-ccms-blob='@row.Path.Trim('/')'>
+                                    @if (selectOne && row.IsDirectory)
+                                    {
+                                        <input type='checkbox' class='gridCheckBox' data-ccms-isdir='@row.IsDirectory' data-ccms-blob='@row.Path.Trim('/')' disabled>
+                                    }
+                                    else
+                                    {
+                                        <input type='checkbox' class='gridCheckBox' data-ccms-isdir='@row.IsDirectory' data-ccms-blob='@row.Path.Trim('/')'>
+                                    }
                                 </td>
                                 <td style="width:30px;">
                                     @if (row.IsDirectory)
@@ -588,7 +621,7 @@
                     path = item.substring(0, lastIndex + 1);
                 }
 
-                const target = '<a title="Click to reveal this item in its containing folder" href="@Url.Action(action, controller)?target=' + path + '& container=@container&directoryOnly=@directoryOnly">' + item + '</a>';
+                const target = '<a title="Click to reveal this item in its containing folder" href="@(baseUrl)target=' + path + '">' + item + '</a>';
 
                 count++;
                 table += '<tr scope="row"><td>' + count + '</td><td>' + target + '</td></tr>';
@@ -690,18 +723,28 @@
         }
 
         if (arrayLength === 1) {
+
+            $("#btnSelectFile").prop('disabled', false);
+            replaceCssClass($("#btnSelectFile"), "btn-secondary", "btn-primary");
+
             $("#btnMoveItems").prop('disabled', false);
             replaceCssClass($("#btnMoveItems"), "btn-secondary", "btn-primary");
 
             $("#btnRename").prop('disabled', false);
             $("#btnRename").prop('title', "Click to rename.");
             replaceCssClass($("#btnRename"), "btn-secondary", "btn-primary");
+
         } else {
+
+            $("#btnSelectFile").prop('disabled', true);
+            replaceCssClass($("#btnSelectFile"), "btn-primary", "btn-secondary");
+
             $("#btnRename").prop('disabled', true);
             replaceCssClass($("#btnRename"), "btn-primary", "btn-secondary");
 
             $("#btnMoveItems").prop('disabled', true);
             replaceCssClass($("#btnMoveItems"), "btn-primary", "btn-secondary");
+
         }
     }
 
@@ -720,7 +763,7 @@
         switch (command) {
             case "cancel":
                 clearPaths();
-                window.location.href = '@Url.Action(action, controller)?target=@pathPrefix&container=@container';
+                window.location.href = '@(baseUrl)';
                 break;
             case "delete":
                 if (arrayLength == 1) {
@@ -742,7 +785,7 @@
                             clearSelection();
                             hideModals();
                             // Reload
-                            window.location.href = '@Url.Action(action, controller)?target=@pathPrefix&container=@container';
+                            window.location.href = '@(baseUrl)';
                         });
                 }
                 break;
@@ -789,7 +832,7 @@
                     showModal("busy", "Moving item(s)");
                     sessionStorage.setItem("itemsToMove", sessionStorage.getItem("paths"));
                     clearSelection();
-                    window.location.href = '@Url.Action(action, controller)?target=@pathPrefix&directoryOnly=true&container=@container'
+                    window.location.href = '@(baseUrl)target=@pathPrefix'
                 };
                 break;
             case "moveItems":
@@ -816,12 +859,25 @@
                         })
                         .done(function () {
                             clearSelection();
-                            window.location.href = '@Url.Action(action, controller)?target=' + dest + '&container=@container';
+                            window.location.href = '@(baseUrl)target=' + dest;
                         })
                         .fail(function () {
                             alert("error");
                             hideModals();
                         });
+                }
+                break;
+            case "selectFile":
+                {
+                    let lastIndex = paths[0].replace(new RegExp("\/*$"), '').lastIndexOf('/');
+
+                    if (lastIndex === -1 || lastIndex === paths[0].length) {
+                        alert("Selected file: " + paths[0]);
+                    } else {
+                        // Can only select files
+                        clearSelection();
+                    }
+
                 }
                 break;
         }
