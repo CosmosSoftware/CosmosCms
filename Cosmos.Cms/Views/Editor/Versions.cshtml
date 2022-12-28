@@ -80,7 +80,7 @@
                                         }
                                         else
                                         {
-                                            <a class='btn btn-sm btn-secondary' title='Open code editor' href='/Editor/EditCode/@row.Id'><i class='fa fa-edit'></i></a>
+                                            <a class='btn btn-sm btn-secondary' title='Open Monaco/VS Code editor' href='/Editor/EditCode/@row.Id'><img src="/images/monaco-vscode-logo.png" height="22" /></a>
                                         }
                                         @if ((isAuthor && row.Published != null) || (isReviewer) || row.UsesHtmlEditor == false)
                                         {
@@ -88,7 +88,7 @@
                                         }
                                         else
                                         {
-                                            <a class='btn btn-sm btn-secondary' title='Open Html WYSIWYG editor' href='/Editor/Edit/@row.Id'><i class='fa-brands fa-html5'></i></a>
+                                            <a class='btn btn-sm btn-secondary' title='CKEditor (WYSIWYG editor)' href='/Editor/Edit/@row.Id'><img src="/images/ckeditor-5-proj-logo.svg" height="22" /></a>
                                         }
                                         @if (isReviewer)
                                         {

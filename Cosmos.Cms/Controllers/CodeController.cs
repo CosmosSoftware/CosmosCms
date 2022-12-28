@@ -402,9 +402,11 @@ namespace Cosmos.Cms.Controllers
         /// <param name="pageNo"></param>
         /// <param name="pageSize"></param>
         /// <param name="directoryOnly"></param>
+        /// <param name="selectOne"></param>
+        /// <param name="imagesOnly"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Source(string target, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10, bool directoryOnly = false)
+        public async Task<IActionResult> Source(string target, string sortOrder = "asc", string currentSort = "Name", int pageNo = 0, int pageSize = 10, bool directoryOnly = false, bool selectOne = false, bool imagesOnly = false)
         {
             target = string.IsNullOrEmpty(target) ? "" : HttpUtility.UrlDecode(target);
 
@@ -415,6 +417,8 @@ namespace Cosmos.Cms.Controllers
             ViewData["TopDirectory"] = "/";
             ViewData["Controller"] = "Code";
             ViewData["Action"] = "Source";
+            ViewData["SelectOne"] = selectOne;
+            ViewData["ImagesOnly"] = imagesOnly;
 
             //
             // Grid pagination
