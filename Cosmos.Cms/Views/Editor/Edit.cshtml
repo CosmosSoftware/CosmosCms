@@ -440,6 +440,8 @@
             const anchor = ckeditor.data.toModel(viewFragment);
             ckeditor.model.insertContent(anchor);
             ckeditor.editing.view.focus();
+
+            clearFileMgrPaths();
         });
     }
     
@@ -454,6 +456,8 @@
             const anchor = ckeditor.data.toModel(viewFragment);
             ckeditor.model.insertContent(anchor);
             ckeditor.editing.view.focus();
+
+            clearFileMgrPaths();
         });
     }
 

@@ -9,11 +9,12 @@
 
 <style>
     /* Set menu options */
-    
+
     #btnCcmsCodeEditor,
     #liBtnVersions {
         display: none !important;
     }
+
     #btnCcmsHtmlEditor {
         display: block !important;
     }
@@ -25,9 +26,9 @@
         @{
             foreach (var field in fields)
             {
-             <li class="nav-item">
-               <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-              </li>
+                <li class="nav-item">
+                    <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+                </li>
                 aclass = "";
             }
         }
@@ -53,13 +54,10 @@
 </form>
 
 <script>
-    var next;
-
     var editor;
     var fieldId;
     var fieldName;
     var ccmsEditorIsLocked = false;
-    let pickPageModal = new bootstrap.Modal(document.getElementById('pickPageModal'));
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -264,12 +262,25 @@
         pickPageModal.show();
     }
 
-    function insertFileLink() {
+    function openInsertFileLinkModel() {
+
+        if (typeof editor === "undefined" || editor === null) {
+            alert("Error: Could not open code editor.");
+            return;
+        }
+
+        openSelectFileModal("file", insertFileLink);
 
     }
 
-    function imageLink() {
+    function openInsertImageModel() {
 
+        if (typeof editor === "undefined" || editor === null) {
+            alert("Error: Could not open code editor.");
+            return;
+        }
+
+        openSelectFileModal("image", insertImage);
     }
 
     function insertPageLink() {
@@ -286,10 +297,34 @@
 
         pickPageModal.hide();
 
-        var link = "<a target='_blank' href='/" + selectedAnchorData.url + "'>" + inputLinkText + "</a>";
+        const link = "<a target='_blank' href='/" + selectedAnchorData.url + "'>" + inputLinkText + "</a>";
 
         // insert text here
-        editor.trigger('keyboard', 'type', { text: link })
+        editor.trigger('keyboard', 'type', { text: link });
+    }
+
+    function insertFileLink(path) {
+
+        clearFileMgrPaths();
+
+        const url = fileBaseUrl + "/" + path;
+
+        const link = "<a href='" + url + "'>" + path + "</a>";
+
+        // insert text here
+        editor.trigger('keyboard', 'type', { text: link });
+    }
+
+    function insertImage(path) {
+
+        clearFileMgrPaths();
+
+        const url = fileBaseUrl + "/" + path;
+
+        const image = "<img src='" + url + "' />";
+
+        // insert text here
+        editor.trigger('keyboard', 'type', { text: image });
     }
 
     $(document).ready(function () {
@@ -319,13 +354,40 @@
             $(event.target).addClass("active");
         });
 
-        $("#btnOpenLink").show();
         $("#liBtnVersions").show();
 
         $("#divTitleGroup").show();
         $("#divPublihedTitleGroup").show();
+        $("#ddInsert").show();
 
         $("#btnVersions").attr("href", "/Editor/Versions/" + $("#ArticleNumber").val() + "?versionNumber=" + $("#VersionNumber").val());
+
+        $("#btnOpenLink").click(function (e) {
+            if (openPickPageModal) {
+                openPickPageModal();
+            }
+            else {
+                alert("Could not find openPickPageModal().");
+            }
+        });
+        
+        $("#btnOpenInsertFileLink").click(function (e) {
+            if (openInsertFileLinkModel) {
+                openInsertFileLinkModel();
+            }
+            else {
+                alert("Could not find openInsertFileLinkModel().");
+            }
+        });
+
+        $("#btnOpenInsertImage").click(function (e) {
+            if (openInsertImageModel) {
+                openInsertImageModel();
+            }
+            else {
+                alert("Could not find openInsertImageModel().");
+            }
+        });
     });
 
     $(window).bind('keydown', function (event) {
@@ -342,7 +404,7 @@
     var timeout;
 
     $(window).bind('keyup', function (event) {
-       // Clear the timeout if it has already been set.
+        // Clear the timeout if it has already been set.
         // This will prevent the previous task from executing
         // if it has been less than <MILLISECONDS>
         clearTimeout(timeout);
@@ -369,7 +431,7 @@
                 <h5 class="modal-title">Article Versions</h5>
             </div>
             <div class="modal-body">
-               @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
+                @* @Html.AjaxGrid(Url.Action("Versions", "Editor", new { Id = Model.ArticleNumber }))*@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
