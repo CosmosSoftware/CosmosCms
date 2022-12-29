@@ -244,7 +244,7 @@
                                             <button class="btn btn-sm btn-secondary ccms-clip-board" title="Copy URL to clipbard" data-clipboard-text="@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')/@row.Path"><i class="fa-regular fa-clipboard"></i></button>
                                             @if (editorExtensions.Contains(row.Extension))
                                             {
-                                                <a class='btn btn-sm btn-secondary' title='Open code editor' href='/FileManager/EditCode?path=@row.Path&container=@container'><i class='fa fa-edit'></i></a>
+                                                <a class='btn btn-sm btn-secondary' title='Edit with Monaco/VS Code editor' href='/FileManager/EditCode?path=@row.Path&container=@container'><img src="/images/monaco-vscode-logo.png" height="22" /></a>
                                             }
                                         }
                                     </div>

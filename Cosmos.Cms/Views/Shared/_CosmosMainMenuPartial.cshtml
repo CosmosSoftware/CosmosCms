@@ -162,27 +162,20 @@
     }
 
     $(document).ready(function () {
-        $("#btnPublicWebsite").click(function () {
-            let publicBaseUrl = "@options.Value.SiteSettings.PublisherUrl.TrimEnd('/')";
-
-            const iframe = document.getElementById("iFrameWebPage");
-
-            if (typeof iframe !== "undefined" || iframe !== null) {
-                const iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
-                var urlPath = iframeWin.ccmsUrlPath;
-
-                urlPath = urlPath.trimStart().replace(/^\//g, '');
-
-                if (urlPath === "root") {
-                    urlPath = "";
-                }
-
-                const url = publicBaseUrl + "/" + urlPath;
-                window.open(url, '_blank');
-            }
-            else {
-                window.open(publicBaseUrl, '_blank');
-            }
-        });
+        setPublicSiteUrl();
     });
+
+    function setPublicSiteUrl() {
+
+        let publicBaseUrl = "@options.Value.SiteSettings.PublisherUrl.TrimEnd('/')";
+
+        const iframe = document.getElementById("iFrameWebPage");
+
+        if (typeof iframe !== "undefined" || iframe !== null) {
+            var url = new URL(iframe.src);
+            publicBaseUrl += url.pathname + url.search + url.hash;
+        }
+
+        $("#btnPublicWebsite").attr("href", publicBaseUrl);
+    }
 </script>
