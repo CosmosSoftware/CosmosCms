@@ -397,7 +397,6 @@ namespace Cosmos.Cms.Controllers
             }
 
             var directory = $"/pub/articles/{Id}/";
-            //var fileName = Path.GetFileNameWithoutExtension(file.FileName);
             //var extension = Path.GetExtension(file.FileName);c
             var blobEndPoint = _options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/');
 
@@ -439,8 +438,6 @@ namespace Cosmos.Cms.Controllers
             {
                 return Json(ReturnSimpleErrorMessage(e.Message));
             }
-
-
 
 
         }
@@ -1224,59 +1221,61 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         /// Edit an image
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="target"></param>
         /// <returns></returns>
-        public async Task<IActionResult> EditImage(string path)
+        public IActionResult EditImage(string target)
         {
-            var extension = Path.GetExtension(path.ToLower());
+            if (string.IsNullOrEmpty(target))
+                return NotFound();
+
+            ViewData["ImageTarget"] = target;
+            var extension = Path.GetExtension(target.ToLower());
 
             var filter = new[] { ".png", ".jpg", ".gif", ".jpeg" };
             if (filter.Contains(extension))
             {
-                EditorMode mode;
-                switch (extension)
-                {
-                    case ".js":
-                        mode = EditorMode.JavaScript;
-                        break;
-                    case ".css":
-                        mode = EditorMode.Css;
-                        break;
-                    default:
-                        mode = EditorMode.Html;
-                        break;
-                }
-
-                // Open a stream
-                await using var memoryStream = new MemoryStream();
-
-                await using (var stream = await _storageContext.OpenBlobReadStreamAsync(path))
-                {
-                    // Load into memory and release the blob stream right away
-                    await stream.CopyToAsync(memoryStream);
-                }
-
-                return View(new FileManagerEditCodeViewModel
-                {
-                    Id = path,
-                    Path = path,
-                    EditorTitle = Path.GetFileName(Path.GetFileName(path)),
-                    EditorFields = new List<EditorField>
-                    {
-                        new()
-                        {
-                            FieldId = "Content",
-                            FieldName = "Html Content",
-                            EditorMode = mode
-                        }
-                    },
-                    Content = Encoding.UTF8.GetString(memoryStream.ToArray()),
-                    EditingField = "Content",
-                    CustomButtons = new List<string>()
-                });
+                return View();
             }
 
             return new UnsupportedMediaTypeResult();
+        }
+
+        /// <summary>
+        /// Image editor post image back to storage
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> EditImage(FileRobotImagePost model)
+        {
+            // Convert base 64 string to byte[]
+            var data = model.imageBase64.Split(',')[1];
+
+            byte[] imageBytes = Convert.FromBase64String(data);
+            // Create a stream and build an image object
+            using var ms = new MemoryStream(imageBytes);
+
+            var image = await SixLabors.ImageSharp.Image.LoadAsync(ms);
+
+            using var output = new MemoryStream();
+            
+            switch (model.extension)
+            {
+                case "jpg":
+                    await image.SaveAsJpegAsync(output);
+                    break;
+                case "png":
+                    await image.SaveAsPngAsync(output);
+                    break;
+                case "gif":
+                    await image.SaveAsGifAsync(output);
+                    break;
+                case "webp":
+                    await image.SaveAsWebpAsync(output);
+                    break;
+            }
+
+            return Ok();
         }
 
         #endregion

@@ -6,6 +6,7 @@
     var publisherUrl = ViewData["PublisherUrl"];
     var directoryOnly = (bool)ViewData["DirectoryOnly"];
     var editorExtensions = new string[] { ".js", ".css", ".html", ".htm", ".json", ".xml" };
+    var imageEditorExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
     var container = (string)ViewData["Container"];
     var topDirectory = (string)ViewData["TopDirectory"];
     var rowCount = (int)ViewData["RowCount"];
@@ -244,7 +245,11 @@
                                             <button class="btn btn-sm btn-secondary ccms-clip-board" title="Copy URL to clipbard" data-clipboard-text="@options.Value.SiteSettings.BlobPublicUrl.TrimEnd('/')/@row.Path"><i class="fa-regular fa-clipboard"></i></button>
                                             @if (editorExtensions.Contains(row.Extension))
                                             {
-                                                <a class='btn btn-sm btn-secondary' title='Edit with Monaco/VS Code editor' href='/FileManager/EditCode?path=@row.Path&container=@container'><img src="/images/monaco-vscode-logo.png" height="22" /></a>
+                                                <a class='btn btn-sm btn-secondary' title='Monaco/VS Code editor' href='/FileManager/EditCode?path=@row.Path&container=@container'><img src="/images/monaco-vscode-logo.png" height="22" /></a>
+                                            }
+                                            @if (imageEditorExtensions.Contains(row.Extension))
+                                            {
+                                                <a class='btn btn-sm btn-secondary' title='Filerobot image editor' href='/FileManager/EditImage?target=@row.Path'><img src="/images/filerobot-icon.png" height="22" /></a>
                                             }
                                         }
                                     </div>
