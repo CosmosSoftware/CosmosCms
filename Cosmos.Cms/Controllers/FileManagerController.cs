@@ -1231,7 +1231,7 @@ namespace Cosmos.Cms.Controllers
             ViewData["ImageTarget"] = target;
             var extension = Path.GetExtension(target.ToLower());
 
-            var filter = new[] { ".png", ".jpg", ".gif", ".jpeg" };
+            var filter = new[] { ".png", ".jpg", ".gif", ".jpeg", ".webp" };
             if (filter.Contains(extension))
             {
                 return View();
@@ -1273,6 +1273,29 @@ namespace Cosmos.Cms.Controllers
                 case "webp":
                     await image.SaveAsWebpAsync(output);
                     break;
+            }
+
+            var contentType = MimeTypeMap.GetMimeType(Path.GetExtension(model.fullName));
+
+            try
+            {
+                var metaData = new FileUploadMetaData()
+                {
+                    ChunkIndex = 0,
+                    ContentType = contentType,
+                    FileName = model.fullName,
+                    RelativePath = model.folder + "/" + model.fullName,
+                    TotalChunks = 1,
+                    TotalFileSize = output.Length,
+                    UploadUid = Guid.NewGuid().ToString()
+                };
+
+                _storageContext.AppendBlob(output, metaData);
+
+            }
+            catch (Exception e)
+            {
+                return Json(ReturnSimpleErrorMessage(e.Message));
             }
 
             return Ok();

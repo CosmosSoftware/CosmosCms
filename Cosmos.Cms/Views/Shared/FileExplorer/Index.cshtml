@@ -85,7 +85,7 @@
         <div class="col-md-12 text-truncate">
             <nav class="d-flex bg-dark">
                 <h6 class="mb-3 mt-3 text-bg-dark">
-                    <a class="text-reset" href="@(baseUrl)target=/"><i class="fa-solid fa-house"></i></a>
+                    <a class="text-reset" href="@Html.Raw(baseUrl)target=/"><i class="fa-solid fa-house"></i></a>
 
                     @{
                         var p = "";
@@ -99,11 +99,11 @@
 
                         if (counter == pathParts.Count)
                         {
-                            <span>/</span> <a class="text-reset font-weight-bold" href="@(baseUrl)@href.TrimStart('/')">@item</a>
+                            <span>/</span> <a class="text-reset font-weight-bold" href="@Html.Raw(baseUrl)@href.TrimStart('/')">@item</a>
                         }
                         else
                         {
-                            <span>/</span> <a class="text-reset" href="@(baseUrl)@href">@item.TrimStart('/')</a>
+                            <span>/</span> <a class="text-reset" href="@Html.Raw(baseUrl)@href">@item.TrimStart('/')</a>
                         }
                     }
                 </h6>
@@ -231,7 +231,7 @@
                                 <td style="width:30px;">
                                     @if (row.IsDirectory)
                                     {
-                                        <a href='@(baseUrl)target=@row.Path'><i class='fa-solid fa-folder'></i></a>
+                                        <a href='@Html.Raw(baseUrl)target=@row.Path'><i class='fa-solid fa-folder'></i></a>
                                     }
                                     else
                                     {
@@ -257,7 +257,7 @@
                                 <td>
                                     @if (row.IsDirectory)
                                     {
-                                        <a href='@(baseUrl)target=@row.Path'>@row.Name</a>
+                                        <a href='@Html.Raw(baseUrl)target=@row.Path'>@row.Name</a>
                                     }
                                     else
                                     {
@@ -624,7 +624,7 @@
                     path = item.substring(0, lastIndex + 1);
                 }
 
-                const target = '<a title="Click to reveal this item in its containing folder" href="@(baseUrl)target=' + path + '">' + item + '</a>';
+                const target = '<a title="Click to reveal this item in its containing folder" href="@Html.Raw(baseUrl)target=' + path + '">' + item + '</a>';
 
                 count++;
                 table += '<tr scope="row"><td>' + count + '</td><td>' + target + '</td></tr>';
@@ -778,7 +778,7 @@
         switch (command) {
             case "cancel":
                 clearPaths();
-                window.location.href = '@(baseUrl)';
+                window.location.href = '@Html.Raw(baseUrl)target=@target';
                 break;
             case "delete":
                 if (arrayLength == 1) {
@@ -800,7 +800,7 @@
                             clearSelection();
                             hideModals();
                             // Reload
-                            window.location.href = '@(baseUrl)';
+                            window.location.href = '@Html.Raw(baseUrl)target=@target';
                         });
                 }
                 break;
@@ -847,7 +847,7 @@
                     showModal("busy", "Moving item(s)");
                     sessionStorage.setItem("itemsToMove", sessionStorage.getItem("paths"));
                     clearSelection();
-                    window.location.href = '@(baseUrl)target=@pathPrefix'
+                    window.location.href = '@Html.Raw(baseUrl)target=@pathPrefix'
                 };
                 break;
             case "moveItems":
@@ -874,7 +874,7 @@
                         })
                         .done(function () {
                             clearSelection();
-                            window.location.href = '@(baseUrl)target=' + dest;
+                            window.location.href = '@Html.Raw(baseUrl)target=' + dest;
                         })
                         .fail(function () {
                             alert("error");

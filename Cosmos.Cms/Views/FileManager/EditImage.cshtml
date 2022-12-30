@@ -36,8 +36,10 @@
     const config = {
         source: publicBlobBaseUrl + imagePath,
         onSave: (editedImageObject, designState) => {
+            showSaving();
             const data = {
                 name: editedImageObject.name,
+                fullName: editedImageObject.fullName,
                 extension: editedImageObject.extension,
                 mimeType: editedImageObject.mimeType,
                 imageBase64: editedImageObject.imageBase64,
@@ -50,7 +52,10 @@
 
             $.post("@Url.Action("EditImage","FileManager")", data)
                 .done(function (result) {
-                    alert("Result: " + result);
+                    showSaved();
+                })
+                .fail(function () {
+                    alert(result);
                 });
         },
         annotationsCommon: {
@@ -128,12 +133,18 @@
     function bgEditClickCustom(command) {
         switch (command) {
             case "Close":
-                next = function () {
-                    window.location.href = "/FileManager/Index?target=" + folder;
-                }
-                $("#divSaveFirstDialog").html("Save page before closing editor?");
-                checkFirstModal.show();
+                window.location.href = "/FileManager/Index?target=" + folder;
+                //$("#divSaveFirstDialog").html("Save page before closing editor?");
+                //checkFirstModal.show();
                 break;
         }
     }
+
+    $(document).ready(function () {
+        $("#btnSaveAsDraft").hide();
+        $("#btnSaveAndPublish").hide();
+        $("#btnPreview").hide();
+        $("#btnFiles").hide();
+        $("#btnSaveChanges").hide();
+    });
 </script>

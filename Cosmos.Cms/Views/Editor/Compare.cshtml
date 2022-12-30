@@ -62,14 +62,12 @@
 
 <nav class="code-tabs navbar">
     <ul class="nav nav-tabs " id="nav-tab">
-        @{
-            foreach (var field in fields)
-            {
-                                            <li class="nav-item">
-                                                <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
-                                            </li>
-                aclass = "";
-            }
+        @foreach (var field in fields)
+        {
+            <li class="nav-item">
+                <a class="code-tabs nav-link @aclass" title="@field.ToolTip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-ccms-fieldname="@field.FieldName" aria-current="page">@field.FieldName</a>
+            </li>
+            aclass = "";
         }
     </ul>
 </nav>

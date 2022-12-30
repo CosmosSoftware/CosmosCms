@@ -72,10 +72,10 @@
                                 <a class="dropdown-item" href="/Code/Source" target="_blank">Source code</a>
                             </li>
                             <li id="btnCcmsCodeEditor" style="display:none">
-                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code editor</a>
+                                <a class="dropdown-item" onclick="bgEditClick('Code')">Code editor <img src="/images/monaco-vscode-logo.png" height="20" /></a>
                             </li>
                             <li id="btnCcmsHtmlEditor" style="display:none">
-                                <a class="dropdown-item" onclick="bgEditClick('Html')">Html editor</a>
+                                <a class="dropdown-item" onclick="bgEditClick('Html')">Html editor <img src="/images/ckeditor-5-proj-logo.svg" height="20" /></a>
                             </li>
                             <li id="liBtnVersions" style="display:none">
                                 <a id="btnVersions" class="dropdown-item" href="#" target="_blank">Page versions</a>
@@ -446,12 +446,17 @@
             });
 
             $("#btnSave").click(function () {
-                if ($('#tbPublished').val() === "") {
-                    $("#btnSaveAsDraft").hide();
-                    $("#btnSaveAndPublish").show();
-                } else {
-                    $("#btnSaveAsDraft").show();
-                    $("#btnSaveAndPublish").hide();
+                // If the form contains a published hidden field,
+                // then toggle the save as draft and save and published
+                // buttons accordingly.
+                if (document.getElementById("Published") !== null) {
+                    if ($('#tbPublished').val() === "") {
+                        $("#btnSaveAsDraft").hide();
+                        $("#btnSaveAndPublish").show();
+                    } else {
+                        $("#btnSaveAsDraft").show();
+                        $("#btnSaveAndPublish").hide();
+                    }
                 }
             });
 

@@ -171,7 +171,7 @@
 
         const iframe = document.getElementById("iFrameWebPage");
 
-        if (typeof iframe !== "undefined" || iframe !== null) {
+        if (typeof iframe !== "undefined" && iframe !== null) {
             var url = new URL(iframe.src);
             publicBaseUrl += url.pathname + url.search + url.hash;
         }
