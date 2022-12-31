@@ -839,6 +839,7 @@ namespace Cosmos.Cms.Controllers
             }
 
             ViewData["Version"] = data.Version;
+            ViewData["Published"] = data.Published;
 
             return View(new EditScriptPostModel()
             {
@@ -879,7 +880,7 @@ namespace Cosmos.Cms.Controllers
             if (model == null) return NotFound();
 
             var entity = await _dbContext.NodeScripts.FindAsync(model.Id);
-
+            
             if (entity == null) return NotFound();
 
             // Validate security for authors before going further
@@ -905,6 +906,15 @@ namespace Cosmos.Cms.Controllers
                     entity.Description = model.Description;
                     entity.Roles = string.IsNullOrEmpty(model.RoleList) ? null : model.RoleList.Split(',');
 
+                    if (model.SaveAsNewVersion.HasValue && model.SaveAsNewVersion.Value)
+                    {
+                        _dbContext.Entry(entity).State = EntityState.Detached;
+                        entity.Id = Guid.NewGuid();
+                        var last = await _dbContext.NodeScripts.Where(w => w.EndPoint == model.EndPoint).MaxAsync(m => m.Version);
+                        entity.Version = last + 1;
+                        _dbContext.NodeScripts.Add(entity); // Now add this as a new version
+                    }
+
                     await _dbContext.SaveChangesAsync();
                     model.IsValid = true;
 
@@ -916,6 +926,7 @@ namespace Cosmos.Cms.Controllers
                 }
             }
 
+            ViewData["Published"] = model.Published;
 
             return Json(model);
         }

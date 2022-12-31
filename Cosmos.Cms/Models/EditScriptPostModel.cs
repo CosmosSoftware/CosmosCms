@@ -97,5 +97,10 @@ namespace Cosmos.Cms.Models
         [Required]
         [MinLength(2)]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Indicates if this is to be saved as a new version.
+        /// </summary>
+        public bool? SaveAsNewVersion { get; set; }
     }
 }

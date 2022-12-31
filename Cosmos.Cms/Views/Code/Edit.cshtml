@@ -52,6 +52,17 @@
             color: white;
             border-color: black;
         }
+
+    /* Set menu options */
+
+    #btnCcmsCodeEditor,
+    #liBtnVersions,
+    #btnPreview,
+    #btnFiles,
+    #btnCcmsHtmlEditor {
+        display: none !important;
+    }
+
 </style>
 
 <nav class="code-tabs navbar">
@@ -121,13 +132,13 @@
                     <input type="hidden" asp-for="EditingField" />
                     <input type="hidden" asp-for="Code" />
                     <input type="hidden" asp-for="Config" />
-                    <input type="hidden" asp-for="Title" />
                     <input type="hidden" asp-for="Version" />
                     <input type="hidden" asp-for="EditorTitle" />
                     <input type="hidden" asp-for="IsValid" />
                     <input type="hidden" asp-for="Published" />
                     <input type="hidden" asp-for="RoleList" />
                     <input type="hidden" asp-for="EditorType" />
+                    <input type="hidden" asp-for="SaveAsNewVersion" />
                 </form>
             </div>
         </div>
@@ -135,8 +146,6 @@
 </div>
 
 <script>
-    var next;
-
     var editor;
     var fieldId;
     var ccmsEditorIsLocked = false;
@@ -253,13 +262,30 @@
             form.serialize(),
             function (response) {
 
-                //doneSaving();
+                doneSaving();
 
                 if (response.IsValid) {
                     if (typeof (next) !== "undefined" && next !== null) {
+                        $("#SaveAsNewVersion").val(false);
                         next();
+
+                        $("#Id").val(response.Model.Id);
+                        $("#EndPoint").val(response.Model.EndPoint);
+                        $("#Title").val(response.Model.Title);
+                        $("#EditingField").val(response.Model.EditingField);
+                        $("#Code").val(response.Model.Code);
+                        $("#Config").val(response.Model.Config);
+                        $("#Version").val(response.Model.Version);
+                        $("#EditorTitle").val(response.Model.EditorTitle);
+                        $("#IsValid").val(response.Model.IsValid);
+                        $("#Published").val(response.Model.Published);
+                        $("#RoleList").val(response.Model.RoleList);
+                        $("#EditorType").val(response.Model.EditorType);
+                        $("#SaveAsNewVersion").val(response.Model.SaveAsNewVersion);
+
+                        toastMsg("Successfully saved.");
                     }
-                    //toastMsg("Successfully saved.");
+                    
                 } else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
 
@@ -292,7 +318,7 @@
         switch (command) {
             case "Close":
                 next = function () {
-                    window.location.href = "@Url.Action("Index", "Code")";
+                    window.location.href = "@Url.Action("Versions", "Code", new { Id = Model.EndPoint })";
                 }
                 $("#divSaveFirstDialog").html("Save page before closing editor?");
                 checkFirstModal.show();
@@ -314,6 +340,9 @@
     }
 
     $(document).ready(function () {
+        
+        $("#divPublihedTitleGroup").show();
+
         var fieldId = "@Model.EditingField";
         if (fieldId !== "") {
             var fieldInfo = editFields.find(o => o.FieldId === fieldId);
@@ -349,12 +378,3 @@
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js" integrity="sha256-Nz+9xAJobnwZzjWKswoVGvxZhOdjpb9ILmKxOalIdsE=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es@5.1.2/dist/emmet-monaco.min.js" integrity="sha256-Gb6qD/EEAJEQ9x+nK9stef5r42hUQ9zazvr0vJAGiFE=" crossorigin="anonymous"></script>
 
-<style>
-    #lblTitle, #tbTitle, #timeZone, #lblPublished, #tbPublished, #btnPreview, #btnFiles, #liBtnVersions, #btnSaveAndPublish {
-        display:none !important;
-    }
-
-    #btnSourceCode {
-        display: block !important;
-    }
-</style>

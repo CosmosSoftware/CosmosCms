@@ -61,13 +61,25 @@
                         {
                             <tr scope="row">
                                 <td scope="row">
-                                    <a asp-action="Versions" asp-route-id="@row.EndPoint" title="Select" class="btn btn-sm fa-solid fa-play"></a>
+                                    <a asp-action="Versions" asp-route-id="@row.EndPoint" title="View version list for this endpoint" class="btn btn-sm fa-solid fa-play"></a>
                                 </td>
                                 <td scope="row">
-                                    @row.EndPoint
+                                    <a asp-action="Versions" asp-route-id="@row.EndPoint" title="View version list for this endpoint">@row.EndPoint</a>
+                                    @if (row.Published.HasValue)
+                                    {
+                                        <small class="d-block">
+                                            <span class="badge badge-primary"> Published: </span><span class='toLocalTimeZone'>@row.Published.Value</span>
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="d-block">
+                                            <span class="badge badge-secondary">- DRAFT -</span>
+                                        </small>
+                                    }
                                 </td>
                                 <td scope="row">
-                                    @Html.Raw(row.Description)
+                                    <a asp-action="Versions" asp-route-id="@row.EndPoint" title="View version list for this endpoint">@Html.Raw(row.Description)</a>
                                 </td>
                                 <td>
                                     <div class='toLocalTimeZone'>@row.Updated</div>
