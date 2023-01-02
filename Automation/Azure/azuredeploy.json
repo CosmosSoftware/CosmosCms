@@ -128,7 +128,8 @@
                             if(equals(parameters('webAppPlanChoice'), 'Free Tier'), 'Free', ''),
                             if(equals(parameters('webAppPlanChoice'), 'Shared Tier'), 'Shared', ''),
                             if(equals(parameters('webAppPlanChoice'), 'Basic Tier'), 'Basic', ''),
-                            if(equals(parameters('webAppPlanChoice'), 'Standard Tier'), 'Standard', ''))]",
+                            if(equals(parameters('webAppPlanChoice'), 'Standard Tier'), 'Standard', '')
+                        )]",
                 "size": "[variables('webAppPlanSku')]",
                 "family": "[concat(
                             if(equals(parameters('webAppPlanChoice'), 'Free Tier'), 'F', ''),
