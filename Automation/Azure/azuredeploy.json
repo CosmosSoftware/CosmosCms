@@ -16,10 +16,34 @@
             "metadata": {
                 "description": "SendGrid account API Key for this application."
             }
+        },
+        "installCosmosDbFreeAccount": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [ true, false ],
+            "metadata": {
+                "description": "Choose to install the free tier version of Cosmos DB."
+            }
+        },
+        "webAppPlanChoice": {
+            "type": "string",
+            "defaultValue": "Free Tier",
+            "allowedValues": [ "Free Tier", "Shared Tier", "Basic Tier", "Standard Tier" ]
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Locally-redundant storage",
+            "allowedValues": [ "Locally-redundant storage", "Geo-redundant storage" ]
         }
     },
     "functions": [],
     "variables": {
+        "webAppPlanSku": "[concat(
+            if(equals(parameters('webAppPlanChoice'), 'Free Tier'), 'F1', ''),
+            if(equals(parameters('webAppPlanChoice'), 'Shared Tier'), 'D1', ''),
+            if(equals(parameters('webAppPlanChoice'), 'Basic Tier'), 'B1', ''),
+            if(equals(parameters('webAppPlanChoice'), 'Standard Tier'), 'S1', '')
+         )]",
         "location": "[resourceGroup().location]",
         "storageAccountName": "[concat('files', uniquestring(resourceGroup().id))]",
         "appServicePlanName": "[concat('appplan', uniquestring(resourceGroup().id))]",
@@ -35,7 +59,7 @@
             "name": "[toLower(variables('accountName'))]",
             "location": "[variables('location')]",
             "properties": {
-                "enableFreeTier": false,
+                "enableFreeTier": "[parameters('installCosmosDbFreeAccount')]",
                 "databaseAccountOfferType": "Standard",
                 "consistencyPolicy": {
                     "defaultConsistencyLevel": "Session"
@@ -73,7 +97,7 @@
             "location": "[variables('location')]",
             "kind": "StorageV2",
             "sku": {
-                "name": "Standard_RAGRS",
+                "name": "[if(equals(parameters('storageAccountType'), 'Locally-redundant storage'), 'Standard_LRS', 'Standard_RAGRS')]",
                 "tier": "Standard"
             }
         },
@@ -99,10 +123,18 @@
             "name": "[variables('appServicePlanName')]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "B1",
-                "tier": "Basic",
-                "size": "B1",
-                "family": "B",
+                "name": "[variables('webAppPlanSku')]",
+                "tier": "[concat(
+                            if(equals(parameters('webAppPlanChoice'), 'Free Tier'), 'Free', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Shared Tier'), 'Shared', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Basic Tier'), 'Basic', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Standard Tier'), 'Standard', ''))]",
+                "size": "[variables('webAppPlanSku')]",
+                "family": "[concat(
+                            if(equals(parameters('webAppPlanChoice'), 'Free Tier'), 'F', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Shared Tier'), 'D', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Basic Tier'), 'B', ''),
+                            if(equals(parameters('webAppPlanChoice'), 'Standard Tier'), 'S', ''))]",
                 "capacity": 1
             },
             "kind": "linux",
@@ -150,7 +182,6 @@
                     "numberOfWorkers": 1,
                     "linuxFxVersion": "DOCKER|toiyabe/cosmoseditor:latest",
                     "acrUseManagedIdentityCreds": false,
-                    "alwaysOn": true,
                     "http20Enabled": true,
                     "functionAppScaleLimit": 0,
                     "minimumElasticInstanceCount": 0
@@ -179,7 +210,7 @@
                         "displayName": "appsettings"
                     },
                     "properties": {
-                        "AzureBlobStorageEndPoint":"[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-07-01').primaryEndpoints.web]",
+                        "AzureBlobStorageEndPoint": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2018-07-01').primaryEndpoints.web]",
                         "AzureBlobStorageContainerName": "$web",
                         "AzureBlobStorageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',concat(listKeys(concat(resourceGroup().id,'/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName')),'2015-05-01-preview').key1))]",
                         "CosmosAdminEmail": "[parameters('adminEmail')]",
@@ -248,7 +279,7 @@
                 "scmType": "None",
                 "use32BitWorkerProcess": true,
                 "webSocketsEnabled": true,
-                "alwaysOn": true,
+                "alwaysOn": "[if(or(equals(parameters('webAppPlanChoice'), 'Basic Tier'), equals(parameters('webAppPlanChoice'), 'Standard Tier')), 'true', 'false')]",
                 "managedPipelineMode": "Integrated",
                 "virtualApplications": [
                     {
@@ -294,7 +325,7 @@
                 "functionsRuntimeScaleMonitoringEnabled": false,
                 "minimumElasticInstanceCount": 1,
                 "azureStorageAccounts": {
-                   "ccmssrc": {
+                    "ccmssrc": {
                         "type": "AzureFiles",
                         "accountName": "[variables('storageAccountName')]",
                         "shareName": "ccmsshare",
@@ -335,7 +366,7 @@
                     "numberOfWorkers": 1,
                     "linuxFxVersion": "DOCKER|toiyabe/cosmospublisher:latest",
                     "acrUseManagedIdentityCreds": false,
-                    "alwaysOn": true,
+                    "alwaysOn":  "[if(or(equals(parameters('webAppPlanChoice'), 'Basic Tier'), equals(parameters('webAppPlanChoice'), 'Standard Tier')), 'true', 'false')]",
                     "http20Enabled": true,
                     "functionAppScaleLimit": 0,
                     "minimumElasticInstanceCount": 0,
@@ -383,7 +414,7 @@
                         "[resourceId('Microsoft.Web/sites', variables('publisherName'))]"
                     ],
                     "properties": {
-                         "ApplicationDbContextConnection": {
+                        "ApplicationDbContextConnection": {
                             "value": "[listConnectionStrings(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('accountName')), '2019-12-12').connectionStrings[0].connectionString]",
                             "type": "Custom"
                         }

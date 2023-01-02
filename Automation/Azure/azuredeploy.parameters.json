@@ -4,6 +4,19 @@
     "parameters": {
         "sendGridApiKey": {
             "value": ""
-        }
+        },
+        "adminEmail": {
+            "value": ""
+        },
+        "installCosmosDbFreeAccount": {
+            "value": false
+        },
+        "storageAccountType": {
+            "value": "Locally-redundant storage"
+        },
+        "webAppPlanChoice": {
+            "value": "Free Tier"
+        },
+        ""
     }
 }
