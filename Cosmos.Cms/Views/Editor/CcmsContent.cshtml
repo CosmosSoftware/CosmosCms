@@ -31,7 +31,7 @@
     *@
     @Html.Raw(Model.FooterJavaScript)
 
-    <script src="/lib/ckeditor/build_20221226.01/ckeditor.js"></script>
+    <script src="/lib/ckeditor/build_20230104.01/ckeditor.js"></script>
     <script>
 
         // Create editors
@@ -119,7 +119,7 @@
                     //config.toolbar.items = ['heading', '|', 'link'];
                 }
 
-                InlineEditor
+                BalloonEditor
                     .create(inlineElement, config)
                     .then(editor => {
                         window.editor = editor;
