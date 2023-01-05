@@ -75,6 +75,32 @@
                             { model: 'heading5', view: 'h5', title: 'Heading 4' },
                             { model: 'heading6', view: 'h6', title: 'Heading 5' }
                         ]
+                    },
+                    link: {
+                        decorators: {
+                            toggleDownloadable: {
+                                mode: 'manual',
+                                label: 'Downloadable',
+                                attributes: {
+                                    download: 'file'
+                                }
+                            },
+                            openInNewTab: {
+                                mode: 'manual',
+                                label: 'Open in a new tab',
+                                defaultValue: true,			// This option will be selected by default.
+                                attributes: {
+                                    target: '_blank'
+                                }
+                            },
+                            btnClass: {
+                                model: 'manual',
+                                label: 'CSS class',
+                                attributes: {
+                                    class: ''
+                                }
+                            }
+                        }
                     }
                 };
 

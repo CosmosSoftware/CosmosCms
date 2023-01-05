@@ -227,7 +227,17 @@
             // If there are "editable" areas being edited, use this method to save changes
             if (typeof (ccms_editibleAreas) !== "undefined" && ccms_editibleAreas.length > 0) {
                 const p = postRegions(ccms_editibleAreas);
-                p.then(doneSaving());
+
+                p.then(
+                    function () {
+                        doneSaving();
+                        if (typeof (next) !== "undefined" && next !== null) {
+                            next();
+                            toastMsg("Successfully saved.");
+                        }
+                    }
+                );
+
                 return;
             }
 
