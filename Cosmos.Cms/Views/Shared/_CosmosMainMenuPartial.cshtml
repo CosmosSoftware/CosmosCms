@@ -118,9 +118,9 @@
                     div += "<div class='btn-group btn-group-sm' role='group'>";
 
                     if (element.UsesHtmlEditor === true) {
-                        div += "<a class='btn btn-sm btn-secondary' title='Use HTML (WSYWIG) editor' href='/Editor/Edit/" + element.Id + "' style='width:90px;'>";
+                        div += "<a class='btn btn-sm btn-secondary' title='Use the live view editor' href='/Editor/Edit/" + element.Id + "' style='width:90px;'>";
                     } else {
-                        div += "<a class='btn btn-sm btn-secondary' title='Edit using VS Code' href='/Editor/EditCode/" + element.Id + "' style='width:90px;'>";
+                        div += "<a class='btn btn-sm btn-secondary' title='Code editor' href='/Editor/EditCode/" + element.Id + "' style='width:90px;'>";
                     }
 
                     if (element.Published === null && element.Published !== "") {
@@ -140,10 +140,10 @@
 
                     div += "</a>";
 
-                    div += "<a class='btn btn-sm btn-secondary' title='Edit with Monaco/VS Code editor' href='/Editor/EditCode/" + element.Id + "'><img src='/images/monaco-vscode-logo.png' height='22' />  Code Editor</a>";
+                    div += "<a class='btn btn-sm btn-secondary' title='Code editor' href='/Editor/EditCode/" + element.Id + "'><img src='/images/monaco-vscode-logo.png' height='22' />  Code editor</a>";
 
                     if (element.UsesHtmlEditor === true) {
-                        div += "<a class='btn btn-sm btn-secondary' title='CKEditor (WYSIWYG editor)' href='/Editor/Edit/" + element.Id + "'><img src='/images/ckeditor-5-proj-logo.svg' height='22' /> HTML Editor</a>";
+                        div += "<a class='btn btn-sm btn-secondary' title='Live editor' href='/Editor/Edit/" + element.Id + "'><img src='/images/ckeditor-5-proj-logo.svg' height='22' /> Live editor</a>";
                     } else {
                         div += "<a class='btn btn-sm btn-secondary' href='#' style='width:109px;'></a>";
                     }

@@ -25,7 +25,7 @@ namespace Cosmos.Cms.Models
         public DateTimeOffset? Published { get; set; }
 
         /// <summary>
-        /// Can use HTML Editor
+        /// Can use Live editor
         /// </summary>
         public bool UsesHtmlEditor { get; set; }
     }

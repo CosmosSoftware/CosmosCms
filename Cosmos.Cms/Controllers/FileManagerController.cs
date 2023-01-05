@@ -382,7 +382,7 @@ namespace Cosmos.Cms.Controllers
         }
 
         /// <summary>
-        /// Simple file upload for CKEditor
+        /// Simple file upload for live editor
         /// </summary>
         /// <param name="Id">Article Number</param>
         /// <returns></returns>

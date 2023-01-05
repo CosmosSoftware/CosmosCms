@@ -619,7 +619,7 @@ namespace Cosmos.Cms.Controllers
                 {
                     var result = await _articleLogic.UpdateOrInsert(articleViewModel, userId, true);
 
-                    // Open the HTML (CKEditor) if there are editable regions on the page.
+                    // Open the live editor if there are editable regions on the page.
                     if (result.Model.Content.Contains("editable", StringComparison.InvariantCultureIgnoreCase) ||
                         result.Model.Content.Contains("data-ccms-ceid", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -803,7 +803,7 @@ namespace Cosmos.Cms.Controllers
             if (model == null) return NotFound();
 
             //
-            // The HTML editor edits the title and Content fields.
+            // The Live editor edits the title and Content fields.
             // Next two lines detect any HTML errors with each.
             // Errors are saved in ModelState.
             model.Title = BaseValidateHtml("Title", model.Title);

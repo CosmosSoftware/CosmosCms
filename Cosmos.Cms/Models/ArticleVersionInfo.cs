@@ -30,7 +30,7 @@ namespace Cosmos.Cms.Models
         public DateTimeOffset? Expires { get; set; }
 
         /// <summary>
-        /// Can use HTML Editor
+        /// Can use Live editor
         /// </summary>
         public bool UsesHtmlEditor { get; set; }
     }

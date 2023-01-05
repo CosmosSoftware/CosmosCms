@@ -39,9 +39,9 @@ namespace Cosmos.Cms.Models
         [Display(Name = "Expires")]
         public DateTimeOffset? Expires { get; set; }
         /// <summary>
-        /// Uses Html Editor
+        /// Uses Live editor
         /// </summary>
-        [Display(Name = "Uses Html Editor")]
+        [Display(Name = "Uses Live editor")]
         public bool UsesHtmlEditor { get; set; }
     }
 }

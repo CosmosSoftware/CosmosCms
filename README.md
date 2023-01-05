@@ -15,7 +15,7 @@ Content distribution is handled by:
 
 Content management is handled by an applications that uses:
 
-* CKEditor for easy WYSYG editing
+* CKEditor for easy "live" editing
 * Online version of VS Code
 * File management tool for the static website and upload NodeJS modules
 
