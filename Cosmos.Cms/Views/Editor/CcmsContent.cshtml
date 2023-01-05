@@ -64,60 +64,19 @@
                         uploadUrl: '/FileManager/SimpleUpload/@Model.ArticleNumber',
                         // Enable the XMLHttpRequest.withCredentials property.
                         withCredentials: true
+                    },
+                    heading: {
+                        options: [
+                            { model: 'paragraph', title: 'Paragraph' },
+                            { model: 'heading1', view: 'h1', title: 'Page Title' },
+                            { model: 'heading2', view: 'h2', title: 'Heading 1' },
+                            { model: 'heading3', view: 'h3', title: 'Heading 2' },
+                            { model: 'heading4', view: 'h4', title: 'Heading 3' },
+                            { model: 'heading5', view: 'h5', title: 'Heading 4' },
+                            { model: 'heading6', view: 'h6', title: 'Heading 5' }
+                        ]
                     }
                 };
-
-                var htags = ["header", "h1", "h2", "h3", "h4", "h5", "h6"];
-
-                if (htags.indexOf(inlineElement.tagName.toLowerCase()) > -1) {
-                    config.removePlugins = [
-                        'Alignment',
-                         //'Autoformat',
-                         //'AutoImage',
-                         //'AutoLink',
-                        'BlockQuote',
-                        'Bold',
-                        'CloudServices',
-                        'CodeBlock',
-                        //'Essentials',
-                        //'FindAndReplace',
-                        'FontColor',
-                        'FontSize',
-                         //'Heading',
-                         //'HeadingEditing',
-                        'Highlight',
-                        'HorizontalLine',
-                        //'Image',
-                        //'ImageCaption',
-                        //'ImageInsert',
-                        //'ImageResize',
-                        //'ImageStyle',
-                        //'ImageToolbar',
-                        //'ImageUpload',
-                        'Indent',
-                        'IndentBlock',
-                        'Italic',
-                        //'Link',
-                        //'LinkImage',
-                        'List',
-                        'ListProperties',
-                        'MediaEmbed',
-                        'MediaEmbedToolbar',
-                        //'Paragraph',
-                        'PasteFromOffice',
-                        //'SimpleUploadAdapter',
-                        'Table',
-                        'TableCaption',
-                        'TableCellProperties',
-                        'TableColumnResize',
-                        'TableProperties',
-                        'TableToolbar',
-                        'TextTransformation',
-                        //'toolbar',
-                        'Underline'
-                    ];
-                    //config.toolbar.items = ['heading', '|', 'link'];
-                }
 
                 BalloonEditor
                     .create(inlineElement, config)

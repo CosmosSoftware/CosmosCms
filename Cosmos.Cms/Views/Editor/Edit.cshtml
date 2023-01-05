@@ -12,6 +12,7 @@
     <input type="hidden" asp-for="UrlPath" />
     <input type="hidden" asp-for="VersionNumber" />
     <input type="hidden" asp-for="RoleList" />
+    <input type="hidden" asp-for="Content" />
     <input type="hidden" asp-for="Title" />
     <input type="hidden" asp-for="Published" />
 </form>
@@ -61,7 +62,7 @@
                     <div class="navbar">
                         <div class="container-fluid">
                             <div class="navbar-brand text-light">
-                                <img src="/images/vscode.png" alt="Logo" height="20" class="d-inline-block align-text-top">
+                                <img src="/images/vscodeicon.svg" alt="Logo" height="20" class="d-inline-block align-text-top">
                                 Code Editor
                             </div>
                             <div class="d-flex">
@@ -69,7 +70,7 @@
                                 <button id="btnApply" type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Apply</button>
                             </div>
                         </div>
-                    </div>                    
+                    </div>
                     <div id="editspace" class="m-editor-container" style="height: 80vh;"></div>
                 </div>
             </div>
@@ -83,7 +84,7 @@
     let editor;
     // CK Editor
     let ckeditor = null;
-    
+
     // CONSTANTS
     // Modals
     const versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
@@ -161,7 +162,7 @@
     };
 
     $(document).ready(function (e) {
-                
+
         $("#lblTitle").html("Page URL: ");
         $("#modalChgTitleHeader").html("Change page URL: ");
         $("#newTitle").html("New page URL: ");
@@ -223,8 +224,11 @@
 
             const ccms_editibleAreas = iframe.contentWindow.ccms_editibleAreas;
 
+            // If there are "editable" areas being edited, use this method to save changes
             if (typeof (ccms_editibleAreas) !== "undefined" && ccms_editibleAreas.length > 0) {
-                postRegions(ccms_editibleAreas);
+                const p = postRegions(ccms_editibleAreas);
+                p.then(doneSaving());
+                return;
             }
 
             if (typeof (myModel) !== "undefined" && myModel !== null) {
@@ -400,7 +404,7 @@
     }
 
     function insertPageLink() {
-        
+
         if (typeof ckeditor === "undefined" || ckeditor === null) {
             alert("Error: Could not open HTML editor.");
             return;
@@ -429,7 +433,7 @@
         });
     }
 
-    function insertFileLink (path) {
+    function insertFileLink(path) {
         // Change the model using the model writer.
         ckeditor.model.change(writer => {
 
@@ -444,11 +448,11 @@
             clearFileMgrPaths();
         });
     }
-    
-    function insertImage (path) {
+
+    function insertImage(path) {
         // Change the model using the model writer.
         ckeditor.model.change(writer => {
-            
+
             const url = fileBaseUrl + "/" + path;
 
             const viewFragment = ckeditor.data.processor.toView("<img src='" + url + "' />");

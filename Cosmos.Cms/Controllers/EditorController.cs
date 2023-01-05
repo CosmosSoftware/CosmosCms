@@ -895,7 +895,7 @@ namespace Cosmos.Cms.Controllers
             // Get the editable regions from the original document.
             var originalHtmlDoc = new HtmlDocument();
             originalHtmlDoc.LoadHtml(article.Content);
-            var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*/div[@data-ccms-ceid]|//*/div[@data-ccms-ceid]|//*/[matches(local-name(),'^h\\d+$')][@data-ccms-ceid]");
+            var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*[@data-ccms-ceid]");
 
             foreach (var region in model.Regions)
             {
