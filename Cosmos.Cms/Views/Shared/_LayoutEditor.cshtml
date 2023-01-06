@@ -219,7 +219,14 @@
                     <div class="container-fluid">
                         <div class="row mb-3">
                             <label for="combobox">Page search:</label>
-                            <input id="combobox" placeholder="Search for a page ..." type="text" class="form-control bg-dark text-light custom-combobox" aria-label="Type to search for a page." style="height:26px">
+                            <div class="row">
+                                <div class="col-9">
+                                    <input id="combobox" placeholder="Search for a page ..." type="text" class="form-control bg-dark text-light custom-combobox" aria-label="Type to search for a page." style="height:26px">
+                                </div>
+                                <div class="col-3">
+                                    <button type="button" id="btnRefreshList" title="Refresh search" class="btn btn-sm btn-secondary">Refresh <i class="fa-solid fa-rotate"></i></button>
+                                </div>
+                            </div>
                         </div>
                         <div class="row mb-3" id="pageSelectResults">
                             <div class="col-9">
@@ -593,6 +600,12 @@
                     selectedAnchorData = ui.item; // Save this as the last selected item
                     return true;
                 }
+            });
+
+            $("#btnRefreshList").click(function (e) {
+                e.preventDefault();
+                const value = $("#combobox").val();
+                $("#combobox").autocomplete("search", value);
             });
 
             $("#btnOpenLink").click(function (e) {
