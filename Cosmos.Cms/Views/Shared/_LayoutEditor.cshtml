@@ -246,6 +246,7 @@
                             <div class="col-auto ms-5">
                                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button id="btnApplyLink" type="button" class="btn btn-sm btn-primary" disabled>Apply <i class="fa-solid fa-circle-arrow-right"></i></button>
+                                <a id="btnCreatePage" target="_blank" href="" class="btn btn-sm btn-primary" style="display:none">Create page <i class="fa-solid fa-circle-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -290,6 +291,7 @@
         // VARIABLES
         // Function to fire after modal action
         let next;
+        let comboBoxTimeout = null;
         let fileMgrPopup = null;
         let selectedFile = "";
         let lastPublished = "@(((DateTimeOffset?)ViewData["LastPubDateTime"]))";
@@ -539,6 +541,11 @@
                     $("#btnOpen").prop('disabled', true);
                     $("#pageStatus").hide();
                     $("#divLinkDetails").hide();
+                    $("#btnApplyLink").prop('disabled', true);
+                    $("#btnCreatePage").hide();
+                    if (comboBoxTimeout !== null) {
+                        clearTimeout(comboBoxTimeout);
+                    }
                     $.ajax({
                         url: "@Url.Action("GetArticleList","Editor")",
                         dataType: "json",
@@ -547,6 +554,13 @@
                         },
                         success: function (data) {
                             var results = [];
+                            if (data.length === 0) {
+                                comboBoxTimeout = setTimeout(function () {
+                                    $("#btnCreatePage").show();
+                                    const url = "@Url.Action("Create", "Editor")?title=" + $("#combobox").val();
+                                    $("#btnCreatePage").attr("href", url);
+                                }, 1500);
+                            }
                             $.each(data, function (index, entity) {
                                 var item = { label: entity.Title, value: entity.Title, url: entity.UrlPath, updated: entity.Updated, id: entity.ArticleNumber, published: entity.LastPublished };
                                 results.push(item);

@@ -416,9 +416,10 @@ namespace Cosmos.Cms.Controllers
         /// <summary>
         ///     Creates a <see cref="CreatePageViewModel" /> used to create a new article.
         /// </summary>
+        /// <param name="title">Name of new page if known</param>
         /// <returns></returns>
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(string title = "")
         {
             var layout = await _dbContext.Layouts.FirstOrDefaultAsync(l => l.IsDefault);
 
@@ -434,7 +435,7 @@ namespace Cosmos.Cms.Controllers
                 return View(new CreatePageViewModel
                 {
                     Id = Guid.NewGuid(),
-                    Title = string.Empty,
+                    Title = title,
                     Templates = templates
                 });
             }
@@ -443,7 +444,7 @@ namespace Cosmos.Cms.Controllers
             return View(new CreatePageViewModel
             {
                 Id = Guid.NewGuid(),
-                Title = string.Empty,
+                Title = title,
                 Templates = templates
             });
         }
