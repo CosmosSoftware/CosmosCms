@@ -53,7 +53,9 @@
 @if (selectOne)
 {
     <style>
-        #ccmsNavMenu { display: none; }
+        #ccmsNavMenu {
+            display: none;
+        }
     </style>
 }
 <link href="https://unpkg.com/filepond@4/dist/filepond.css" rel="stylesheet" />
@@ -78,6 +80,10 @@
             {
                 <h5 class="text-light">Select the folder where you want to place the file(s).</h5>
             }
+            <div class="form-check form-switch mt-2 ms-3">
+                <input id="swViewImgThumbs" class="form-check-input" type="checkbox" role="checkbox" checked>
+                <label id="lbViewImgThumbs" style="font-size:0.8rem" class="form-check-label text-light" for="swViewImgThumbs">Image thumbnails (on)</label>
+            </div>
         </div>
     </div>
 
@@ -403,10 +409,13 @@
     const selectOneFile = @(selectOne.ToString().ToLower());
     // Set mode
     const directoryOnly = @(directoryOnly.ToString().ToLower());
-
+    // Image browser on?
+    const imageBrowserMode = @imagesOnly;
 
     let totalFileCount = 0;
     let loadedFileCount = 0;
+    let imgThumbStatus = (new Boolean(sessionStorage.getItem("ImgThubmnail"))) || imageBrowserMode;
+
 
     // shows a modal, closes all others.
     function showModal(name, message, title) {
@@ -653,6 +662,18 @@
         });
 
         resetButtons();
+
+        $("#swViewImgThumbs").prop('checked', imgThumbStatus);
+
+        $("#swViewImgThumbs").click(function () {
+            if ($("#swViewImgThumbs").is(":checked")) {
+                $("#lbViewImgThumbs").html("Image thumbnails (on)");
+                sessionStorage.setItem("ImgThubmnail", true);
+            } else {
+                $("#lbViewImgThumbs").html("Image thumbnails (off)");
+                sessionStorage.setItem("ImgThubmnail", false);
+            }
+        });
     });
 
     function clearSelection() {
@@ -704,7 +725,7 @@
         // Get the array length
         let arrayLength = paths.length;
 
-        
+
         if (selectOneFile) {
             let btnSelectFileAndClose = parent.document.getElementById("btnSelectFileAndClose");
             btnSelectFileAndClose.disabled = true;
@@ -917,6 +938,10 @@
 
     function download(p) {
         window.location.href = encodeURI("@Url.Action("Download", controller)?path=" + p + "&container=@container");
+    }
+
+    function getViewThumbsValue() {
+        return $("#swViewImgThumbs").is(":checked");
     }
 
 </script>
