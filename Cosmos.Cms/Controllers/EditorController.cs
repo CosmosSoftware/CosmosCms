@@ -211,7 +211,7 @@ namespace Cosmos.Cms.Controllers
                     Updated = s.Updated,
                     VersionNumber = s.VersionNumber,
                     Expires = s.Expires,
-                    UsesHtmlEditor = s.Content.ToLower().Contains(" editable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
+                    UsesHtmlEditor = s.Content.ToLower().Contains(" contenteditable=") || s.Content.ToLower().Contains(" data-ccms-ceid=")
                 }).AsQueryable();
 
             ViewData["RowCount"] = await query.CountAsync();
