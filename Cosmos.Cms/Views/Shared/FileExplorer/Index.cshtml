@@ -261,7 +261,14 @@
                                     }
                                     else
                                     {
-                                        <a href="javascript:download('@row.Path')">@(row.Name + row.Extension)</a>
+                                        if (imagesOnly)
+                                        {
+                                            <a title="Click to download image" href="javascript:download('@row.Path')"><img src="@Url.Action("GetImageThumbnail", "FileManager")?target=@row.Path" /></a>
+                                        }
+                                        else
+                                        {
+                                            <a href="javascript:download('@row.Path')">@(row.Name + row.Extension)</a>
+                                        }
                                     }
                                 </td>
                                 <td style="width:240px">

@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using MimeTypes;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1299,6 +1300,35 @@ namespace Cosmos.Cms.Controllers
             }
 
             return Ok();
+        }
+
+        /// <summary>
+        /// Gets a thumbnail for the specified image
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> GetImageThumbnail(string target, int width = 42, int height = 42)
+        {
+            var extension = Path.GetExtension(target.ToLower());
+
+            var filter = new[] { ".png", ".jpg", ".gif", ".jpeg", ".webp" };
+
+            if (!filter.Contains(extension))
+            {
+                throw new NotSupportedException($"Image type {extension} not supported.");
+            }
+
+            _storageContext.SetContainerName("$web");
+            using var stream = await _storageContext.OpenBlobReadStreamAsync(target);
+            var image = await SixLabors.ImageSharp.Image.LoadAsync(stream);
+            var newImage = image.Clone(i => i.Resize(new ResizeOptions() { Mode = ResizeMode.Crop, Position = AnchorPositionMode.Center, Size = new Size(width, height) }));
+
+            using var outStream = new MemoryStream();
+            newImage.SaveAsWebp(outStream);
+
+            return File(outStream.ToArray(), "image/webp");
         }
 
         #endregion

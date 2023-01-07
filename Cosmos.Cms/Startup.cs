@@ -19,9 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
-using SixLabors.ImageSharp.Web.Caching.Azure;
-using SixLabors.ImageSharp.Web.DependencyInjection;
-using SixLabors.ImageSharp.Web.Providers.Azure;
 using System;
 using System.Threading.Tasks;
 
@@ -152,32 +149,7 @@ namespace Cosmos.Cms
             services.AddTransient<TranslationServices>();
             services.AddTransient<ArticleEditLogic>();
 
-            // ImageSharp services
-            // https://docs.sixlabors.com/articles/imagesharp.web/gettingstarted.html
-
-
-            // Add the default service and options.
-            // Configure and register the containers.  
-            // Alteratively use `appsettings.json` to represent the class and bind those settings.
-            services.AddImageSharp()
-                .Configure<AzureBlobStorageImageProviderOptions>(options =>
-                {
-                    // The "BlobContainers" collection allows registration of multiple containers.
-                    options.BlobContainers.Add(new AzureBlobContainerClientOptions
-                    {
-                        // https://docs.sixlabors.com/articles/imagesharp.web/imageproviders.html?tabs=tabid-1%2Ctabid-1a
-                        ConnectionString = fileStorageCon,
-                        ContainerName = "$web"
-                    });
-                }).Configure<AzureBlobStorageCacheOptions>(options =>
-                {
-                    // https://docs.sixlabors.com/articles/imagesharp.web/imagecaches.html?tabs=tabid-1%2Ctabid-1a
-                    options.ConnectionString = fileStorageCon;
-                    options.ContainerName = "cosmosimgcache";
-                    // Optionally create the cache container on startup if not already created.
-                    AzureBlobStorageCache.CreateIfNotExists(options, PublicAccessType.None);
-                }).SetCache<AzureBlobStorageCache>().AddProvider<AzureBlobStorageImageProvider>();
-
+            
             // This is used by the ViewRenderingService 
             // to export web pages for external editing.
             services.AddScoped<IViewRenderService, ViewRenderService>();
