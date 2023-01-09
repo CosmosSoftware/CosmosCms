@@ -16,7 +16,8 @@ namespace Cosmos.Cms.Models
         /// <param name="sortOrder"></param>
         /// <param name="currentSort"></param>
         /// <param name="getUrl"></param>
-        public GridPagerPartialViewModel(int pageNumber, int rowCount, int pageSize, string sortOrder, string currentSort, string getUrl)
+        /// <param name="filter"></param>
+        public GridPagerPartialViewModel(int pageNumber, int rowCount, int pageSize, string sortOrder, string currentSort, string getUrl, string filter = "")
         {
             // Set values as-is
             RowCount = rowCount;
@@ -32,7 +33,8 @@ namespace Cosmos.Cms.Models
             PageCount = System.Convert.ToInt32(Math.Ceiling(at));
             PreviousPage = Math.Max(0, PageNumber - 1);
             LastPage = PageCount - 1;
-            NextPage = Math.Min(PageCount, LastPage);
+            NextPage = Math.Min(pageNumber + 1, LastPage);
+            Filter= filter;
         }
         /// <summary>
         /// Total number of rows
@@ -77,5 +79,10 @@ namespace Cosmos.Cms.Models
         /// Get method URL
         /// </summary>
         public string GetUrl { get; }
+
+        /// <summary>
+        /// Filter value
+        /// </summary>
+        public string Filter { get; }
     }
 }

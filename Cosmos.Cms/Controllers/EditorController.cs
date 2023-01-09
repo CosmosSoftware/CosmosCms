@@ -94,11 +94,13 @@ namespace Cosmos.Cms.Controllers
         /// <param name="currentSort"></param>
         /// <param name="pageNo"></param>
         /// <param name="pageSize"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Index(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10)
+        public async Task<IActionResult> Index(string sortOrder, string currentSort, int pageNo = 0, int pageSize = 10, string filter = "")
         {
             ViewData["PublisherUrl"] = _options.Value.SiteSettings.PublisherUrl;
             ViewData["ShowFirstPageBtn"] = await _dbContext.Articles.CosmosAnyAsync() == false;
+            ViewData["Filter"] = filter;
 
             ViewData["sortOrder"] = sortOrder;
             ViewData["currentSort"] = currentSort;
@@ -108,6 +110,12 @@ namespace Cosmos.Cms.Controllers
             var query = _dbContext.ArticleCatalog.AsQueryable();
 
             ViewData["RowCount"] = await query.CountAsync();
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                var f = filter.ToLower();
+                query = query.Where(w => w.Title.ToLower().Contains(f));
+            }
 
             if (sortOrder == "desc")
             {
@@ -180,7 +188,9 @@ namespace Cosmos.Cms.Controllers
                 Updated = s.Updated
             }).Skip(pageNo * pageSize).Take(pageSize);
 
-            return View(await model.ToListAsync());
+            var data = await model.ToListAsync();
+
+            return View(data);
         }
 
         ///<summary>

@@ -14,8 +14,9 @@
     var currentSort = (string)ViewData["currentSort"];
     var pageNumber = (int)ViewData["pageNo"];
     var pageSize = (int)ViewData["pageSize"];
+    var filter = (string)ViewData["Filter"];
 
-    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index");
+    var pagerModel = new GridPagerPartialViewModel(pageNumber, rowCount, pageSize, sortOrder, currentSort, "/Editor/Index", filter);
 }
 <script src="~/js/clipboard.min.js"></script>
 
@@ -30,10 +31,13 @@
         </div>
     </div>
     <div class="row bg-dark">
-        <div class="col-10">
-            <input id="combobox" placeholder="Search for a page ..." type="text" class="form-control bg-dark text-light custom-combobox" aria-label="Type to search for a page." style="height:26px">
+        <div class="col-1 text-left">
+            <button id="btnFilter" class="btn btn-sm btn-primary">Filter <i class="fa-solid fa-filter"></i></button>
         </div>
-        <div class="col-2 text-right">
+        <div class="col-10">
+            <input id="combobox" placeholder="Search for a page ..." type="text" class="form-control bg-dark text-light custom-combobox" aria-label="Type to search for a page." style="height:26px" value="@filter">
+        </div>
+        <div class="col-1 text-right">
             <button id="btnOpen" class="btn btn-sm btn-primary" disabled>Open <i class="fa-solid fa-circle-arrow-right"></i></button>
         </div>
     </div>
@@ -194,6 +198,7 @@
         $("#combobox").combobox({
             source: function (request, response) {
                 $("#btnOpen").prop('disabled', true);
+                $("#btnFilter").prop('disabled', true);
 
                 $.ajax({
                     url: "@Url.Action("GetArticleList","Editor")",
@@ -208,6 +213,10 @@
                             results.push(item);
                         });
                         response(results);
+                        var value = $("#combobox").val();
+                        if (value !== null && value.length > 0) {
+                            $("#btnFilter").prop('disabled', false);
+                        }
                     }
                 });
             },
@@ -219,6 +228,24 @@
             }
         });
 
+        $("#combobox").keypress(function (event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if (keycode == '13') {
+                var url = "/Editor/Index?pageNo=0&sortOrder=@sortOrder&currentSort=@currentSort&pageSize=@pageSize&filter=" + $("#combobox").val();
+                window.location.href = url;
+            }
+        });
+
+        $("#btnFilter").click(function (e){
+            e.preventDefault();
+            var url = "/Editor/Index?pageNo=0&sortOrder=@sortOrder&currentSort=@currentSort&pageSize=@pageSize&filter=" + $("#combobox").val();
+            window.location.href = url;
+        });
+
+
+        if ("@filter" === "") {
+            $("#btnFilter").prop('disabled', true);
+        }
     });
 
 
