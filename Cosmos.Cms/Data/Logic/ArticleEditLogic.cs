@@ -8,6 +8,7 @@ using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using NUglify.Html;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
@@ -192,7 +193,7 @@ namespace Cosmos.Cms.Data.Logic
             {
                 return content;
             }
-            var htmlDoc = new HtmlDocument();
+            var htmlDoc = new HtmlAgilityPack.HtmlDocument();
             htmlDoc.LoadHtml(content);
 
             var elements = htmlDoc.DocumentNode.SelectNodes("//*[@contenteditable]|//*[@crx]|//*[@data-ccms-ceid]");
@@ -267,10 +268,70 @@ namespace Cosmos.Cms.Data.Logic
         /// <param name="model"></param>
         private void Ensure_Oembed_Handled(ArticleViewModel model)
         {
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(model.Content);
+            
+            var htmlDoc = new HtmlAgilityPack.HtmlDocument();
+            var footerDoc = new HtmlAgilityPack.HtmlDocument();
+            
+            htmlDoc.LoadHtml(string.IsNullOrEmpty(model.Content) ? "" : model.Content);
+            footerDoc.LoadHtml(string.IsNullOrEmpty(model.FooterJavaScript) ? "" : model.FooterJavaScript);
 
-            var elements = htmlDoc.DocumentNode.SelectNodes(
+            var oembed = htmlDoc.DocumentNode.SelectNodes("//oembed[@url]");
+            var hasOembed = oembed != null && oembed.Any();
+
+            var embedlyElements = footerDoc.DocumentNode.SelectNodes("//script[@id='cwps_embedly']");
+            var scriptElements = footerDoc.DocumentNode.SelectNodes("//script[@id='cwps_embedly_launch']");
+
+            //
+            // Now add or remove supporting JavaScript as  needed
+            //
+            if (hasOembed)
+            {
+                //
+                // There are OEmbeds, so add supporting JavaScript injects below
+                //
+                if (embedlyElements == null || !embedlyElements.Any())
+                {
+                    var embedly = footerDoc.CreateElement("script");
+                    embedly.Id = "cwps_embedly";
+                    embedly.Attributes.Append("async");
+                    embedly.Attributes.Append("charset", "utf-8");
+                    embedly.Attributes.Append("src", "//cdn.embedly.com/widgets/platform.js");
+
+                    footerDoc.DocumentNode.AppendChild(embedly);
+                }
+
+                if (scriptElements == null || !scriptElements.Any())
+                {
+                    var addon = footerDoc.CreateElement("script");
+                    addon.Id = "cwps_embedly_launch";
+                    addon.InnerHtml = "document.querySelectorAll( 'oembed[url]' ).forEach( element => { const anchor = document.createElement( 'a' ); anchor.setAttribute( 'href', element.getAttribute( 'url' ) ); anchor.className = 'embedly-card'; element.appendChild( anchor ); });";
+
+                    footerDoc.DocumentNode.AppendChild(addon);
+                }
+                model.FooterJavaScript = footerDoc.DocumentNode.OuterHtml;
+            }
+            else
+            {
+                //
+                // There are NO OEmbeds, so REMOVE supporting JavaScript injects below
+                //
+                if (embedlyElements != null && embedlyElements.Any())
+                {
+                    foreach(var el in embedlyElements)
+                    {
+                        el.Remove();
+                    }
+                }
+                if (scriptElements != null && scriptElements.Any())
+                {
+                    foreach (var el in scriptElements)
+                    {
+                        el.Remove();
+                    }
+                }
+                model.FooterJavaScript = footerDoc.DocumentNode.OuterHtml;
+            }
+
         }
 
         /// <summary>
@@ -1092,7 +1153,7 @@ namespace Cosmos.Cms.Data.Logic
                 return "";
             }
 
-            var htmlDoc = new HtmlDocument();
+            var htmlDoc = new HtmlAgilityPack.HtmlDocument();
 
             htmlDoc.LoadHtml(headerJavaScript);
 
