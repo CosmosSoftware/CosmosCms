@@ -8,6 +8,7 @@ using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -258,6 +259,18 @@ namespace Cosmos.Cms.Data.Logic
 
             // If we had to add at least one ID, then re-save the article.
             return htmlDoc.DocumentNode.OuterHtml;
+        }
+
+        /// <summary>
+        /// If an OEMBED element is present, ensures the necessary JavaScript is injected.
+        /// </summary>
+        /// <param name="model"></param>
+        private void Ensure_Oembed_Handled(ArticleViewModel model)
+        {
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(model.Content);
+
+            var elements = htmlDoc.DocumentNode.SelectNodes(
         }
 
         /// <summary>
@@ -665,6 +678,8 @@ namespace Cosmos.Cms.Data.Logic
             #region UPDATE ENTITY WITH NEW CONTENT FROM MODEL
 
             model.Content = Ensure_ContentEditable_IsMarked(model.Content);
+
+            Ensure_Oembed_Handled(model);
 
             // IMPORTANT!!!
             // Handled title changes below....
