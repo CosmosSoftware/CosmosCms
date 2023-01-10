@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NUglify.Html;
+using SendGrid.Helpers.Errors.Model;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
@@ -132,29 +133,6 @@ namespace Cosmos.Cms.Data.Logic
             };
         }
 
-        /// <summary>
-        /// Gets the last version number, and increments by one.
-        /// </summary>
-        /// <param name="articleNumber"></param>
-        /// <returns></returns>
-        private async Task<int> GetNextVersionNumber(int articleNumber)
-        {
-            return await DbContext.Articles.Where(a => a.ArticleNumber == articleNumber)
-                .MaxAsync(m => m.VersionNumber) + 1;
-        }
-
-        /// <summary>
-        /// Gets the last article number, and increments by one
-        /// </summary>
-        /// <returns></returns>
-        private async Task<int> GetNextArticleNumber()
-        {
-            if (await DbContext.Articles.CosmosAnyAsync())
-                return await DbContext.Articles.MaxAsync(m => m.ArticleNumber) + 1;
-
-            return 1;
-        }
-
         private async Task HandleLogEntry(Article article, string note, string userId)
         {
             DbContext.ArticleLogs.Add(new ArticleLog
@@ -268,10 +246,10 @@ namespace Cosmos.Cms.Data.Logic
         /// <param name="model"></param>
         private void Ensure_Oembed_Handled(ArticleViewModel model)
         {
-            
+
             var htmlDoc = new HtmlAgilityPack.HtmlDocument();
             var footerDoc = new HtmlAgilityPack.HtmlDocument();
-            
+
             htmlDoc.LoadHtml(string.IsNullOrEmpty(model.Content) ? "" : model.Content);
             footerDoc.LoadHtml(string.IsNullOrEmpty(model.FooterJavaScript) ? "" : model.FooterJavaScript);
 
@@ -317,7 +295,7 @@ namespace Cosmos.Cms.Data.Logic
                 //
                 if (embedlyElements != null && embedlyElements.Any())
                 {
-                    foreach(var el in embedlyElements)
+                    foreach (var el in embedlyElements)
                     {
                         el.Remove();
                     }
@@ -645,9 +623,8 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
-        /// <param name="saveAsNewVersion"></param>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> UpdateOrInsert(HtmlEditorViewModel model, string userId, bool saveAsNewVersion)
+        public async Task<ArticleUpdateResult> Save(HtmlEditorViewModel model, string userId)
         {
             ArticleViewModel entity;
             if (model.ArticleNumber == 0)
@@ -674,7 +651,7 @@ namespace Cosmos.Cms.Data.Logic
                 entity.VersionNumber = model.VersionNumber;
             }
 
-            return await UpdateOrInsert(entity, userId, saveAsNewVersion);
+            return await Save(entity, userId);
         }
 
         /// <summary>
@@ -682,7 +659,6 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
-        /// <param name="saveAsNewVersion"></param>
         /// <remarks>
         ///     <para>
         ///         If the article number is '0', a new article is inserted.  If a version number is '0', then
@@ -710,31 +686,41 @@ namespace Cosmos.Cms.Data.Logic
         ///     </list>
         /// </remarks>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> UpdateOrInsert(ArticleViewModel model, string userId, bool saveAsNewVersion)
+        public async Task<ArticleUpdateResult> Save(ArticleViewModel model, string userId)
         {
             //
             // Retrieve the article that we will be using.
             // This will either be used to create a new version (detached then added as new),
             // or updated in place.
             //
-            var article = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
+            var existing = await DbContext.Articles.FirstOrDefaultAsync(a => a.Id == model.Id);
 
-            if (article == null)
+            if (existing == null)
             {
-                throw new Exception($"Article ID: {model.Id} not found.");
+                throw new NotFoundException($"Article ID: {model.Id} not found.");
             }
 
-            if (saveAsNewVersion)
-            {
-                DbContext.Entry(article).State = EntityState.Detached;
-                // Give it a new GUID and version number
-                article.VersionNumber = await GetNextVersionNumber(model.ArticleNumber);
-                article.Id = Guid.NewGuid();
+            var nextVersion = (await DbContext.Articles.Where(w => w.ArticleNumber == existing.ArticleNumber).MaxAsync(m => m.VersionNumber)) + 1;
 
-            }
+            var article = new Article()
+            {
+                ArticleNumber = existing.ArticleNumber,
+                // Content = model.Content, // Set content below.
+                Expires = model.Expires,
+                //FooterJavaScript = model.FooterJavaScript, // Set content below.
+                // HeaderJavaScript = model.HeadJavaScript, // Set content below.
+                Id = Guid.NewGuid(),
+                VersionNumber = nextVersion,
+                Published = model.Published,
+                RoleList = existing.RoleList,
+                StatusCode = existing.StatusCode,
+                Title = model.Title,
+                Updated = DateTimeOffset.UtcNow,
+                UrlPath = model.UrlPath
+            };
 
             // =======================================================
-            // BEGIN: MAKE MODEL CHANGES HERE
+            // BEGIN: MAKE CONTENT CHANGES HERE
             //
             #region UPDATE ENTITY WITH NEW CONTENT FROM MODEL
 
@@ -742,11 +728,9 @@ namespace Cosmos.Cms.Data.Logic
 
             Ensure_Oembed_Handled(model);
 
-            // IMPORTANT!!!
-            // Handled title changes below....
-            // DO NOT CHANGE NOW!!!
-            //article.Title = model.Title.Trim();
-
+            //
+            // Update content
+            //
             if (model.Content == null || model.Content.Trim() == "")
             {
                 article.Content = "";
@@ -759,14 +743,8 @@ namespace Cosmos.Cms.Data.Logic
             }
 
             //
-            // Make sure everything server-side is saved in UTC time.
+            // Update page head and footer
             //
-            if (model.Published.HasValue)
-                article.Published = model.Published.Value.ToUniversalTime();
-            else
-                article.Published = null;
-            article.Updated = DateTime.Now.ToUniversalTime();
-
             article.HeaderJavaScript = model.HeadJavaScript;
             article.FooterJavaScript = model.FooterJavaScript;
 
@@ -779,35 +757,22 @@ namespace Cosmos.Cms.Data.Logic
 
             UpdateHeadBaseTag(article);
 
-            // If published, make sure we increment the version
-            if (model.Published.HasValue)
-            {
-                model.VersionNumber = 0;
-            }
-
             // Make sure base tag is set properly.
             UpdateHeadBaseTag(model);
 
             //
             // We are adding a new version.
-            // DETACH and put into an ADD state.
             //
-            var logEntry = "Edit existing";
+            DbContext.Articles.Add(article); // Put this entry in an add state
 
-            if (saveAsNewVersion)
-            {
-                DbContext.Articles.Add(article); // Put this entry in an add state
-                logEntry = "New version";
-            }
-
-            await HandleLogEntry(article, logEntry, userId);
+            await HandleLogEntry(article, "New version", userId);
 
             // Make sure this saves now
             await DbContext.SaveChangesAsync();
 
             // IMPORTANT!
             // Handle title (and URL) changes for existing 
-            await HandleTitleChange(article, model.Title, userId);
+            await HandleTitleChange(existing, model.Title, userId);
 
             // HANDLE PUBLISHING OF AN ARTICLE
             // This can be a new or existing article.

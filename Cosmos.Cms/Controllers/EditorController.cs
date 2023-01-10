@@ -553,7 +553,7 @@ namespace Cosmos.Cms.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            var result = await _articleLogic.UpdateOrInsert(model, userId, true);
+            var result = await _articleLogic.Save(model, userId);
 
             return RedirectToAction("EditCode", "Editor", new { result.Model.Id });
         }
@@ -628,7 +628,7 @@ namespace Cosmos.Cms.Controllers
 
                 try
                 {
-                    var result = await _articleLogic.UpdateOrInsert(articleViewModel, userId, true);
+                    var result = await _articleLogic.Save(articleViewModel, userId);
 
                     // Open the live editor if there are editable regions on the page.
                     if (result.Model.Content.Contains("editable", StringComparison.InvariantCultureIgnoreCase) ||
@@ -832,7 +832,7 @@ namespace Cosmos.Cms.Controllers
                 //
                 // Now save the changes to the database here.
                 //
-                var result = await _articleLogic.UpdateOrInsert(model, userId, model.SaveAsNewVersion);
+                var result = await _articleLogic.Save(model, userId);
 
                 //
                 // Echo back the changes made.
@@ -920,7 +920,7 @@ namespace Cosmos.Cms.Controllers
             // Now carry over what's beein updated to the original.
             article.Content = originalHtmlDoc.DocumentNode.OuterHtml;
 
-            _ = await _articleLogic.UpdateOrInsert(article, await GetUserId(), false);
+            _ = await _articleLogic.Save(article, await GetUserId());
 
             return Ok();
         }
@@ -1023,7 +1023,7 @@ namespace Cosmos.Cms.Controllers
 
             try
             {
-                var result = await _articleLogic.UpdateOrInsert(new ArticleViewModel()
+                var result = await _articleLogic.Save(new ArticleViewModel()
                 {
                     Id = model.Id,
                     ArticleNumber = article.ArticleNumber,
@@ -1038,7 +1038,7 @@ namespace Cosmos.Cms.Controllers
                     Updated = DateTimeOffset.Now,
                     UrlPath = article.UrlPath,
                     VersionNumber = article.VersionNumber
-                }, userId, model.SaveAsNewVersion);
+                }, userId);
 
                 jsonModel.Model = new EditCodePostModel()
                 {
