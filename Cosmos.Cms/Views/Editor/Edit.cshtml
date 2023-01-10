@@ -24,9 +24,9 @@
 
 <div class="modal" id="modalSavingError" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div data-bs-theme="dark" class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Error</h5>
+                <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Error</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -89,6 +89,7 @@
     // Modals
     const versionsModal = new bootstrap.Modal(document.getElementById('versionList'));
     const vsCodeModal = new bootstrap.Modal(document.getElementById('modalVsCode'));
+    const errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -288,15 +289,14 @@
                     // Renable editors
                     $(editorContainers).css("border", "dashed 1px #dadada");
 
-                    // Below not needed
-                    //iframe.contentWindow.ccms_createEditors();
+                    if (typeof response === "undefined" || response === null || response === "" || typeof response.Model === "undefined" || response.Model === null) {
+                        let errorMsg = "Error saving to server, please try again.";
+                        $("#divErrorLog").html(errorMsg);
+                        errorModal.show();
+                    }
 
                     if (response.IsValid) {
-                        if (typeof (next) !== "undefined" && next !== null) {
-                            next();
-                            toastMsg("Successfully saved.");
-                        }
-
+                                                
                         // Reload the changed data.
                         $("#Id").val(response.Model.Id);
                         $("#ArticleNumber").val(response.Model.ArticleNumber);
@@ -305,12 +305,18 @@
                         $("#Content").val(response.Model.Content);
                         $("#RoleList").val(response.Model.RoleList);
                         $("#Title").val(response.Model.Title);
+                        $("#currentTitle").html(response.Model.Title);
                         $("#divTitle").html(response.Model.Title);
                         $("#Published").val(response.Model.Published);
 
+                        if (typeof (next) !== "undefined" && next !== null) {
+                            next();
+                            toastMsg("Successfully saved.");
+                        }
+
                     }
                     else {
-                        var errorMsg = "<h5>Error(s) detected while saving:</h5>";
+                        let errorMsg = "<h5>Error(s) detected while saving:</h5>";
 
                         // Invalid response.
                         $.each(response.Errors,
@@ -323,7 +329,6 @@
                                 errorMsg = errorMsg + "</ul>";
                             });
                         $("#divErrorLog").html(errorMsg);
-                        const errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
                         errorModal.show();
                     }
                 }).done(resolve).fail(reject);
