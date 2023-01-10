@@ -553,7 +553,7 @@ namespace Cosmos.Cms.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            var result = await _articleLogic.Save(model, userId);
+            var result = await _articleLogic.Save(model, userId, true);
 
             return RedirectToAction("EditCode", "Editor", new { result.Model.Id });
         }
@@ -628,7 +628,7 @@ namespace Cosmos.Cms.Controllers
 
                 try
                 {
-                    var result = await _articleLogic.Save(articleViewModel, userId);
+                    var result = await _articleLogic.Save(articleViewModel, userId, true);
 
                     // Open the live editor if there are editable regions on the page.
                     if (result.Model.Content.Contains("editable", StringComparison.InvariantCultureIgnoreCase) ||
@@ -804,12 +804,13 @@ namespace Cosmos.Cms.Controllers
         ///     Saves an article meta data via HTTP POSTand returns JSON results.
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="updateExisting"></param>
         /// <returns></returns>
         /// <remarks>
         ///     Does not save article HTML. That is saved with <see cref="PostRegions"/>.
         /// </remarks>
         [HttpPost]
-        public async Task<IActionResult> Edit(HtmlEditorViewModel model)
+        public async Task<IActionResult> Edit(HtmlEditorViewModel model, bool updateExisting)
         {
             if (model == null) return NotFound();
 
@@ -832,7 +833,7 @@ namespace Cosmos.Cms.Controllers
                 //
                 // Now save the changes to the database here.
                 //
-                var result = await _articleLogic.Save(model, userId);
+                var result = await _articleLogic.Save(model, userId, updateExisting);
 
                 //
                 // Echo back the changes made.
@@ -920,7 +921,7 @@ namespace Cosmos.Cms.Controllers
             // Now carry over what's beein updated to the original.
             article.Content = originalHtmlDoc.DocumentNode.OuterHtml;
 
-            _ = await _articleLogic.Save(article, await GetUserId());
+            _ = await _articleLogic.Save(article, await GetUserId(), model.UpdateExisting.HasValue ? model.UpdateExisting.Value : true);
 
             return Ok();
         }
@@ -994,6 +995,7 @@ namespace Cosmos.Cms.Controllers
         ///     Saves the code and html of the page.
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="updateExisting"></param>
         /// <returns></returns>
         /// <remarks>
         ///     This method saves page code to the database.  <see cref="EditCodePostModel.Content" /> is validated using method
@@ -1006,7 +1008,7 @@ namespace Cosmos.Cms.Controllers
         /// <exception cref="UnauthorizedResult"></exception>
         [HttpPost]
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
-        public async Task<IActionResult> EditCode(EditCodePostModel model)
+        public async Task<IActionResult> EditCode(EditCodePostModel model, bool updateExisting)
         {
             if (model == null) return NotFound();
 
@@ -1038,7 +1040,7 @@ namespace Cosmos.Cms.Controllers
                     Updated = DateTimeOffset.Now,
                     UrlPath = article.UrlPath,
                     VersionNumber = article.VersionNumber
-                }, userId);
+                }, userId, updateExisting);
 
                 jsonModel.Model = new EditCodePostModel()
                 {

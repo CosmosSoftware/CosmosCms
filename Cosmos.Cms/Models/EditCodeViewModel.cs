@@ -105,5 +105,10 @@ namespace Cosmos.Cms.Models
         /// Editor type
         /// </summary>
         public string EditorType { get; set; } = nameof(EditCodePostModel);
+
+        /// <summary>
+        /// Update existing version
+        /// </summary>
+        public bool UpdateExisting { get; set; } = true;
     }
 }

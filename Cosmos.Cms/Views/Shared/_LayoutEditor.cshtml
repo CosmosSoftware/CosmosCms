@@ -389,7 +389,7 @@
         }
 
         function saveFirst() {
-            saveChanges(checkFirstModal, next);
+            saveChanges(checkFirstModal, next, true);
         }
 
         function doNotSave() {
@@ -525,7 +525,7 @@
                             $("#newTitleValidation").html("");
                             $("#divTitle").html(title);
                             $("#Title").val(title);
-                            saveChanges(null, null);
+                            saveChanges(null, null, false);
                             $('#swAutoSave').prop('checked', status); // Return to last status
                         } else {
                             $("#newTitleValidation").show();
@@ -536,7 +536,7 @@
                     $("#newTitleValidation").html("");
                     $("#divTitle").html(title);
                     $("#Title").val(title);
-                    saveChanges(null, null);
+                    saveChanges(null, null, false);
                 }
                 autoSaveOn = true;
                 modalChangeTitle.hide();

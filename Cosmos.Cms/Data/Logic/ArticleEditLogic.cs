@@ -623,8 +623,9 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
+        /// <param name="updateExisting"></param>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> Save(HtmlEditorViewModel model, string userId)
+        public async Task<ArticleUpdateResult> Save(HtmlEditorViewModel model, string userId, bool updateExisting)
         {
             ArticleViewModel entity;
             if (model.ArticleNumber == 0)
@@ -651,7 +652,7 @@ namespace Cosmos.Cms.Data.Logic
                 entity.VersionNumber = model.VersionNumber;
             }
 
-            return await Save(entity, userId);
+            return await Save(entity, userId, updateExisting);
         }
 
         /// <summary>
@@ -659,6 +660,7 @@ namespace Cosmos.Cms.Data.Logic
         /// </summary>
         /// <param name="model"></param>
         /// <param name="userId"></param>
+        /// <param name="updateExisting"></param>
         /// <remarks>
         ///     <para>
         ///         If the article number is '0', a new article is inserted.  If a version number is '0', then
@@ -686,7 +688,7 @@ namespace Cosmos.Cms.Data.Logic
         ///     </list>
         /// </remarks>
         /// <returns></returns>
-        public async Task<ArticleUpdateResult> Save(ArticleViewModel model, string userId)
+        public async Task<ArticleUpdateResult> Save(ArticleViewModel model, string userId, bool updateExisting)
         {
             //
             // Retrieve the article that we will be using.
@@ -697,27 +699,37 @@ namespace Cosmos.Cms.Data.Logic
 
             if (existing == null)
             {
-                throw new NotFoundException($"Article ID: {model.Id} not found.");
+                throw new NotFoundException($"Article ID: { model.Id } not found.");
             }
 
-            var nextVersion = (await DbContext.Articles.Where(w => w.ArticleNumber == existing.ArticleNumber).MaxAsync(m => m.VersionNumber)) + 1;
+            Article article;
 
-            var article = new Article()
+            if (updateExisting)
             {
-                ArticleNumber = existing.ArticleNumber,
-                // Content = model.Content, // Set content below.
-                Expires = model.Expires,
-                //FooterJavaScript = model.FooterJavaScript, // Set content below.
-                // HeaderJavaScript = model.HeadJavaScript, // Set content below.
-                Id = Guid.NewGuid(),
-                VersionNumber = nextVersion,
-                Published = model.Published,
-                RoleList = existing.RoleList,
-                StatusCode = existing.StatusCode,
-                Title = model.Title,
-                Updated = DateTimeOffset.UtcNow,
-                UrlPath = model.UrlPath
-            };
+                article = existing;
+            }
+            else
+            {
+                var nextVersion = (await DbContext.Articles.Where(w => w.ArticleNumber == existing.ArticleNumber).MaxAsync(m => m.VersionNumber)) + 1;
+
+                article = new Article()
+                {
+                    ArticleNumber = existing.ArticleNumber,
+                    // Content = model.Content, // Set content below.
+                    Expires = model.Expires,
+                    //FooterJavaScript = model.FooterJavaScript, // Set content below.
+                    // HeaderJavaScript = model.HeadJavaScript, // Set content below.
+                    Id = Guid.NewGuid(),
+                    VersionNumber = nextVersion,
+                    Published = model.Published,
+                    RoleList = existing.RoleList,
+                    StatusCode = existing.StatusCode,
+                    Title = model.Title,
+                    Updated = DateTimeOffset.UtcNow,
+                    UrlPath = model.UrlPath
+                };
+            }
+
 
             // =======================================================
             // BEGIN: MAKE CONTENT CHANGES HERE
@@ -763,12 +775,22 @@ namespace Cosmos.Cms.Data.Logic
             //
             // We are adding a new version.
             //
-            DbContext.Articles.Add(article); // Put this entry in an add state
+            if (updateExisting)
+            {
+                DbContext.Entry(article).State = EntityState.Modified;
+                // Make sure this saves now
+                await DbContext.SaveChangesAsync();
+                await HandleLogEntry(article, "Updated existing version", userId);
+            }
+            else
+            {
+                DbContext.Articles.Add(article); // Put this entry in an add state
+                                                 // Make sure this saves now
+                await DbContext.SaveChangesAsync();
+                await HandleLogEntry(article, "New version", userId);
+            }
 
-            await HandleLogEntry(article, "New version", userId);
 
-            // Make sure this saves now
-            await DbContext.SaveChangesAsync();
 
             // IMPORTANT!
             // Handle title (and URL) changes for existing 

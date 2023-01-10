@@ -196,10 +196,10 @@
         }
     });
 
-    function postRegions(data) {
+    function postRegions(data, updateExisting) {
         return new Promise(function (resolve, reject) {
             var id = $("#Id").val();
-            var model = { Id: id, Regions: data };
+            var model = { Id: id, Regions: data, UpdateExisting: updateExisting };
 
             var json = JSON.stringify(model);
 
@@ -222,25 +222,6 @@
             saving();
 
             const iframe = document.getElementById("ccmsContFrame");
-
-            const ccms_editibleAreas = iframe.contentWindow.ccms_editibleAreas;
-
-            // If there are "editable" areas being edited, use this method to save changes
-            if (typeof (ccms_editibleAreas) !== "undefined" && ccms_editibleAreas.length > 0) {
-                const p = postRegions(ccms_editibleAreas);
-
-                p.then(
-                    function () {
-                        doneSaving();
-                        if (typeof (next) !== "undefined" && next !== null) {
-                            next();
-                            toastMsg("Successfully saved.");
-                        }
-                    }
-                );
-
-                return;
-            }
 
             if (typeof (myModel) !== "undefined" && myModel !== null) {
                 myModal.hide();
@@ -296,7 +277,7 @@
                     }
 
                     if (response.IsValid) {
-                                                
+
                         // Reload the changed data.
                         $("#Id").val(response.Model.Id);
                         $("#ArticleNumber").val(response.Model.ArticleNumber);
@@ -308,6 +289,14 @@
                         $("#currentTitle").html(response.Model.Title);
                         $("#divTitle").html(response.Model.Title);
                         $("#Published").val(response.Model.Published);
+
+                        //
+                        // We are creating a new version of the article with this method.
+                        // Update the page history, so if the user refreshes the page, the
+                        // most recent version will appear.
+                        let stateObj = { id: response.Model.Id }
+                        window.history.pushState(stateObj, response.Model.Title, "/Editor/Edit/" + response.Model.Id);
+
 
                         if (typeof (next) !== "undefined" && next !== null) {
                             next();
@@ -340,7 +329,24 @@
             switch (String.fromCharCode(event.which).toLowerCase()) {
                 case 's':
                     event.preventDefault();
-                    $("#frmSave").submit();
+
+                    // If there are "editable" areas being edited, use this method to save changes
+                    const ccms_editibleAreas = iframe.contentWindow.ccms_editibleAreas;
+                    if (typeof (ccms_editibleAreas) !== "undefined" && ccms_editibleAreas.length > 0) {
+
+                        saving();
+                        const p = postRegions(ccms_editibleAreas, true);
+
+                        p.then(
+                            function () {
+                                doneSaving();
+                                if (typeof (next) !== "undefined" && next !== null) {
+                                    next();
+                                    toastMsg("Successfully saved.");
+                                }
+                            }
+                        );
+                    }
                     break;
             }
         }

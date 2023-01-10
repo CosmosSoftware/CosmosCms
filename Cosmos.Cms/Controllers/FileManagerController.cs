@@ -672,7 +672,7 @@ namespace Cosmos.Cms.Controllers
                     // Get the user's ID for logging.
                     var user = await _userManager.GetUserAsync(User);
 
-                    await _articleLogic.Save(article, user.Id);
+                    await _articleLogic.Save(article, user.Id, true);
                 }
                 else
                 {

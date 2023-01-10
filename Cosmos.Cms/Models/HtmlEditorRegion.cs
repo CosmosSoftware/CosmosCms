@@ -14,6 +14,11 @@ namespace Cosmos.Cms.Models
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Update existing article (don't create a new version)
+        /// </summary>
+        public bool? UpdateExisting { get; set; }
+
+        /// <summary>
         /// Regions
         /// </summary>
         public List<HtmlEditorRegion> Regions { get; set; }

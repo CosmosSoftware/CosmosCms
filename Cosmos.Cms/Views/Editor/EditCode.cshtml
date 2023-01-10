@@ -51,6 +51,7 @@
     <input type="hidden" asp-for="HeadJavaScript" />
     <input type="hidden" asp-for="FooterJavaScript" />
     <input type="hidden" asp-for="EditorType" />
+    <input type="hidden" asp-for="UpdateExisting" />
 </form>
 
 <script>
@@ -61,7 +62,7 @@
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
-        saveChanges(null, null);
+        saveChanges(null, null, false);
     });
 
     // Example: var editFields = '[{"FieldId":"HeaderJavaScript","FieldName":"Header JavaScript","EditorMode":0},{"FieldId":"Content","FieldName":"Html Content","EditorMode":1},{"FieldId":"FooterJavaScript","FieldName":"Footer JavaScript","EditorMode":0}]';
@@ -140,7 +141,7 @@
     }
 
     // Save the changes for this editor
-    function saveChanges(myModal, next) {
+    function saveChanges(myModal, next, updateExisting) {
 
         saving();
 
@@ -150,14 +151,17 @@
         // Saving publish date with time zone information
         savePublishDateTime();
 
-        var form = $('#frmSave');
+        let form = $('#frmSave');
 
         if (editor) {
             $("#" + fieldId).val(editor.getValue());
         }
 
+        $("#UpdateExisting").val(new Boolean(updateExisting));
+
+        const data = form.serialize();
         $.post("@Url.Action("EditCode")",
-            form.serialize(),
+            data,
             function (response) {
 
                 doneSaving();
@@ -181,7 +185,12 @@
                     $("#HeadJavaScript").val(response.Model.HeadJavaScript);
                     $("#FooterJavaScript").val(response.Model.FooterJavaScript);
 
-                    //createAndLoadEditor(fieldName); // Reuse the existing set fieldId
+                    //
+                    // We are creating a new version of the article with this method.
+                    // Update the page history, so if the user refreshes the page, the
+                    // most recent version will appear.
+                    let stateObj = { id: response.Model.Id }
+                    window.history.pushState(stateObj, response.Model.Title, "/Editor/EditCode/" + response.Model.Id);
 
                     toastMsg("Successfully saved.");
                 } else {
@@ -370,7 +379,7 @@
                 alert("Could not find openPickPageModal().");
             }
         });
-        
+
         $("#btnOpenInsertFileLink").click(function (e) {
             if (openInsertFileLinkModel) {
                 openInsertFileLinkModel();
@@ -395,7 +404,7 @@
             switch (String.fromCharCode(event.which).toLowerCase()) {
                 case 's':
                     event.preventDefault();
-                    $("#frmSave").submit();
+                    saveChanges(null, null, true);
                     break;
             }
         }
@@ -412,9 +421,9 @@
         // Make a new timeout set to go off in 1000ms (1 second)
         timeout = setTimeout(function () {
             if (getAutoSave()) {
-                $("#frmSave").submit();
+                saveChanges(null, null, true);
             }
-        }, 1500);
+        }, 1200);
     });
 
 </script>

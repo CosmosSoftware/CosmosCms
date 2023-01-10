@@ -164,7 +164,7 @@
                 if (parent.getAutoSave()) {
                     const data = [];
                     data.push(item);
-                    const savePromise = parent.postRegions(data);
+                    const savePromise = parent.postRegions(data, true);
                     savePromise.then(resolve);
                 }
                 else {
@@ -178,7 +178,13 @@
                 switch (String.fromCharCode(event.which).toLowerCase()) {
                     case 's':
                         event.preventDefault();
-                        window.parent.saveChanges(null, null);
+
+                        parent.saving();
+                        
+                        const savePromise = parent.postRegions(ccms_editibleAreas, true);
+                        savePromise.then((value) => {
+                            parent.doneSaving();
+                        });
 
                         break;
                 }

@@ -94,5 +94,9 @@ namespace Cosmos.Cms.Models
         [DateTimeUtcKind]
         public DateTimeOffset? Published { get; set; }
 
+        /// <summary>
+        /// Update existing version
+        /// </summary>
+        public bool UpdateExisting { get; set; } = true;
     }
 }
