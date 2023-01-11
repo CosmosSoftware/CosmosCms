@@ -84,6 +84,8 @@
     let editor;
     // CK Editor
     let ckeditor = null;
+    // Preview window (if opened)
+    let previewWindow = null;
 
     // CONSTANTS
     // Modals
@@ -118,7 +120,7 @@
                 break;
             case "Preview":
                 next = function () {
-                    window.open("@Url.Action("Preview", "Home")/" + modelId);
+                    previewWindow = window.open("@Url.Action("Preview", "Home")/" + modelId);
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
                 checkFirstModal.show();
@@ -183,6 +185,18 @@
             ckeditor.data.set(data);
             saveChanges(null, null);
         });
+    });
+
+    $(document).on("unload", function () {
+        // Close preview window if opened
+        if (typeof previewWindow !== "undefined" && previewWindow !== null && previewWindow.location) {
+            previewWindow.close();
+        }
+
+        // Close filemanager window if opened
+        if (typeof fileMgrPopup !== "undefined" && fileMgrPopup !== null && fileMgrPopup.location) {
+            fileMgrPopup.close();
+        }
     });
 
     $(window).bind('keydown', function (event) {
@@ -297,6 +311,10 @@
                         let stateObj = { id: response.Model.Id }
                         window.history.pushState(stateObj, response.Model.Title, "/Editor/Edit/" + response.Model.Id);
 
+                        // Update preview window if opened
+                        if (typeof previewWindow !== "undefined" && previewWindow !== null && previewWindow.location) {
+                            previewWindow.location.href = "@Url.Action("Preview", "Home")/" + $("#Id").val();
+                        }
 
                         if (typeof (next) !== "undefined" && next !== null) {
                             next();
@@ -343,6 +361,11 @@
                                 if (typeof (next) !== "undefined" && next !== null) {
                                     next();
                                     toastMsg("Successfully saved.");
+                                }
+
+                                // Update preview window if opened
+                                if (typeof previewWindow !== "undefined" && previewWindow !== null && previewWindow.location) {
+                                    previewWindow.location.href = "@Url.Action("Preview", "Home")/" + $("#Id").val();
                                 }
                             }
                         );

@@ -15,10 +15,6 @@
         display: none !important;
     }
 
-    #btnCcmsHtmlEditor {
-        display: block !important;
-    }
-
 </style>
 
 <nav class="code-tabs navbar">
@@ -59,6 +55,8 @@
     var fieldId;
     var fieldName;
     var ccmsEditorIsLocked = false;
+    // Preview window (if opened)
+    let previewWindow = null;
 
     $("#frmSave").submit(function (e) {
         e.preventDefault();
@@ -73,6 +71,18 @@
             $("#" + fieldId).val(editor.getValue());
         }
         createAndLoadEditor(id);
+    }
+
+    function checkDisplayLiveEditorButton() {
+        var content = $("#Content").val().toLowerCase();
+        const hasContentEditable = content.indexOf("=contenteditable");
+        const hasCeid = content.indexOf("data-ccms-ceid=");
+
+        if (hasContentEditable > -1 || hasCeid > -1) {
+            $("#btnCcmsHtmlEditor").show();
+        } else {
+            $("#btnCcmsHtmlEditor").hide();
+        }
     }
 
     //
@@ -192,6 +202,13 @@
                     let stateObj = { id: response.Model.Id }
                     window.history.pushState(stateObj, response.Model.Title, "/Editor/EditCode/" + response.Model.Id);
 
+                    // Update preview window if opened
+                    if (typeof previewWindow !== "undefined" && previewWindow !== null && previewWindow.location) {
+                        previewWindow.location.href = "@Url.Action("Preview", "Home")/" + $("#Id").val();
+                    }
+
+                    checkDisplayLiveEditorButton();
+
                     toastMsg("Successfully saved.");
                 } else {
                     var errorMsg = "<h5>Error(s) detected while saving:</h5>";
@@ -209,6 +226,8 @@
                     $("#divErrorLog").html(errorMsg);
                     var errorModal = new bootstrap.Modal(document.getElementById('modalSavingError'));
                     errorModal.show();
+
+                    checkDisplayLiveEditorButton();
                 }
             }
         );
@@ -229,18 +248,15 @@
                 checkFirstModal.show();
                 break;
             case "Preview":
-
-                var modelId = $("#Id").val();
-
                 next = function () {
-                    window.open("@Url.Action("Preview", "Home")/" + modelId);
+                    previewWindow = window.open("@Url.Action("Preview", "Home")/" + $("#Id").val());
                 }
                 $("#divSaveFirstDialog").html("Save page before opening preview?");
                 checkFirstModal.show();
                 break;
             case "Html":
                 next = function () {
-                    window.location.href = "@Url.Action("Edit", "Editor")/@Model.Id";
+                    window.location.href = "@Url.Action("Edit", "Editor")/" + $("#Id").val();
                 }
                 $("#divSaveFirstDialog").html("Save page before opening Live editor?");
                 checkFirstModal.show();
@@ -397,6 +413,20 @@
                 alert("Could not find openInsertImageModel().");
             }
         });
+
+        checkDisplayLiveEditorButton();
+    });
+
+    $(document).on("unload", function () {
+        // Update preview window if opened
+        if (typeof previewWindow !== "undefined" && previewWindow !== null && previewWindow.location) {
+            previewWindow.close();
+        }
+
+        // Close filemanager window if opened
+        if (typeof fileMgrPopup !== "undefined" && fileMgrPopup !== null && fileMgrPopup.location) {
+            fileMgrPopup.close();
+        }
     });
 
     $(window).bind('keydown', function (event) {

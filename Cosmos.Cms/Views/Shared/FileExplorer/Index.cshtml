@@ -392,7 +392,6 @@
 
 <script>
 
-    // Gloabals
     var paths = [];
 
     // MODALS
@@ -400,6 +399,9 @@
     let renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
     let checkFirstModal = new bootstrap.Modal(document.getElementById('checkFirstModal'));
     let showSelectedModal = new bootstrap.Modal(document.getElementById('showSelectedModal'));
+
+    // Image editor
+    let imageEditorWindow = null;
 
     // Select one mode?
     const selectOneFile = @(selectOne.ToString().ToLower());
@@ -411,6 +413,9 @@
     let totalFileCount = 0;
     let loadedFileCount = 0;
 
+    function openImageEditor(url) {
+        imageEditorWindow = window.open(url, "_blank");
+    }
 
     // shows a modal, closes all others.
     function showModal(name, message, title) {
@@ -570,6 +575,13 @@
             return $(checkbox).attr('data-ccms-blob');
         }
     }
+
+    $(document).on("unload", function () {
+        // Update preview window if opened
+        if (typeof imageEditorWindow !== "undefined" && imageEditorWindow !== null && imageEditorWindow.location) {
+            imageEditorWindow.close();
+        }
+    });
 
     $(document).ready(function () {
         $(".toLocalTimeZone").each(function (index, element) {
