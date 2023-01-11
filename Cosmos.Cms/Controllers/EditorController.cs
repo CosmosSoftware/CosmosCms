@@ -1,4 +1,5 @@
-﻿using Cosmos.Cms.Common.Data;
+﻿using Amazon.Runtime.Internal;
+using Cosmos.Cms.Common.Data;
 using Cosmos.Cms.Common.Data.Logic;
 using Cosmos.Cms.Common.Models;
 using Cosmos.Cms.Common.Services.Configurations;
@@ -20,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Cosmos.Cms.Controllers
 {
@@ -901,29 +903,43 @@ namespace Cosmos.Cms.Controllers
         [Authorize(Roles = "Administrators, Editors, Authors, Team Members")]
         public async Task<IActionResult> PostRegions([FromBody] HtmlEditorPost model)
         {
-            // Next pull the original.
-            var article = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
-
-            // Get the editable regions from the original document.
-            var originalHtmlDoc = new HtmlDocument();
-            originalHtmlDoc.LoadHtml(article.Content);
-            var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*[@data-ccms-ceid]");
-
-            foreach (var region in model.Regions)
+            try
             {
-                var target = originalEditableDivs.FirstOrDefault(w => w.Attributes["data-ccms-ceid"].Value == region.Id);
-                if (target != null)
+
+                if (ModelState.IsValid)
                 {
-                    target.InnerHtml = region.Html;
+
+                    // Next pull the original.
+                    var article = await _articleLogic.Get(model.Id, EnumControllerName.Edit, await GetUserId());
+
+                    // Get the editable regions from the original document.
+                    var originalHtmlDoc = new HtmlDocument();
+                    originalHtmlDoc.LoadHtml(article.Content);
+                    var originalEditableDivs = originalHtmlDoc.DocumentNode.SelectNodes("//*[@data-ccms-ceid]");
+
+                    foreach (var region in model.Regions)
+                    {
+                        var target = originalEditableDivs.FirstOrDefault(w => w.Attributes["data-ccms-ceid"].Value == region.Id);
+                        if (target != null)
+                        {
+                            target.InnerHtml = region.Html;
+                        }
+                    }
+
+                    // Now carry over what's beein updated to the original.
+                    article.Content = originalHtmlDoc.DocumentNode.OuterHtml;
+
+                    var result = await _articleLogic.Save(article, await GetUserId(), model.UpdateExisting.HasValue ? model.UpdateExisting.Value : true);
+
+                    return Json(result);
                 }
             }
-
-            // Now carry over what's beein updated to the original.
-            article.Content = originalHtmlDoc.DocumentNode.OuterHtml;
-
-            _ = await _articleLogic.Save(article, await GetUserId(), model.UpdateExisting.HasValue ? model.UpdateExisting.Value : true);
-
-            return Ok();
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message, e);
+                throw;
+            }
+            return Json("Error saving page.");
         }
 
         /// <summary>

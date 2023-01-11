@@ -17,7 +17,6 @@
       "destination": "wwwroot/lib/signalr/"
     },
     {
-      "provider": "cdnjs",
       "library": "signalr.js@2.4.3",
       "destination": "wwwroot/lib/signalr.js/"
     },
@@ -28,6 +27,10 @@
     {
       "library": "jquery-validation-unobtrusive@4.0.0",
       "destination": "wwwroot/lib/jquery-validation-unobtrusive"
+    },
+    {
+      "library": "jquery@3.6.3",
+      "destination": "wwwroot/lib/jquery/"
     }
   ]
 }

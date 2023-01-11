@@ -119,11 +119,7 @@
                 checkFirstModal.show();
                 break;
             case "Preview":
-                next = function () {
-                    previewWindow = window.open("@Url.Action("Preview", "Home")/" + modelId);
-                }
-                $("#divSaveFirstDialog").html("Save page before opening preview?");
-                checkFirstModal.show();
+                previewWindow = window.open("@Url.Action("Preview", "Home")/" + modelId);
                 break;
         }
     }
@@ -318,7 +314,7 @@
 
                         if (typeof (next) !== "undefined" && next !== null) {
                             next();
-                            toastMsg("Successfully saved.");
+                            // toastMsg("Successfully saved.");
                         }
 
                     }
@@ -360,7 +356,7 @@
                                 doneSaving();
                                 if (typeof (next) !== "undefined" && next !== null) {
                                     next();
-                                    toastMsg("Successfully saved.");
+                                    // toastMsg("Successfully saved.");
                                 }
 
                                 // Update preview window if opened

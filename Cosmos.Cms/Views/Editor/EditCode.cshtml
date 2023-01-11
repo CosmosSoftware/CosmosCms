@@ -239,6 +239,9 @@
     }
 
     function bgEditClickCustom(command) {
+        
+        var modelId = $("#Id").val();
+
         switch (command) {
             case "Close":
                 next = function () {
@@ -248,15 +251,11 @@
                 checkFirstModal.show();
                 break;
             case "Preview":
-                next = function () {
-                    previewWindow = window.open("@Url.Action("Preview", "Home")/" + $("#Id").val());
-                }
-                $("#divSaveFirstDialog").html("Save page before opening preview?");
-                checkFirstModal.show();
+                previewWindow = window.open("@Url.Action("Preview", "Home")/" + modelId);
                 break;
             case "Html":
                 next = function () {
-                    window.location.href = "@Url.Action("Edit", "Editor")/" + $("#Id").val();
+                    window.location.href = "@Url.Action("Edit", "Editor")/" + modelId;
                 }
                 $("#divSaveFirstDialog").html("Save page before opening Live editor?");
                 checkFirstModal.show();

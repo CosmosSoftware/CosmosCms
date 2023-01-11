@@ -13,6 +13,7 @@ using SendGrid.Helpers.Errors.Model;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -699,7 +700,7 @@ namespace Cosmos.Cms.Data.Logic
 
             if (existing == null)
             {
-                throw new NotFoundException($"Article ID: { model.Id } not found.");
+                throw new NotFoundException($"Article ID: {model.Id} not found.");
             }
 
             Article article;
@@ -915,16 +916,20 @@ namespace Cosmos.Cms.Data.Logic
             var itemsToPublish = await DbContext.Articles.Where(w => w.ArticleNumber == articleNumber && w.Published != null)
                 .OrderByDescending(o => o.Published).AsNoTracking().ToListAsync();
 
+            var paths = itemsToPublish.Select(s => s.UrlPath).Distinct().ToArray();
+
             // Get everything that is going to be removed or replaced
-            var itemsToRemove = await DbContext.Pages.Where(w => w.ArticleNumber == articleNumber).ToListAsync();
+            var itemsToRemove = await DbContext.Pages.Where(w => w.ArticleNumber == articleNumber || paths.Contains(w.UrlPath)).ToListAsync();
 
             // Mark these for deletion - do this first to remove any conflicts
             DbContext.Pages.RemoveRange(itemsToRemove);
+            await DbContext.SaveChangesAsync();
+
 
             // Now refresh the published pages
             foreach (var item in itemsToPublish)
             {
-                DbContext.Pages.Add(new Common.Data.PublishedPage()
+                var newPage = new Common.Data.PublishedPage()
                 {
                     ArticleNumber = item.ArticleNumber,
                     Content = item.Content,
@@ -939,7 +944,20 @@ namespace Cosmos.Cms.Data.Logic
                     Updated = item.Updated,
                     UrlPath = item.UrlPath,
                     VersionNumber = item.VersionNumber
-                });
+                };
+
+                // Check for duplicate
+                var duplicate = await DbContext.Pages.FirstOrDefaultAsync(f => f.Id == newPage.Id);
+                if (duplicate == null)
+                {
+                    DbContext.Pages.Add(newPage);
+                }
+                else
+                {
+                    throw new Exception($"Duplicate Page Id. Existing: {duplicate.Id} New: {newPage.Id} ArticleId: {articleNumber}.");
+                }
+
+                
             }
 
             // Update the pages collection
